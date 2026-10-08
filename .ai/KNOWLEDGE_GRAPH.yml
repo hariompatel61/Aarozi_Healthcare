@@ -1,0 +1,87 @@
+# Compact domain knowledge graph. Nodes are stable identifiers. Edges are canonical relationships.
+nodes:
+  - id: tenant
+    type: core
+  - id: branch
+    type: core
+  - id: department
+    type: core
+  - id: user
+    type: identity
+  - id: role
+    type: identity
+  - id: permission
+    type: identity
+  - id: patient
+    type: clinical
+  - id: order
+    type: pathology
+  - id: order_item
+    type: pathology
+  - id: test
+    type: master
+  - id: sample
+    type: pathology
+  - id: result
+    type: pathology
+  - id: report
+    type: reporting
+  - id: invoice
+    type: billing
+  - id: payment
+    type: billing
+  - id: referral_partner
+    type: referral
+  - id: referral_rule
+    type: referral
+  - id: commission_ledger
+    type: referral
+  - id: donor
+    type: blood_bank
+  - id: donation
+    type: blood_bank
+  - id: blood_unit
+    type: blood_bank
+  - id: cross_match
+    type: blood_bank
+  - id: analyzer
+    type: integration
+  - id: analyzer_message
+    type: integration
+  - id: report_template
+    type: reporting
+  - id: license
+    type: platform
+  - id: device
+    type: platform
+  - id: sync_event
+    type: platform
+edges:
+  - [tenant, owns, branch]
+  - [branch, has, department]
+  - [tenant, has, user]
+  - [user, assigned_role, role]
+  - [role, grants, permission]
+  - [tenant, owns, patient]
+  - [patient, has, order]
+  - [order, contains, order_item]
+  - [order_item, references, test]
+  - [order_item, has, sample]
+  - [order_item, produces, result]
+  - [result, renders_to, report]
+  - [report, uses, report_template]
+  - [order, billed_by, invoice]
+  - [invoice, receives, payment]
+  - [order, attributed_to, referral_partner]
+  - [referral_partner, governed_by, referral_rule]
+  - [referral_rule, produces, commission_ledger]
+  - [tenant, owns, donor]
+  - [donor, creates, donation]
+  - [donation, produces, blood_unit]
+  - [patient, participates_in, cross_match]
+  - [blood_unit, participates_in, cross_match]
+  - [analyzer, emits, analyzer_message]
+  - [analyzer_message, maps_to, order_item]
+  - [tenant, owns, license]
+  - [device, authenticates, license]
+  - [device, emits, sync_event]

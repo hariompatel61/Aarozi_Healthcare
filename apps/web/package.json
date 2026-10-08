@@ -1,0 +1,8 @@
+{
+  "name": "aarozi-healthcare-web",
+  "private": true,
+  "type": "module",
+  "scripts": {"dev":"nuxt dev","build":"nuxt build","lint":"eslint ."},
+  "dependencies": {"nuxt":"latest","vue":"latest","pinia":"latest"},
+  "devDependencies": {"typescript":"latest","tailwindcss":"latest"}
+}

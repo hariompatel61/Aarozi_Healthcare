@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Aarozi Report Template",
+  "type": "object",
+  "required": ["name", "version", "page", "sections"],
+  "properties": {
+    "name": {"type": "string"},
+    "version": {"type": "integer", "minimum": 1},
+    "page": {"type": "object"},
+    "sections": {"type": "array"}
+  }
+}

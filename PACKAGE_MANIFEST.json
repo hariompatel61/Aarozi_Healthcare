@@ -1,0 +1,1189 @@
+{
+  "project": "Aarozi Healthcare",
+  "package_version": "1.1.0",
+  "generated": "2026-10-08",
+  "task_count": 128,
+  "file_count": 236,
+  "commercial_model": {
+    "primary": "OFFLINE_LOCAL annual license",
+    "optional": "HYBRID_SYNC cloud plan"
+  },
+  "offline_target": "5,000 patients/day validation with 4+ LAN clients",
+  "files": [
+    {
+      "path": ".ai/AGENT_IMPLEMENTATION_PROTOCOL.md",
+      "size": 1476,
+      "sha256": "ee6f6923430724f2cc4573b798a4b303341cc8eba0f1e3e07694a336be0f8069"
+    },
+    {
+      "path": ".ai/API_CONTRACT_RULES.md",
+      "size": 449,
+      "sha256": "60b905310e08520cb31b6cfa98c4faf60e4312e14cda7aef7fbef7eaef91f0d5"
+    },
+    {
+      "path": ".ai/ARCHITECTURE.md",
+      "size": 1839,
+      "sha256": "0598c9d126fe2fae182db7497e50ca33039c03933904c9a102cc6546d77678bb"
+    },
+    {
+      "path": ".ai/CLOUD_OPTIONALITY.md",
+      "size": 768,
+      "sha256": "bb38394af408001bdcc982184b7008a316e6a314a7afd9cfa0776152290a02f7"
+    },
+    {
+      "path": ".ai/CONTEXT_ROUTER.md",
+      "size": 1197,
+      "sha256": "bf49ddde0c636a5cdecadd436e5b28aef84651317947093712812d0adb40c04b"
+    },
+    {
+      "path": ".ai/DECISIONS.md",
+      "size": 741,
+      "sha256": "8d01562d5c1245d4eec91c58d545fece4d3599dfbf720555e461e2a5e3d76650"
+    },
+    {
+      "path": ".ai/DOMAIN_GLOSSARY.yml",
+      "size": 2324,
+      "sha256": "138cb48247009dff38f7aeed5c4f1bb158cd2d5b5793fa0057b2c9fcf195ccc9"
+    },
+    {
+      "path": ".ai/EVENT_CATALOG.yml",
+      "size": 1329,
+      "sha256": "6568b430a8fb17d8cb02c92c43f0885453486ea648e6fb75b27af4e7213c1416"
+    },
+    {
+      "path": ".ai/IDENTITY.md",
+      "size": 604,
+      "sha256": "1dd86702ad7696dd13a63ef0977113a08f93d02569d724577e02da798b940934"
+    },
+    {
+      "path": ".ai/IMPLEMENT_THIS.md",
+      "size": 714,
+      "sha256": "a70b7fb3e365f44831d8007e344cdd620dc12884961bf82e732d170c24ef96fb"
+    },
+    {
+      "path": ".ai/KNOWLEDGE_GRAPH.yml",
+      "size": 2118,
+      "sha256": "2d91919832494349e23889b1ba0100b868c2e44fa3f62805c8d38948a4d95683"
+    },
+    {
+      "path": ".ai/OFFLINE_LICENSE_MODEL.md",
+      "size": 2329,
+      "sha256": "a0db6c6e61790b0326c5deabd1ca54733cf1f615e11e00bce50c406e603e0efd"
+    },
+    {
+      "path": ".ai/OFFLINE_SYNC.md",
+      "size": 2027,
+      "sha256": "008d060bc4966da8dd5effdfb0bf568daed0e90b01acd2be02b65bf3fa20b2bd"
+    },
+    {
+      "path": ".ai/PERFORMANCE_BUDGET.md",
+      "size": 1788,
+      "sha256": "b12df6561b5cbeb0d97111137a638d52b3b21970692ee56cd2d6d89fb221c7bc"
+    },
+    {
+      "path": ".ai/PHASE_EXIT_GATES.md",
+      "size": 5202,
+      "sha256": "dfa44e50117a0639e41efe34fbd85651a43c5bc3f8cf74e94fbbce4ba9ede554"
+    },
+    {
+      "path": ".ai/PROJECT_STATUS.json",
+      "size": 479,
+      "sha256": "a87ce94b14f828501ec38b3623166c18eb114af4d233da851ae63c717546fd2b"
+    },
+    {
+      "path": ".ai/SCHEMA_MAP.md",
+      "size": 981,
+      "sha256": "f378fe6c69ea6b499bfafffd0c9f5a23b31a66481f592b5c144562b03b5effbf"
+    },
+    {
+      "path": ".ai/SECURITY_RULES.md",
+      "size": 737,
+      "sha256": "08919092ce79ce680b8daab35867668a9eee8b0fe48e593fb303cf6d2e330e84"
+    },
+    {
+      "path": ".ai/STATE_MACHINES.md",
+      "size": 1066,
+      "sha256": "a7b360e52791f6af9a6af94886f0852e3d9ba51079f000cbdebce8013dbfa143"
+    },
+    {
+      "path": ".ai/TASK_INDEX.md",
+      "size": 11215,
+      "sha256": "0eff9a5e3e335b2144f16377cccad25ff65552811601b30793124e4d3d9bbb5b"
+    },
+    {
+      "path": ".ai/TEST_STRATEGY.md",
+      "size": 834,
+      "sha256": "ead72f34090fe33aa6d30e8fc0c460558b121d53a02189d4bc3ca07d762b4b38"
+    },
+    {
+      "path": ".ai/TOKEN_OPTIMIZATION.md",
+      "size": 1561,
+      "sha256": "f20526f4fad2a79e055c06d5d4fd345655dec4a92269c16ae1c753d82afe0f05"
+    },
+    {
+      "path": ".ai/UI_UX_SYSTEM.md",
+      "size": 959,
+      "sha256": "ceced3ebebccad55e0c497fd29adfb24fd6295242274400f2d80ec2ebfc81952"
+    },
+    {
+      "path": ".ai/task-manifest.csv",
+      "size": 9448,
+      "sha256": "8604c39b43064af4e7fb4c61fd18f7a034853f7f0533600b35f8546ba2cdec73"
+    },
+    {
+      "path": ".ai/task-manifest.json",
+      "size": 28995,
+      "sha256": "bab8112a928062e9dcc9fd59cd4803b6048997345e0cbd173fe7b3e8892a7943"
+    },
+    {
+      "path": ".ai/tasks/P00-01-scope-freeze.md",
+      "size": 1689,
+      "sha256": "1b552b4e04c58d0cc5b714351ae2b471be36400d44925c9358249d157029c214"
+    },
+    {
+      "path": ".ai/tasks/P00-02-domain-glossary.md",
+      "size": 1693,
+      "sha256": "45844a0cd38966d215d87c68ef17f97bde6c63c182a2a7e4d2acddd72ab89f91"
+    },
+    {
+      "path": ".ai/tasks/P00-03-architecture-baseline.md",
+      "size": 1715,
+      "sha256": "fa56e5da978e992dac5ca2183cf961de6f9de8047985f23499f34af29aa2b5bc"
+    },
+    {
+      "path": ".ai/tasks/P00-04-ui-ux-baseline.md",
+      "size": 1717,
+      "sha256": "4b7ff5f6b17dae1e9e288ceab09673e4c3d0c3a261761b1662d4853a5a8bcc99"
+    },
+    {
+      "path": ".ai/tasks/P00-05-performance-budgets.md",
+      "size": 1673,
+      "sha256": "61ced95dd419fdb8c933cd9ff4821617854f35adc8eaf68d0da7262e033eb16b"
+    },
+    {
+      "path": ".ai/tasks/P00-06-agent-context-baseline.md",
+      "size": 1703,
+      "sha256": "56c538ebb41a17331b08e76488cd48511ab1d47e5dcf5f8a5118bd8bcbfb2768"
+    },
+    {
+      "path": ".ai/tasks/P01-01-monorepo-structure.md",
+      "size": 1718,
+      "sha256": "ead3544f0f2d4c07bb0825136ef142f0b0354a9f1264a7718d66d76827beb9e3"
+    },
+    {
+      "path": ".ai/tasks/P01-02-dev-containers.md",
+      "size": 1683,
+      "sha256": "da249e8a2ce445b57886b9074c9899a06e548d929dd371b179d594ffcc5b6a31"
+    },
+    {
+      "path": ".ai/tasks/P01-03-database-boot.md",
+      "size": 1653,
+      "sha256": "e6b242067ec0d09db050c0ec1fb991ca0de91c3b7b7794cf50047ef8cff45e1d"
+    },
+    {
+      "path": ".ai/tasks/P01-04-api-skeleton.md",
+      "size": 1673,
+      "sha256": "e6b1dcbf781745297ee590582d7ee05d8cc66d3fa4968edfc7e7fe983e31641a"
+    },
+    {
+      "path": ".ai/tasks/P01-05-web-skeleton.md",
+      "size": 1667,
+      "sha256": "eee20de8637169e70d012f1fdacff2b419003fa018e8d1c437205c02f19c62d5"
+    },
+    {
+      "path": ".ai/tasks/P01-06-shared-contracts.md",
+      "size": 1663,
+      "sha256": "59d2ac8124a26a418c0765d45d9b589484d3a08d1e01503cb9b8f277aababfb5"
+    },
+    {
+      "path": ".ai/tasks/P01-07-ci-baseline.md",
+      "size": 1629,
+      "sha256": "68fd0b2a8dfc0be4bed146161e31b9188200d3aaa54f319c8e2cc5765a1c50dd"
+    },
+    {
+      "path": ".ai/tasks/P01-08-developer-docs.md",
+      "size": 1653,
+      "sha256": "dc3eb9758ceeea3d347d2b8604e56857b284626e4b13fb0cfc170a77e5021f99"
+    },
+    {
+      "path": ".ai/tasks/P02-01-core-schema.md",
+      "size": 1688,
+      "sha256": "8fba120c2ef7401fdca4601d6e72675cd096b92a5f8bedbd543705c33c4f78c8"
+    },
+    {
+      "path": ".ai/tasks/P02-02-identity-schema.md",
+      "size": 1673,
+      "sha256": "af276866a42250d4d6189d65591dc20313bc1a32ff8f7b20b543fd05db2a86e6"
+    },
+    {
+      "path": ".ai/tasks/P02-03-permission-catalog.md",
+      "size": 1683,
+      "sha256": "ccc96db80fd3a78ef0faee5120ec44daa90be9d2f21e360515d25c73b9ddee95"
+    },
+    {
+      "path": ".ai/tasks/P02-04-role-management.md",
+      "size": 1665,
+      "sha256": "34cca4c0ed1ffdef692151a401a6274feb8c3f04dfc2cde41c4ff6edbad88633"
+    },
+    {
+      "path": ".ai/tasks/P02-05-user-role-scope.md",
+      "size": 1649,
+      "sha256": "9bac4b97f5179d9fdb5143cbb9c2304cf1b75a2c1844316361c4f5c2a370f363"
+    },
+    {
+      "path": ".ai/tasks/P02-06-authorization-engine.md",
+      "size": 1695,
+      "sha256": "b55f8cb2e61bdfc14f0e171170f4b8a0ec132eed746d2f4925c0162dea72d450"
+    },
+    {
+      "path": ".ai/tasks/P02-07-tenant-isolation.md",
+      "size": 1651,
+      "sha256": "9507a5f93a9f471e005e3f02017b455c41524ff514e2d7ab33b0200cbde04d1d"
+    },
+    {
+      "path": ".ai/tasks/P02-08-audit-foundation.md",
+      "size": 1667,
+      "sha256": "4adf210a1e1f796094e5c129857d193de65f13304eb27006fe36e116d7f246bd"
+    },
+    {
+      "path": ".ai/tasks/P02-09-admin-ui.md",
+      "size": 1677,
+      "sha256": "cd7eaf54be88e71c8e3a7280dc45593d77a7e3e9e526ff7f30f8d5a9a4a068e3"
+    },
+    {
+      "path": ".ai/tasks/P02-10-rbac-e2e.md",
+      "size": 1699,
+      "sha256": "651ccc3ffecbae9ffabea8672533c069d211615f4f92cb30ec8ff54fe64007dd"
+    },
+    {
+      "path": ".ai/tasks/P03-01-patient-model.md",
+      "size": 1698,
+      "sha256": "e79670f594ffaea3263cf2ba3bc38cb983be97cd79ffc231622d90ca344eab2f"
+    },
+    {
+      "path": ".ai/tasks/P03-02-patient-search.md",
+      "size": 1679,
+      "sha256": "95943b1cea0294ce281746276f4514002d655a4db6e3b48a908b490d8492ed5b"
+    },
+    {
+      "path": ".ai/tasks/P03-03-patient-registration-ui.md",
+      "size": 1663,
+      "sha256": "fac1e5b317a6719030b26e738fa27c1e49d8a79cadb7e258f5d37b2103f3bf30"
+    },
+    {
+      "path": ".ai/tasks/P03-04-duplicate-detection.md",
+      "size": 1697,
+      "sha256": "0fc320e0c667cc43f9abb9327542748804b223fc087a3011c8df5b8645e78f9e"
+    },
+    {
+      "path": ".ai/tasks/P03-05-test-master.md",
+      "size": 1673,
+      "sha256": "76d3542d487879353928d09d2ad0fa4fadec87ea95dcebfccbda7b16e6d1df3b"
+    },
+    {
+      "path": ".ai/tasks/P03-06-profiles-and-packages.md",
+      "size": 1667,
+      "sha256": "1cc1728ed6626e72390a87e03216f58ac669f7273895c101c7e009370612a0d3"
+    },
+    {
+      "path": ".ai/tasks/P03-07-order-workflow.md",
+      "size": 1647,
+      "sha256": "9586e0936a3b07f809890b1f29c3c735f199a43efefa120506b6cc0b20e6f5f0"
+    },
+    {
+      "path": ".ai/tasks/P03-08-sample-workflow.md",
+      "size": 1681,
+      "sha256": "e31356b221251a8b84b705af64a067764d76eb27ff3aadf7fb8f1faae9c440ae"
+    },
+    {
+      "path": ".ai/tasks/P03-09-registration-e2e.md",
+      "size": 1683,
+      "sha256": "1ce8e7a940768ff5505b6606b1ba4d04577a1ce7f2e2b376b0ec6cdbd20d1118"
+    },
+    {
+      "path": ".ai/tasks/P04-01-price-lists.md",
+      "size": 1669,
+      "sha256": "d383f0a7d6e38e728ee9659d8de4a423939795d59168d335eb744e2b3a92b5ad"
+    },
+    {
+      "path": ".ai/tasks/P04-02-invoice-engine.md",
+      "size": 1662,
+      "sha256": "abca39b7c42ab7afaf6e56b2a9869bc605e3084dfab5a73d66748a7ab3a65cfe"
+    },
+    {
+      "path": ".ai/tasks/P04-03-discount-engine.md",
+      "size": 1666,
+      "sha256": "101458635a71852640d1975301eb4658b2f4b4fa9ac5a80439b48020f064f73a"
+    },
+    {
+      "path": ".ai/tasks/P04-04-payments.md",
+      "size": 1668,
+      "sha256": "a850a4bb2e21540aa4621646e3873a473db2c2551c1ba4a7923066f58b97a5cf"
+    },
+    {
+      "path": ".ai/tasks/P04-05-refunds-and-cancellation.md",
+      "size": 1676,
+      "sha256": "ebfff59b80ed87a5e79af127702fccfeaa6fe5dfa527d4b6ab3da017cc2b2cf3"
+    },
+    {
+      "path": ".ai/tasks/P04-06-referral-partners.md",
+      "size": 1688,
+      "sha256": "ba5d0eee59cb7d28563bb0faf32155e79590a8a383ae1228f2d933cebe708078"
+    },
+    {
+      "path": ".ai/tasks/P04-07-commission-ledger.md",
+      "size": 1658,
+      "sha256": "059dd546e55ecad481b1f06656fbed38e9520ac9738b24b9636c6145e0a21b50"
+    },
+    {
+      "path": ".ai/tasks/P04-08-billing-e2e.md",
+      "size": 1692,
+      "sha256": "1a79376b1f0011a7ca694ec3cae666d5a933c104a352d44ded4c8c88a8573ac8"
+    },
+    {
+      "path": ".ai/tasks/P05-01-reference-ranges.md",
+      "size": 1703,
+      "sha256": "3fa6b49786033ef29686db1c3665e0fe44cf84716d1adddb06de34aa72a1d05c"
+    },
+    {
+      "path": ".ai/tasks/P05-02-result-value-model.md",
+      "size": 1670,
+      "sha256": "3d23f2a1147593030c0bec979677f53d7ed70e268cb01a7a9149e796a70b993a"
+    },
+    {
+      "path": ".ai/tasks/P05-03-calculation-engine.md",
+      "size": 1688,
+      "sha256": "a01a1f67e09c62ffeed30c5b56856daa0b91fe0f634e3da124b2aaec5d28dc29"
+    },
+    {
+      "path": ".ai/tasks/P05-04-abnormal-critical-engine.md",
+      "size": 1678,
+      "sha256": "68bce8f2a9990dd1828db8ae0305fd974db0abf618df1e7612bfb6cc2687e267"
+    },
+    {
+      "path": ".ai/tasks/P05-05-worklists.md",
+      "size": 1690,
+      "sha256": "c4aa17ac73c293de13ef3357eddb5e978a97875bd353222906585e19e525a0fd"
+    },
+    {
+      "path": ".ai/tasks/P05-06-result-entry-ui.md",
+      "size": 1710,
+      "sha256": "9e59f66f3847cb6d526b6311a4d51b9e63da78f5a7cdc23dc4177401b7a916b7"
+    },
+    {
+      "path": ".ai/tasks/P05-07-verification.md",
+      "size": 1692,
+      "sha256": "d5ff7e4a13d8e1ca33c5443964a5dabb7b785f73e00cc9228338fb20bfeb2334"
+    },
+    {
+      "path": ".ai/tasks/P05-08-pathologist-approval.md",
+      "size": 1686,
+      "sha256": "d156f0af68438a380c3778f95717290bb5d84a992725ec7f0104dfb05d13e69b"
+    },
+    {
+      "path": ".ai/tasks/P05-09-amendment-versioning.md",
+      "size": 1744,
+      "sha256": "06ed9105251c9ed78b3e337546b91c1c053ddda7c17d3008a5db323cb32de091"
+    },
+    {
+      "path": ".ai/tasks/P05-10-pathology-e2e.md",
+      "size": 1702,
+      "sha256": "f4d49eb27e401202a5458e354caa747f9b37b78f9c9e74e617088be1c3564de6"
+    },
+    {
+      "path": ".ai/tasks/P06-01-template-schema.md",
+      "size": 1664,
+      "sha256": "7a2e40c45cf66217019e1996d4aa98d3220b7ce1de3f47e92810d41f6020f4bc"
+    },
+    {
+      "path": ".ai/tasks/P06-02-designer-core.md",
+      "size": 1661,
+      "sha256": "8b9f5a3e929c67ea1066fb8ca47654913d2b37e4bde9e0af67c57ea7ed522af7"
+    },
+    {
+      "path": ".ai/tasks/P06-03-patient-test-components.md",
+      "size": 1651,
+      "sha256": "96e4670b86e93a810813f22a175ce4889fb899d5773a2289d343af5880c7e362"
+    },
+    {
+      "path": ".ai/tasks/P06-04-qr-barcode.md",
+      "size": 1653,
+      "sha256": "60ad54a88bcb6910f225aaeaedff8f7abda7dd6eeee76662491b881667b874b6"
+    },
+    {
+      "path": ".ai/tasks/P06-05-signature-stamp.md",
+      "size": 1643,
+      "sha256": "c89730967dbac53b304e422bec8ac4e2ba0ee65333eb73cca4b06ffcbf8d3ed3"
+    },
+    {
+      "path": ".ai/tasks/P06-06-renderer.md",
+      "size": 1631,
+      "sha256": "aa4ac0e2589f656ab12c5b4b7790f5fc7d1aa845e48cac48b8c9d100a97c8c4d"
+    },
+    {
+      "path": ".ai/tasks/P06-07-template-library.md",
+      "size": 1701,
+      "sha256": "433d6cb2d1c7227fa50bcc4f89bbe06561792e033bdba74d776dd2da018d5229"
+    },
+    {
+      "path": ".ai/tasks/P06-08-report-delivery.md",
+      "size": 1707,
+      "sha256": "a4dc065d619e6d0200bdb8601b3de9fc2fb356cf8287403d25ac0cd1d09e2847"
+    },
+    {
+      "path": ".ai/tasks/P07-01-donor-master.md",
+      "size": 1683,
+      "sha256": "c2332966eea9e3aef71a927db726138d7d56e929784af8eb70723531e5d663e2"
+    },
+    {
+      "path": ".ai/tasks/P07-02-screening.md",
+      "size": 1676,
+      "sha256": "02c5948ace8bac0b8ee3adff2e49eba6a554484a95ffa1007c2c4a002269115b"
+    },
+    {
+      "path": ".ai/tasks/P07-03-donation.md",
+      "size": 1660,
+      "sha256": "f41f61f245db025848f7a6f1f88a2762658411ec3b0c7af9e332f835d62e7ba9"
+    },
+    {
+      "path": ".ai/tasks/P07-04-unit-identity.md",
+      "size": 1680,
+      "sha256": "59cca3bb424ab77d468626b1dac39006116c9de21cf198a01fa38e121b0deb3c"
+    },
+    {
+      "path": ".ai/tasks/P07-05-tti-testing.md",
+      "size": 1660,
+      "sha256": "5440834705bb304f277890534881b813f45770828ad8f946c753def3410dff63"
+    },
+    {
+      "path": ".ai/tasks/P07-06-quarantine-release.md",
+      "size": 1670,
+      "sha256": "e487aa34df633e3814c637aff7ee3a9b8ea72720f97e8ec0c612cfc99eff4f22"
+    },
+    {
+      "path": ".ai/tasks/P07-07-inventory.md",
+      "size": 1682,
+      "sha256": "2b4a5fcbba6d88fee2af746b2b8ef157cee5d8208b0c7bbd5bd2cf9cf4b7fe1d"
+    },
+    {
+      "path": ".ai/tasks/P07-08-reservations.md",
+      "size": 1638,
+      "sha256": "7b8c06307e131dfbbc601d86dc70fac1a192cffeefeaf16076e3777c0a2e2abc"
+    },
+    {
+      "path": ".ai/tasks/P07-09-cross-match.md",
+      "size": 1654,
+      "sha256": "720f6c0f45776894d551ed46d7437e98956b14aae14d1c3f393f96cdee01a964"
+    },
+    {
+      "path": ".ai/tasks/P07-10-issue-return.md",
+      "size": 1654,
+      "sha256": "723c47b572d340828c977e61b71f0ba33a0a7d74afd1f177f4ce1e7f59c0089c"
+    },
+    {
+      "path": ".ai/tasks/P07-11-adverse-events.md",
+      "size": 1658,
+      "sha256": "dee9214dbaddc44d4f804fc9472d8e503dc8aa36478e42ea28c7e2ae9f0451c4"
+    },
+    {
+      "path": ".ai/tasks/P07-12-blood-bank-e2e.md",
+      "size": 1696,
+      "sha256": "87fa106a3d6c23e6abe4cbe8d74a8b86e14f545678f354154c39f641c6364a4e"
+    },
+    {
+      "path": ".ai/tasks/P08-01-connector-service.md",
+      "size": 1671,
+      "sha256": "291a344942d4da340d88fd4e28179a01c5738a7f46c4cb2ff55dfafa943a27f6"
+    },
+    {
+      "path": ".ai/tasks/P08-02-adapter-interface.md",
+      "size": 1672,
+      "sha256": "70d5a2735217aea55efb08765aa758217f780334109f5869750ed84dd7b4f240"
+    },
+    {
+      "path": ".ai/tasks/P08-03-astm-adapter.md",
+      "size": 1666,
+      "sha256": "0cc1fd28517d924025c0ad0a2a15bf2e30419a71fcf8b36bc810c166788229fb"
+    },
+    {
+      "path": ".ai/tasks/P08-04-hl7-adapter.md",
+      "size": 1674,
+      "sha256": "d32310ec58420f902f90b00fb9d6473a7c0d3db57218e4ff5c8af435006a6618"
+    },
+    {
+      "path": ".ai/tasks/P08-05-machine-mapping.md",
+      "size": 1662,
+      "sha256": "c8f9044d522ca917c7ede95d67177b41d8e1dbc5bab18ed72bbbf91105fc7904"
+    },
+    {
+      "path": ".ai/tasks/P08-06-sample-matching.md",
+      "size": 1670,
+      "sha256": "cde6d45ba0d693f190e5e1e6ce57bf3f8b9ca9d312a08d7d01fc78f6f8457e04"
+    },
+    {
+      "path": ".ai/tasks/P08-07-notification-adapters.md",
+      "size": 1688,
+      "sha256": "5fedfc68e3116c93875147c861047db792d5701d6fe7d584903e5eae4fd2eb6c"
+    },
+    {
+      "path": ".ai/tasks/P08-08-integration-e2e.md",
+      "size": 1704,
+      "sha256": "b24e9c7e7f5dca73673308b5eaeeda281a7ad80038855cbacb09255f7c24cbe9"
+    },
+    {
+      "path": ".ai/tasks/P09-01-local-deployment.md",
+      "size": 1700,
+      "sha256": "05c1aade0ee0379e0b91dc6863acea3861a38c15557759c03069d157afade181"
+    },
+    {
+      "path": ".ai/tasks/P09-02-local-auth.md",
+      "size": 1649,
+      "sha256": "ebffb6886ce5e496bd45e0caef33a0e19d06922c24b1a66110ec66f281456efb"
+    },
+    {
+      "path": ".ai/tasks/P09-03-sync-event-model.md",
+      "size": 1661,
+      "sha256": "d56a46149ebc5aa2eee9a3911a32ca7f4c503fc88bee1c22b81649356c910903"
+    },
+    {
+      "path": ".ai/tasks/P09-04-sync-transport.md",
+      "size": 1659,
+      "sha256": "4cf09b7c29f9b9e55a24224430d386d9a80d1bc28527e4bb52aaf8ed99c2f616"
+    },
+    {
+      "path": ".ai/tasks/P09-05-conflict-detection.md",
+      "size": 1675,
+      "sha256": "5522e3b1a34d58494a0220715198bb92fccaff240e0e925a3fc3798f3e546932"
+    },
+    {
+      "path": ".ai/tasks/P09-06-conflict-resolution.md",
+      "size": 1719,
+      "sha256": "e5e51892d52060f2b8c27a60c6a5fc922d02c330d830ca2c1fe7e78a469bd1de"
+    },
+    {
+      "path": ".ai/tasks/P09-07-offline-cache.md",
+      "size": 1697,
+      "sha256": "283d19e7ea1860a8a5da89dc4b12af81d4e1aa2acf0c30372e9c79f8c52bcea8"
+    },
+    {
+      "path": ".ai/tasks/P09-08-license-engine.md",
+      "size": 1677,
+      "sha256": "5d8bb1c5106905063d0a6809602706cfd712d0d81358d5119a87272fb5b5ec45"
+    },
+    {
+      "path": ".ai/tasks/P09-09-backup-restore.md",
+      "size": 1693,
+      "sha256": "4bddf089cd96789b0b09007993821082ead1658501d7429442c3fa9f93f93c59"
+    },
+    {
+      "path": ".ai/tasks/P09-10-hybrid-e2e.md",
+      "size": 1693,
+      "sha256": "bae1d918f3abde57501936f959a01ed57c9c5926e20088afe3e534b6a2b63d78"
+    },
+    {
+      "path": ".ai/tasks/P09-11-offline-license-signing.md",
+      "size": 1157,
+      "sha256": "617c00b2fe28827be2f945519f5aeb84b9944fb045f20f94ff8e14d7fd20bbf2"
+    },
+    {
+      "path": ".ai/tasks/P09-12-offline-activation-request.md",
+      "size": 922,
+      "sha256": "9b8a85e11a5d9fc74f31559a73d85b439ae42b268e64a0a96575ee8e0f2ef01e"
+    },
+    {
+      "path": ".ai/tasks/P09-13-license-renewal-expiry.md",
+      "size": 848,
+      "sha256": "97b3a9eba6e716ebaa599e70c849f0df7f2879bb0ca9641d7c1296377a57bd10"
+    },
+    {
+      "path": ".ai/tasks/P09-14-cloud-optional-entitlement.md",
+      "size": 837,
+      "sha256": "cd5f301f92b6e1d4133b42da885978fdbf3601a9cc312415d65ef0f76f05820e"
+    },
+    {
+      "path": ".ai/tasks/P09-15-sync-checkpoints-resume.md",
+      "size": 826,
+      "sha256": "ab941efbffa7b6276ba06a4493e6db99625ba6793e61782250eca3185ab4e5b9"
+    },
+    {
+      "path": ".ai/tasks/P09-16-offline-5k-multipc-acceptance.md",
+      "size": 916,
+      "sha256": "3730dbf21042b140e0639b3e8ddaed84264c88db5bcd2232f42e6c3ddb37f06e"
+    },
+    {
+      "path": ".ai/tasks/P09-17-local-backup-restore.md",
+      "size": 785,
+      "sha256": "191daa1bd074876aa5c3108619523c390f3cc75ccee39c5ab1c529b382980cc4"
+    },
+    {
+      "path": ".ai/tasks/P09-18-local-server-installer.md",
+      "size": 844,
+      "sha256": "f577a4c2fb9a32ddf1c49351679406947612fad3ffd56ca1c76d485d1794feda"
+    },
+    {
+      "path": ".ai/tasks/P09-19-local-print-barcode-analyzer.md",
+      "size": 786,
+      "sha256": "020ea2a4a78644f3a562d85acd12476701d9413cea5c4ed2fb23b79a6b2546ee"
+    },
+    {
+      "path": ".ai/tasks/P09-20-commercial-offline-release.md",
+      "size": 864,
+      "sha256": "8a67ecc50fd59f70964fd22bb8df4b1c5368ea854d5c7f058f4b7057d92a2b10"
+    },
+    {
+      "path": ".ai/tasks/P10-01-unified-shell.md",
+      "size": 1647,
+      "sha256": "012db0667bcffc049772f3e5b0102e3a3bae288fdc34d7327f2d16b3644b60cc"
+    },
+    {
+      "path": ".ai/tasks/P10-02-reception-workspace.md",
+      "size": 1664,
+      "sha256": "5e87d6c90aeaf18e158a5f8a51aee93d39aab10d0ee5de1dec75015e7f57c663"
+    },
+    {
+      "path": ".ai/tasks/P10-03-operational-tables.md",
+      "size": 1664,
+      "sha256": "e1021a282995db324d5754090d6b486a46e4b2c409bfa9ecb13e449eae9fc09d"
+    },
+    {
+      "path": ".ai/tasks/P10-04-keyboard-workflow.md",
+      "size": 1652,
+      "sha256": "c2a6ba8f325648b3594adf7539b54db3aef0ddc205e6f3ee554329f6e1b79922"
+    },
+    {
+      "path": ".ai/tasks/P10-05-lazy-loading.md",
+      "size": 1656,
+      "sha256": "75659775b30398e6c3fde980dab1d46794adcfe75df5b5bebd334fef04ff767e"
+    },
+    {
+      "path": ".ai/tasks/P10-06-cache-strategy.md",
+      "size": 1664,
+      "sha256": "aa1044db8df43eafd5d98214252e3402514166de68aeeda7b1d03fdc4d86f7c0"
+    },
+    {
+      "path": ".ai/tasks/P10-07-ux-performance-gate.md",
+      "size": 1694,
+      "sha256": "717e2e99f6f1b52496535e66b373a2f1a3cb42a0adffe9b2312936b4d9c313da"
+    },
+    {
+      "path": ".ai/tasks/P11-01-tauri-shell.md",
+      "size": 1678,
+      "sha256": "0ccf77b613e74d32227ef9672718e73761fc049633a90d514c51cfced2f8f647"
+    },
+    {
+      "path": ".ai/tasks/P11-02-local-server-installer.md",
+      "size": 1683,
+      "sha256": "f4d3056f01b5db6d65a50ba1667b4bfd2995c4dfb91d44efcba605943d56a065"
+    },
+    {
+      "path": ".ai/tasks/P11-03-desktop-printing.md",
+      "size": 1657,
+      "sha256": "26701e0bf66c302028692f132a866c5dc7ba709636fd73b18b4a470328140774"
+    },
+    {
+      "path": ".ai/tasks/P11-04-mobile-auth.md",
+      "size": 1631,
+      "sha256": "327fc6362d34ae4b590ac0671cdfe0b8eee9d332bf07e087b693fe186b93591f"
+    },
+    {
+      "path": ".ai/tasks/P11-05-mobile-collection.md",
+      "size": 1655,
+      "sha256": "1b6f4bd031923889f2a07280d7ee4d4b43884bb3dcb8cc219702b1c61533c242"
+    },
+    {
+      "path": ".ai/tasks/P11-06-mobile-blood-bank.md",
+      "size": 1635,
+      "sha256": "7f64a08c6c9d82f285ca2bc4f386304eea60e89c18e4d627ac1d2cd2f617075e"
+    },
+    {
+      "path": ".ai/tasks/P11-07-client-release.md",
+      "size": 1659,
+      "sha256": "db247f23734084f0d18c22951143add8cd2100f97c4096cfb38bb9465e254ac5"
+    },
+    {
+      "path": ".ai/tasks/P12-01-security-hardening.md",
+      "size": 1709,
+      "sha256": "51d5a2d2ed17b2b096b9c26eb6fa973c42116ef6840f453fbf41013649d499ae"
+    },
+    {
+      "path": ".ai/tasks/P12-02-api-load-tests.md",
+      "size": 1676,
+      "sha256": "fa879672511515dc64d399b51d578425408fc91526e86fa0136032b13de193e4"
+    },
+    {
+      "path": ".ai/tasks/P12-03-db-performance.md",
+      "size": 1688,
+      "sha256": "e08525fec030c30db2b0ad95b4fa7e70667e733db0eac322c14ad9acafa221a0"
+    },
+    {
+      "path": ".ai/tasks/P12-04-frontend-performance.md",
+      "size": 1680,
+      "sha256": "80d17a017f4312b32449649dc197c4b6fccc110bc91e99aef4c42d03d5d742ae"
+    },
+    {
+      "path": ".ai/tasks/P12-05-report-throughput.md",
+      "size": 1676,
+      "sha256": "b2a22ee653e8240ab29a4b28c99b66fa675f17b84360dfb21fdf15773a406281"
+    },
+    {
+      "path": ".ai/tasks/P12-06-observability.md",
+      "size": 1696,
+      "sha256": "b3bc45d7e59941b3b9eae8e5abefdc77d3e74b75d16aecbff9517bbdaa57f17c"
+    },
+    {
+      "path": ".ai/tasks/P12-07-backup-recovery-drill.md",
+      "size": 1686,
+      "sha256": "17a55e4aa0bea764eba71e3fb873e2925e022080fb3bde3f138fd52ef58a485a"
+    },
+    {
+      "path": ".ai/tasks/P12-08-regression-suite.md",
+      "size": 1676,
+      "sha256": "dfeca2b9ab8cab9369c4c11d6132ddb3ee821c162337cb521ab0af76489ea28f"
+    },
+    {
+      "path": ".ai/tasks/P13-01-demo-tenant.md",
+      "size": 1692,
+      "sha256": "d1fa742cbee95daca6bf655bf185b40e6becaa3beceab7abb82771c68cae7849"
+    },
+    {
+      "path": ".ai/tasks/P13-02-pilot-checklist.md",
+      "size": 1699,
+      "sha256": "c57c2842eadf0c09a05951d360a0e6a779498e4bc58b1723a776a6490890226b"
+    },
+    {
+      "path": ".ai/tasks/P13-03-uat.md",
+      "size": 1671,
+      "sha256": "370f3b658c8d5ae16ce0a3b86c5001b7b9909732d4d0265919ad37da798df9a5"
+    },
+    {
+      "path": ".ai/tasks/P13-04-data-migration.md",
+      "size": 1657,
+      "sha256": "133b802973d52d107ce270c90b400100e8b2d9e84222659ed4471c66d835c043"
+    },
+    {
+      "path": ".ai/tasks/P13-05-production-hardening.md",
+      "size": 1691,
+      "sha256": "a4814c7e6b08cb372bf7c1f8c85adaf4bc13784b798e05ec591231868e572701"
+    },
+    {
+      "path": ".ai/tasks/P13-06-pilot-rollout.md",
+      "size": 1657,
+      "sha256": "cc1072de4b865121e9ff4fe5b97e77a180893ac11515ecf26dd9842eda44314e"
+    },
+    {
+      "path": ".ai/tasks/P13-07-production-release.md",
+      "size": 1707,
+      "sha256": "9d8b95e258d53b7f0d574e01cf202e9f37dedb831a7557f0c10733d523ef9bd7"
+    },
+    {
+      "path": ".editorconfig",
+      "size": 114,
+      "sha256": "78dc11bb60364cbb65afecce40c965fa2e395491632a96a5be330a37fe8daad8"
+    },
+    {
+      "path": ".env.example",
+      "size": 236,
+      "sha256": "867d8a9677974ef6ec8713c8afbadd4f8c62ebc6807d72c8a9c8ecfd73e164f8"
+    },
+    {
+      "path": ".gitignore",
+      "size": 177,
+      "sha256": "ca5a52e8e5b7c1eaf867d9d96f29ee9afac06c98165a8f9afd7f19894d9bd278"
+    },
+    {
+      "path": "AGENTS.md",
+      "size": 2089,
+      "sha256": "ec27f65cc1da49e3706d5f87804ad7c7f0281687ee5f3311c20a8d3983f45558"
+    },
+    {
+      "path": "Aarozi_Healthcare_Master_Task_Tracker_v1.1.xlsx",
+      "size": 26240,
+      "sha256": "1819acfc3dc3e5d6c7d881027b8a0b53c5f4b59379c3d9a6a61f0c17964a9258"
+    },
+    {
+      "path": "BUILD_KIT_VERSION.txt",
+      "size": 330,
+      "sha256": "c1f4381dd784823f066caa27c241892b3eebb9abe7524dbe262c02dae839071d"
+    },
+    {
+      "path": "COPY_THIS_PATH_FIRST.txt",
+      "size": 1075,
+      "sha256": "922d52f2076fbcbfcb6d8ddf07390afa78f6bb12d84e42b135c45ad43dcf5836"
+    },
+    {
+      "path": "Makefile",
+      "size": 208,
+      "sha256": "1f32799492cf166114ae5298ac29d7b91027542d0c9cd8103c53c3afcabfd347"
+    },
+    {
+      "path": "QUICKSTART.md",
+      "size": 912,
+      "sha256": "2c1e8b88dca858ff3cebb312bd1cc84d51814d03b371b6773fbff5a89d2e3171"
+    },
+    {
+      "path": "README.md",
+      "size": 1900,
+      "sha256": "403310d1ccdc754afeb119951d994b2c61496cabc0b1bda9fdd43232c9c5bdb1"
+    },
+    {
+      "path": "apps/api/README.md",
+      "size": 118,
+      "sha256": "b52fc5061ffd9c5792922b276175762448814804b978176d8f78c94cb4c6507f"
+    },
+    {
+      "path": "apps/api/app/main.py",
+      "size": 190,
+      "sha256": "1cd64b04d6d0c3475c64d13d41b0aa80be10ccf6d3e5c5dbb7ead3bbadc99faa"
+    },
+    {
+      "path": "apps/api/pyproject.toml",
+      "size": 342,
+      "sha256": "f26142ceff1c339ed512e8b176225d282e6051b151550518ef1d14988c18e7b1"
+    },
+    {
+      "path": "apps/api/tests/test_health.py",
+      "size": 196,
+      "sha256": "77b03b10d8c6a92550af7dfca2f2569e59845d3839ad967aec48e689a7914438"
+    },
+    {
+      "path": "apps/desktop/README.md",
+      "size": 119,
+      "sha256": "5ceacf53a80a780756edc319f709df278808401caed7f40a5b20021c05e32abf"
+    },
+    {
+      "path": "apps/mobile/README.md",
+      "size": 119,
+      "sha256": "b9b3193c9a3b82bcbd80a54a89e29e3af0caaa106c3b83591c37fea9abf6b147"
+    },
+    {
+      "path": "apps/web/README.md",
+      "size": 107,
+      "sha256": "33fbe7327d47efd8eefbfb4fb44cbef08017c46f454ba308edcb976eb8084f12"
+    },
+    {
+      "path": "apps/web/app.vue",
+      "size": 38,
+      "sha256": "0f726f6a452814de5029d73f9df4803400a737cb2dfa2364455edda42012b5c6"
+    },
+    {
+      "path": "apps/web/nuxt.config.ts",
+      "size": 100,
+      "sha256": "2580c6d0e3a23a90b38f0cadca3c7a928f11aceb3776018833ea54402fbef50b"
+    },
+    {
+      "path": "apps/web/package.json",
+      "size": 287,
+      "sha256": "14632623cf3df06e72030f5c5c20180412eab73b0b295c9a873828f7cbb3d4ec"
+    },
+    {
+      "path": "apps/web/pages/index.vue",
+      "size": 183,
+      "sha256": "80e3725a422dd13f5b64c528d004be5fe27786b18968e0fbebf74ba2cba72b6e"
+    },
+    {
+      "path": "contracts/offline-license.schema.json",
+      "size": 1197,
+      "sha256": "2b106e6a32d16365dde850b06ead3c8a0b293e63fa817766098ad3868733217e"
+    },
+    {
+      "path": "contracts/report-template.schema.json",
+      "size": 347,
+      "sha256": "6927f2278df2600f1cea2e2ff429535b860c8432da27e868c8da3730906ccde5"
+    },
+    {
+      "path": "database/000_README.md",
+      "size": 474,
+      "sha256": "4d92dbbd76dd5001807cfdc5abbe127146cb6e53e76612129c4073867d5a0a05"
+    },
+    {
+      "path": "database/001_extensions.sql",
+      "size": 41,
+      "sha256": "6b9d13405012508438e45a4e665e444a10bd8172f56b825a3e5560f8e3329275"
+    },
+    {
+      "path": "database/002_platform.sql",
+      "size": 1156,
+      "sha256": "e11cde3178ea628efc24d6b4491346ab9cb2ac323e807cae18870633a649f8fe"
+    },
+    {
+      "path": "database/003_identity_rbac.sql",
+      "size": 1958,
+      "sha256": "7652c73e1f3232d9611605cacced4baafa44ba5f8e57a44d7cd6b0c762449b5b"
+    },
+    {
+      "path": "database/004_patient.sql",
+      "size": 1199,
+      "sha256": "c76650da7a2cdf435c1443742fb807891f9255b2b2a5694f7d6bf4ba801655a2"
+    },
+    {
+      "path": "database/005_pathology.sql",
+      "size": 3167,
+      "sha256": "d5b6566f75d2bc8e1574a26217b9dcf266ed945ddc2e02b04f1db0fc9b6eaf25"
+    },
+    {
+      "path": "database/006_billing_referral.sql",
+      "size": 2590,
+      "sha256": "95df82ffe954c755a299ae15e1b48001d8a41d81b12e5878e0d6ff52a13e1d19"
+    },
+    {
+      "path": "database/007_blood_bank.sql",
+      "size": 2361,
+      "sha256": "036c5aca5d2e051f10cabbfdb42439e132e9d37eac19494b2bd3ba41d3091673"
+    },
+    {
+      "path": "database/008_reporting_analyzer.sql",
+      "size": 1530,
+      "sha256": "b744ad880baa47e0cdbea0eefe5572850df463f462ff49223f45b1d6418b6736"
+    },
+    {
+      "path": "database/009_offline_license_sync.sql",
+      "size": 1570,
+      "sha256": "34b90adc78305a0e97bdb2c3b67dfafdcaf56e2cf2e2aa3fe2cbde6866963a70"
+    },
+    {
+      "path": "database/010_indexes.sql",
+      "size": 684,
+      "sha256": "91f779c9e6af6fc5e335144587b6117d8663bbbda0fc79cb225219cd9a55edd9"
+    },
+    {
+      "path": "database/011_seed_permissions.sql",
+      "size": 2668,
+      "sha256": "1e62a8f92f436e3d7ca0e596783cb024ed3b6c1bb342d28fd385b8c22269e90e"
+    },
+    {
+      "path": "database/012_commercial_offline_license.sql",
+      "size": 2338,
+      "sha256": "74fd172279ef555a9b214966bfe43d60b1f2736b9f2b9bc960c1d1ca382660de"
+    },
+    {
+      "path": "docker-compose.dev.yml",
+      "size": 586,
+      "sha256": "094dc1d9bafc29e4e3b72453051b542f55801cbbe4ca385cc73c0592866432ad"
+    },
+    {
+      "path": "docs/ANALYZER_INTEGRATION.md",
+      "size": 453,
+      "sha256": "bbb4f524080a6c84842f1e9c3f89efe034dd9e90f6f66910a5d93769b94a801f"
+    },
+    {
+      "path": "docs/BILLING_REFERRAL.md",
+      "size": 408,
+      "sha256": "4a8b3f02ccb24cc91dc74bb23f7ff90a49942fd229a1917847dbdad87f301050"
+    },
+    {
+      "path": "docs/BLOOD_BANK.md",
+      "size": 333,
+      "sha256": "d784754ce931150df3f01dec4e8f361c12ef15056f0f4ec2fb55534e1e9927a4"
+    },
+    {
+      "path": "docs/BRD.md",
+      "size": 1179,
+      "sha256": "f907c19c2a43373100325bcfd123b46c76befdbb19e62b9910b870f231886de7"
+    },
+    {
+      "path": "docs/COMMERCIAL_OFFLINE_MODEL.md",
+      "size": 2799,
+      "sha256": "d0081c4bc44216d2ab3281f0d4f78e2f0c6debe6d0761d595351c396cdfe7d80"
+    },
+    {
+      "path": "docs/COMPLIANCE_BOUNDARY.md",
+      "size": 322,
+      "sha256": "a3902a5adc1567518f267955c7029b8fd8d64212ff8b80c9c4735402a2a8b5e2"
+    },
+    {
+      "path": "docs/DATABASE_DESIGN.md",
+      "size": 461,
+      "sha256": "ee55dd64f2930126a218c8e3a12bfe6c658b8a34f4a8cc6c85ceb8ce9f87a928"
+    },
+    {
+      "path": "docs/DEPLOYMENT.md",
+      "size": 1069,
+      "sha256": "703f7a962c4006d4eecbee7657e39b30e8c5368d719b2ec8a6df26f3edd34065"
+    },
+    {
+      "path": "docs/IMPORTANT_NOTICES.md",
+      "size": 503,
+      "sha256": "7d309c627c9973daa57936240768ed9e3defcc009aa31078b5c0698771d0b0b5"
+    },
+    {
+      "path": "docs/LOCAL_SERVER_OPERATIONS.md",
+      "size": 1208,
+      "sha256": "486ebd7a44b3a1aa43b3132417d1fe151a8c5a884bdb79088da23ca3c39bfa42"
+    },
+    {
+      "path": "docs/OBSERVABILITY.md",
+      "size": 260,
+      "sha256": "edc74a74e1c0a2aaced6bc13c9e9a35c05ded1844f508faf8d3bed73d48f8821"
+    },
+    {
+      "path": "docs/OFFLINE_ACCEPTANCE_TESTS.md",
+      "size": 1969,
+      "sha256": "e5a57120881a985fd373cc53b94499ae4fd2f1541db6ea2aeeac6e7a08d47a93"
+    },
+    {
+      "path": "docs/OFFLINE_DESKTOP.md",
+      "size": 1224,
+      "sha256": "0c26237172d5e53b2739f3cc82f74225071ffc72d95af73f57a35772f690137a"
+    },
+    {
+      "path": "docs/PATHOLOGY_LIMS.md",
+      "size": 363,
+      "sha256": "00609b3c5ca79fa8c052e21788df6ea379afe9f3d5a8c2753c545494c3c92847"
+    },
+    {
+      "path": "docs/PRD.md",
+      "size": 654,
+      "sha256": "f944fbcd6932a9a3cb88916ba5b7b8f8dc06ae58ddd792ee273ffd1ccef233ed"
+    },
+    {
+      "path": "docs/QA_VALIDATION.md",
+      "size": 219,
+      "sha256": "c8978cb76678a5790358be54031621c7272cea7036e29f42cb183ca72f693d3e"
+    },
+    {
+      "path": "docs/RENEWAL_AND_ACTIVATION.md",
+      "size": 1411,
+      "sha256": "72c0b3db0b55cb226161431c9aa5495ed4c4a06bc1b7bd1a0c94d970ff7f0a6a"
+    },
+    {
+      "path": "docs/REPORT_ENGINE.md",
+      "size": 408,
+      "sha256": "e703ccf0f3fb048a23f0990443398608e1f2cfc4950692a4bf3e8c51d7620f99"
+    },
+    {
+      "path": "docs/SECURITY_PRIVACY.md",
+      "size": 254,
+      "sha256": "249f8e451ae2026b02b825699433c61aa8493314b588657568efb0429ae33f95"
+    },
+    {
+      "path": "docs/SYSTEM_DESIGN.md",
+      "size": 630,
+      "sha256": "bef2fb6187f840e9714f32bbd83ff501b09a70af7f5184964b6ea6f2cbe470be"
+    },
+    {
+      "path": "docs/reference/Aarozi_Healthcare_Master_Task_Tracker_v1.1.xlsx",
+      "size": 26240,
+      "sha256": "1819acfc3dc3e5d6c7d881027b8a0b53c5f4b59379c3d9a6a61f0c17964a9258"
+    },
+    {
+      "path": "docs/reference/Master_Implementation_Taskbook.docx",
+      "size": 58632,
+      "sha256": "9d2f1f26c3bf9a10eff5871473fcc4b91a28bf2281e36d7330b264ec3ddd7007"
+    },
+    {
+      "path": "docs/reference/Project_Requirements_and_Implementation_Plan.docx",
+      "size": 278043,
+      "sha256": "08a35a286ad9f577230ee0dd6116e245f0a2c2358fa4ec4df30ec29dbc78bd68"
+    },
+    {
+      "path": "docs/reference/Project_Requirements_and_Implementation_Plan.pdf",
+      "size": 979324,
+      "sha256": "99d16eefab42bb609ae5cfe6531aefa78a9396fa804dd2542168ae342a4fed77"
+    },
+    {
+      "path": "docs/reference/README.md",
+      "size": 535,
+      "sha256": "c4d285cc9df934115ed5dd050d93421b1c3212924931afd2e7db3e6c23bbb18f"
+    },
+    {
+      "path": "docs/reference/Task_Tracker.xlsx",
+      "size": 20033,
+      "sha256": "7270f4582840a4a2edf5a59c610fe0299db06316802c7606ca22b9d4081c47df"
+    },
+    {
+      "path": "docs/reference/Unified_Diagnostic_Lab_BloodBank_Master_Implementation_Taskbook.docx",
+      "size": 58632,
+      "sha256": "9d2f1f26c3bf9a10eff5871473fcc4b91a28bf2281e36d7330b264ec3ddd7007"
+    },
+    {
+      "path": "docs/reference/Unified_Diagnostic_Lab_BloodBank_SaaS_Project_Requirements_and_Implementation_Plan.docx",
+      "size": 278043,
+      "sha256": "08a35a286ad9f577230ee0dd6116e245f0a2c2358fa4ec4df30ec29dbc78bd68"
+    },
+    {
+      "path": "docs/reference/Unified_Diagnostic_Lab_BloodBank_SaaS_Project_Requirements_and_Implementation_Plan.pdf",
+      "size": 979324,
+      "sha256": "99d16eefab42bb609ae5cfe6531aefa78a9396fa804dd2542168ae342a4fed77"
+    },
+    {
+      "path": "docs/reference/architecture-images/architecture-reference.png",
+      "size": 81722,
+      "sha256": "7473fcdfd4b1cffc4d2d017463f9ee1d6dc33c4322d7143b611bb353f11f1b14"
+    },
+    {
+      "path": "docs/reference/architecture-images/offline-reference.png",
+      "size": 61997,
+      "sha256": "0cf6aa93952d3c7d1d031ba18994c35e535e98c02364a2264bbf270fa1c8daf2"
+    },
+    {
+      "path": "docs/reference/architecture-images/rbac-reference.png",
+      "size": 51416,
+      "sha256": "9988d4d7c6b8508effdfa51bdd8e8a31baf2be40d0480e93b20633770ea37b51"
+    },
+    {
+      "path": "docs/reference/architecture-images/report-engine-reference.png",
+      "size": 39131,
+      "sha256": "41fc207545ecd523d00a583422dc4d0fe854ff34530125935958fc3056daa6bb"
+    },
+    {
+      "path": "docs/reference/ui-screenshots/role-permissions-reference.png",
+      "size": 295138,
+      "sha256": "e8ec5e990931039cf8b462335ceed41aae5c24b79a6ce5d596884b46a346857b"
+    },
+    {
+      "path": "docs/reference/ui-screenshots/user-create-reference.png",
+      "size": 241011,
+      "sha256": "2e1d1369054b106093dabf0bb6a95df016fc21531e250af2b80cf795f52c692c"
+    },
+    {
+      "path": "packages/contracts/README.md",
+      "size": 60,
+      "sha256": "6d4c33162e36c1cbe1578ec8ca8fef570bd221776f4ebcd45a427a4e974e9822"
+    },
+    {
+      "path": "packages/report-engine/README.md",
+      "size": 90,
+      "sha256": "0cfddd48e1dc7c436dd9205fac0369bda87609e29fd5e24fa88fe4bc90cf6c70"
+    },
+    {
+      "path": "packages/shared/README.md",
+      "size": 118,
+      "sha256": "a0bff3c2fa9d44b58ac8092559293f210bbdefd4e67eee726fa8f0359648598e"
+    },
+    {
+      "path": "packages/ui/README.md",
+      "size": 130,
+      "sha256": "afa641a43f451885d5fb7fef3cf178d0671a395f03939f4f6a45b89cda202be8"
+    },
+    {
+      "path": "report-templates/cbc-template.example.json",
+      "size": 411,
+      "sha256": "67df2b2bdb32fcd8ee77d3c81d2ef6c739204c2a6cc78344254945290924b50f"
+    },
+    {
+      "path": "services/analyzer-connector/README.md",
+      "size": 146,
+      "sha256": "65a6ff82b0e3f8665bfad96c85f3c89fdcd73640e66e667dfc3c44f97e351771"
+    },
+    {
+      "path": "tools/new-task-template.md",
+      "size": 135,
+      "sha256": "330855d22b85daab0799cfc7d156e21bb8b1723a0988aac4d293671f94491b66"
+    },
+    {
+      "path": "tools/task_context.py",
+      "size": 1023,
+      "sha256": "63c19b7e60ad847878ce1f1baddfd770ae6f97e088d3e5a97eb63fb1a088affc"
+    },
+    {
+      "path": "tools/validate_kit.py",
+      "size": 646,
+      "sha256": "b403d76dc25640f396359f13457864bdc7f24ca80f72d8d7180fb186b9c091e9"
+    },
+    {
+      "path": "workspace.code-workspace",
+      "size": 177,
+      "sha256": "5488eac10c32c93497f7fc70cfcc9fd9215d6fbf9d5ae20b52aedd2fcee6ee59"
+    }
+  ]
+}

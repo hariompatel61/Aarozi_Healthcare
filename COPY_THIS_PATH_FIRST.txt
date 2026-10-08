@@ -1,0 +1,34 @@
+AAROZI HEALTHCARE - COPY-THIS-PATH WORKFLOW
+============================================
+
+Extract this ZIP and open the extracted Aarozi_Healthcare folder in your IDE.
+
+For AI coding agents, pick ONE task file at a time from:
+  .ai/tasks/
+
+Example:
+  .ai/tasks/P00-01-scope-freeze.md
+
+Then say exactly:
+  "Implement this task file. Read the task protocol and only the referenced context files. Make the smallest safe change, run the listed tests, and stop when the task is green."
+
+The task file is the context router and contains:
+- objective
+- dependencies
+- minimal context files
+- implementation prompt
+- tests / verification
+- done criteria
+
+OFFLINE COMMERCIAL MODEL:
+- Core product can run without Internet.
+- One local server can serve multiple LAN PCs.
+- Annual offline license is signed and verified locally.
+- Activation and renewal can be file-based.
+- Cloud Sync is optional and can be added later by upgrading entitlement/license.
+
+First build task:
+  .ai/tasks/P00-01-scope-freeze.md
+
+Offline commercial hardening:
+  .ai/tasks/P09-11-offline-license-signing.md

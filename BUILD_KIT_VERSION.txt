@@ -1,0 +1,8 @@
+Aarozi Healthcare Build Kit 1.1.0
+Project: Aarozi Healthcare
+Mode: coding-ready foundation + AI task control plane + offline-first commercial licensing
+Base tasks: 118
+Additional offline/commercial hardening tasks: 10
+Total tasks: 128
+Primary commercial mode: OFFLINE_LOCAL annual license
+Optional upgrade: HYBRID_SYNC cloud plan

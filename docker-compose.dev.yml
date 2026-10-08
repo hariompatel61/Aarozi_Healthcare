@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: aarozi
+      POSTGRES_PASSWORD: aarozi
+      POSTGRES_DB: aarozi_healthcare
+    ports: ["5432:5432"]
+    volumes: ["aarozi_pg:/var/lib/postgresql/data"]
+
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: aarozi
+      MINIO_ROOT_PASSWORD: aarozi-development-only
+    ports: ["9000:9000", "9001:9001"]
+    volumes: ["aarozi_minio:/data"]
+
+volumes:
+  aarozi_pg:
+  aarozi_minio:

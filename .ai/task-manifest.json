@@ -1,0 +1,1030 @@
+{
+  "project": "Aarozi Healthcare",
+  "task_count": 128,
+  "tasks": [
+    {
+      "id": "P00-01",
+      "phase": "P00",
+      "phase_name": "Product Control Plane",
+      "title": "Scope Freeze",
+      "file": ".ai/tasks/P00-01-scope-freeze.md",
+      "depends_on": "none"
+    },
+    {
+      "id": "P00-02",
+      "phase": "P00",
+      "phase_name": "Product Control Plane",
+      "title": "Domain Glossary",
+      "file": ".ai/tasks/P00-02-domain-glossary.md",
+      "depends_on": "P00-01"
+    },
+    {
+      "id": "P00-03",
+      "phase": "P00",
+      "phase_name": "Product Control Plane",
+      "title": "Architecture Baseline",
+      "file": ".ai/tasks/P00-03-architecture-baseline.md",
+      "depends_on": "P00-02"
+    },
+    {
+      "id": "P00-04",
+      "phase": "P00",
+      "phase_name": "Product Control Plane",
+      "title": "UI/UX Baseline",
+      "file": ".ai/tasks/P00-04-ui-ux-baseline.md",
+      "depends_on": "P00-03"
+    },
+    {
+      "id": "P00-05",
+      "phase": "P00",
+      "phase_name": "Product Control Plane",
+      "title": "Performance Budgets",
+      "file": ".ai/tasks/P00-05-performance-budgets.md",
+      "depends_on": "P00-04"
+    },
+    {
+      "id": "P00-06",
+      "phase": "P00",
+      "phase_name": "Product Control Plane",
+      "title": "Agent Context Baseline",
+      "file": ".ai/tasks/P00-06-agent-context-baseline.md",
+      "depends_on": "P00-05"
+    },
+    {
+      "id": "P01-01",
+      "phase": "P01",
+      "phase_name": "Repository and Local Development",
+      "title": "Monorepo Structure",
+      "file": ".ai/tasks/P01-01-monorepo-structure.md",
+      "depends_on": "previous phase gate"
+    },
+    {
+      "id": "P01-02",
+      "phase": "P01",
+      "phase_name": "Repository and Local Development",
+      "title": "Dev Containers",
+      "file": ".ai/tasks/P01-02-dev-containers.md",
+      "depends_on": "P01-01"
+    },
+    {
+      "id": "P01-03",
+      "phase": "P01",
+      "phase_name": "Repository and Local Development",
+      "title": "Database Boot",
+      "file": ".ai/tasks/P01-03-database-boot.md",
+      "depends_on": "P01-02"
+    },
+    {
+      "id": "P01-04",
+      "phase": "P01",
+      "phase_name": "Repository and Local Development",
+      "title": "API Skeleton",
+      "file": ".ai/tasks/P01-04-api-skeleton.md",
+      "depends_on": "P01-03"
+    },
+    {
+      "id": "P01-05",
+      "phase": "P01",
+      "phase_name": "Repository and Local Development",
+      "title": "Web Skeleton",
+      "file": ".ai/tasks/P01-05-web-skeleton.md",
+      "depends_on": "P01-04"
+    },
+    {
+      "id": "P01-06",
+      "phase": "P01",
+      "phase_name": "Repository and Local Development",
+      "title": "Shared Contracts",
+      "file": ".ai/tasks/P01-06-shared-contracts.md",
+      "depends_on": "P01-05"
+    },
+    {
+      "id": "P01-07",
+      "phase": "P01",
+      "phase_name": "Repository and Local Development",
+      "title": "CI Baseline",
+      "file": ".ai/tasks/P01-07-ci-baseline.md",
+      "depends_on": "P01-06"
+    },
+    {
+      "id": "P01-08",
+      "phase": "P01",
+      "phase_name": "Repository and Local Development",
+      "title": "Developer Docs",
+      "file": ".ai/tasks/P01-08-developer-docs.md",
+      "depends_on": "P01-07"
+    },
+    {
+      "id": "P02-01",
+      "phase": "P02",
+      "phase_name": "Database, Tenant and RBAC",
+      "title": "Core Schema",
+      "file": ".ai/tasks/P02-01-core-schema.md",
+      "depends_on": "previous phase gate"
+    },
+    {
+      "id": "P02-02",
+      "phase": "P02",
+      "phase_name": "Database, Tenant and RBAC",
+      "title": "Identity Schema",
+      "file": ".ai/tasks/P02-02-identity-schema.md",
+      "depends_on": "P02-01"
+    },
+    {
+      "id": "P02-03",
+      "phase": "P02",
+      "phase_name": "Database, Tenant and RBAC",
+      "title": "Permission Catalog",
+      "file": ".ai/tasks/P02-03-permission-catalog.md",
+      "depends_on": "P02-02"
+    },
+    {
+      "id": "P02-04",
+      "phase": "P02",
+      "phase_name": "Database, Tenant and RBAC",
+      "title": "Role Management",
+      "file": ".ai/tasks/P02-04-role-management.md",
+      "depends_on": "P02-03"
+    },
+    {
+      "id": "P02-05",
+      "phase": "P02",
+      "phase_name": "Database, Tenant and RBAC",
+      "title": "User Role Scope",
+      "file": ".ai/tasks/P02-05-user-role-scope.md",
+      "depends_on": "P02-04"
+    },
+    {
+      "id": "P02-06",
+      "phase": "P02",
+      "phase_name": "Database, Tenant and RBAC",
+      "title": "Authorization Engine",
+      "file": ".ai/tasks/P02-06-authorization-engine.md",
+      "depends_on": "P02-05"
+    },
+    {
+      "id": "P02-07",
+      "phase": "P02",
+      "phase_name": "Database, Tenant and RBAC",
+      "title": "Tenant Isolation",
+      "file": ".ai/tasks/P02-07-tenant-isolation.md",
+      "depends_on": "P02-06"
+    },
+    {
+      "id": "P02-08",
+      "phase": "P02",
+      "phase_name": "Database, Tenant and RBAC",
+      "title": "Audit Foundation",
+      "file": ".ai/tasks/P02-08-audit-foundation.md",
+      "depends_on": "P02-07"
+    },
+    {
+      "id": "P02-09",
+      "phase": "P02",
+      "phase_name": "Database, Tenant and RBAC",
+      "title": "Admin UI",
+      "file": ".ai/tasks/P02-09-admin-ui.md",
+      "depends_on": "P02-08"
+    },
+    {
+      "id": "P02-10",
+      "phase": "P02",
+      "phase_name": "Database, Tenant and RBAC",
+      "title": "RBAC E2E",
+      "file": ".ai/tasks/P02-10-rbac-e2e.md",
+      "depends_on": "P02-09"
+    },
+    {
+      "id": "P03-01",
+      "phase": "P03",
+      "phase_name": "Patient, Registration and Order",
+      "title": "Patient Model",
+      "file": ".ai/tasks/P03-01-patient-model.md",
+      "depends_on": "previous phase gate"
+    },
+    {
+      "id": "P03-02",
+      "phase": "P03",
+      "phase_name": "Patient, Registration and Order",
+      "title": "Patient Search",
+      "file": ".ai/tasks/P03-02-patient-search.md",
+      "depends_on": "P03-01"
+    },
+    {
+      "id": "P03-03",
+      "phase": "P03",
+      "phase_name": "Patient, Registration and Order",
+      "title": "Patient Registration UI",
+      "file": ".ai/tasks/P03-03-patient-registration-ui.md",
+      "depends_on": "P03-02"
+    },
+    {
+      "id": "P03-04",
+      "phase": "P03",
+      "phase_name": "Patient, Registration and Order",
+      "title": "Duplicate Detection",
+      "file": ".ai/tasks/P03-04-duplicate-detection.md",
+      "depends_on": "P03-03"
+    },
+    {
+      "id": "P03-05",
+      "phase": "P03",
+      "phase_name": "Patient, Registration and Order",
+      "title": "Test Master",
+      "file": ".ai/tasks/P03-05-test-master.md",
+      "depends_on": "P03-04"
+    },
+    {
+      "id": "P03-06",
+      "phase": "P03",
+      "phase_name": "Patient, Registration and Order",
+      "title": "Profiles and Packages",
+      "file": ".ai/tasks/P03-06-profiles-and-packages.md",
+      "depends_on": "P03-05"
+    },
+    {
+      "id": "P03-07",
+      "phase": "P03",
+      "phase_name": "Patient, Registration and Order",
+      "title": "Order Workflow",
+      "file": ".ai/tasks/P03-07-order-workflow.md",
+      "depends_on": "P03-06"
+    },
+    {
+      "id": "P03-08",
+      "phase": "P03",
+      "phase_name": "Patient, Registration and Order",
+      "title": "Sample Workflow",
+      "file": ".ai/tasks/P03-08-sample-workflow.md",
+      "depends_on": "P03-07"
+    },
+    {
+      "id": "P03-09",
+      "phase": "P03",
+      "phase_name": "Patient, Registration and Order",
+      "title": "Registration E2E",
+      "file": ".ai/tasks/P03-09-registration-e2e.md",
+      "depends_on": "P03-08"
+    },
+    {
+      "id": "P04-01",
+      "phase": "P04",
+      "phase_name": "Billing and Referral",
+      "title": "Price Lists",
+      "file": ".ai/tasks/P04-01-price-lists.md",
+      "depends_on": "previous phase gate"
+    },
+    {
+      "id": "P04-02",
+      "phase": "P04",
+      "phase_name": "Billing and Referral",
+      "title": "Invoice Engine",
+      "file": ".ai/tasks/P04-02-invoice-engine.md",
+      "depends_on": "P04-01"
+    },
+    {
+      "id": "P04-03",
+      "phase": "P04",
+      "phase_name": "Billing and Referral",
+      "title": "Discount Engine",
+      "file": ".ai/tasks/P04-03-discount-engine.md",
+      "depends_on": "P04-02"
+    },
+    {
+      "id": "P04-04",
+      "phase": "P04",
+      "phase_name": "Billing and Referral",
+      "title": "Payments",
+      "file": ".ai/tasks/P04-04-payments.md",
+      "depends_on": "P04-03"
+    },
+    {
+      "id": "P04-05",
+      "phase": "P04",
+      "phase_name": "Billing and Referral",
+      "title": "Refunds and Cancellation",
+      "file": ".ai/tasks/P04-05-refunds-and-cancellation.md",
+      "depends_on": "P04-04"
+    },
+    {
+      "id": "P04-06",
+      "phase": "P04",
+      "phase_name": "Billing and Referral",
+      "title": "Referral Partners",
+      "file": ".ai/tasks/P04-06-referral-partners.md",
+      "depends_on": "P04-05"
+    },
+    {
+      "id": "P04-07",
+      "phase": "P04",
+      "phase_name": "Billing and Referral",
+      "title": "Commission Ledger",
+      "file": ".ai/tasks/P04-07-commission-ledger.md",
+      "depends_on": "P04-06"
+    },
+    {
+      "id": "P04-08",
+      "phase": "P04",
+      "phase_name": "Billing and Referral",
+      "title": "Billing E2E",
+      "file": ".ai/tasks/P04-08-billing-e2e.md",
+      "depends_on": "P04-07"
+    },
+    {
+      "id": "P05-01",
+      "phase": "P05",
+      "phase_name": "Pathology Result Engine",
+      "title": "Reference Ranges",
+      "file": ".ai/tasks/P05-01-reference-ranges.md",
+      "depends_on": "previous phase gate"
+    },
+    {
+      "id": "P05-02",
+      "phase": "P05",
+      "phase_name": "Pathology Result Engine",
+      "title": "Result Value Model",
+      "file": ".ai/tasks/P05-02-result-value-model.md",
+      "depends_on": "P05-01"
+    },
+    {
+      "id": "P05-03",
+      "phase": "P05",
+      "phase_name": "Pathology Result Engine",
+      "title": "Calculation Engine",
+      "file": ".ai/tasks/P05-03-calculation-engine.md",
+      "depends_on": "P05-02"
+    },
+    {
+      "id": "P05-04",
+      "phase": "P05",
+      "phase_name": "Pathology Result Engine",
+      "title": "Abnormal/Critical Engine",
+      "file": ".ai/tasks/P05-04-abnormal-critical-engine.md",
+      "depends_on": "P05-03"
+    },
+    {
+      "id": "P05-05",
+      "phase": "P05",
+      "phase_name": "Pathology Result Engine",
+      "title": "Worklists",
+      "file": ".ai/tasks/P05-05-worklists.md",
+      "depends_on": "P05-04"
+    },
+    {
+      "id": "P05-06",
+      "phase": "P05",
+      "phase_name": "Pathology Result Engine",
+      "title": "Result Entry UI",
+      "file": ".ai/tasks/P05-06-result-entry-ui.md",
+      "depends_on": "P05-05"
+    },
+    {
+      "id": "P05-07",
+      "phase": "P05",
+      "phase_name": "Pathology Result Engine",
+      "title": "Verification",
+      "file": ".ai/tasks/P05-07-verification.md",
+      "depends_on": "P05-06"
+    },
+    {
+      "id": "P05-08",
+      "phase": "P05",
+      "phase_name": "Pathology Result Engine",
+      "title": "Pathologist Approval",
+      "file": ".ai/tasks/P05-08-pathologist-approval.md",
+      "depends_on": "P05-07"
+    },
+    {
+      "id": "P05-09",
+      "phase": "P05",
+      "phase_name": "Pathology Result Engine",
+      "title": "Amendment Versioning",
+      "file": ".ai/tasks/P05-09-amendment-versioning.md",
+      "depends_on": "P05-08"
+    },
+    {
+      "id": "P05-10",
+      "phase": "P05",
+      "phase_name": "Pathology Result Engine",
+      "title": "Pathology E2E",
+      "file": ".ai/tasks/P05-10-pathology-e2e.md",
+      "depends_on": "P05-09"
+    },
+    {
+      "id": "P06-01",
+      "phase": "P06",
+      "phase_name": "Reporting and 100+ Templates",
+      "title": "Template Schema",
+      "file": ".ai/tasks/P06-01-template-schema.md",
+      "depends_on": "previous phase gate"
+    },
+    {
+      "id": "P06-02",
+      "phase": "P06",
+      "phase_name": "Reporting and 100+ Templates",
+      "title": "Designer Core",
+      "file": ".ai/tasks/P06-02-designer-core.md",
+      "depends_on": "P06-01"
+    },
+    {
+      "id": "P06-03",
+      "phase": "P06",
+      "phase_name": "Reporting and 100+ Templates",
+      "title": "Patient/Test Components",
+      "file": ".ai/tasks/P06-03-patient-test-components.md",
+      "depends_on": "P06-02"
+    },
+    {
+      "id": "P06-04",
+      "phase": "P06",
+      "phase_name": "Reporting and 100+ Templates",
+      "title": "QR/Barcode",
+      "file": ".ai/tasks/P06-04-qr-barcode.md",
+      "depends_on": "P06-03"
+    },
+    {
+      "id": "P06-05",
+      "phase": "P06",
+      "phase_name": "Reporting and 100+ Templates",
+      "title": "Signature/Stamp",
+      "file": ".ai/tasks/P06-05-signature-stamp.md",
+      "depends_on": "P06-04"
+    },
+    {
+      "id": "P06-06",
+      "phase": "P06",
+      "phase_name": "Reporting and 100+ Templates",
+      "title": "Renderer",
+      "file": ".ai/tasks/P06-06-renderer.md",
+      "depends_on": "P06-05"
+    },
+    {
+      "id": "P06-07",
+      "phase": "P06",
+      "phase_name": "Reporting and 100+ Templates",
+      "title": "Template Library",
+      "file": ".ai/tasks/P06-07-template-library.md",
+      "depends_on": "P06-06"
+    },
+    {
+      "id": "P06-08",
+      "phase": "P06",
+      "phase_name": "Reporting and 100+ Templates",
+      "title": "Report Delivery",
+      "file": ".ai/tasks/P06-08-report-delivery.md",
+      "depends_on": "P06-07"
+    },
+    {
+      "id": "P07-01",
+      "phase": "P07",
+      "phase_name": "Blood Bank",
+      "title": "Donor Master",
+      "file": ".ai/tasks/P07-01-donor-master.md",
+      "depends_on": "previous phase gate"
+    },
+    {
+      "id": "P07-02",
+      "phase": "P07",
+      "phase_name": "Blood Bank",
+      "title": "Screening",
+      "file": ".ai/tasks/P07-02-screening.md",
+      "depends_on": "P07-01"
+    },
+    {
+      "id": "P07-03",
+      "phase": "P07",
+      "phase_name": "Blood Bank",
+      "title": "Donation",
+      "file": ".ai/tasks/P07-03-donation.md",
+      "depends_on": "P07-02"
+    },
+    {
+      "id": "P07-04",
+      "phase": "P07",
+      "phase_name": "Blood Bank",
+      "title": "Unit Identity",
+      "file": ".ai/tasks/P07-04-unit-identity.md",
+      "depends_on": "P07-03"
+    },
+    {
+      "id": "P07-05",
+      "phase": "P07",
+      "phase_name": "Blood Bank",
+      "title": "TTI/Testing",
+      "file": ".ai/tasks/P07-05-tti-testing.md",
+      "depends_on": "P07-04"
+    },
+    {
+      "id": "P07-06",
+      "phase": "P07",
+      "phase_name": "Blood Bank",
+      "title": "Quarantine/Release",
+      "file": ".ai/tasks/P07-06-quarantine-release.md",
+      "depends_on": "P07-05"
+    },
+    {
+      "id": "P07-07",
+      "phase": "P07",
+      "phase_name": "Blood Bank",
+      "title": "Inventory",
+      "file": ".ai/tasks/P07-07-inventory.md",
+      "depends_on": "P07-06"
+    },
+    {
+      "id": "P07-08",
+      "phase": "P07",
+      "phase_name": "Blood Bank",
+      "title": "Reservations",
+      "file": ".ai/tasks/P07-08-reservations.md",
+      "depends_on": "P07-07"
+    },
+    {
+      "id": "P07-09",
+      "phase": "P07",
+      "phase_name": "Blood Bank",
+      "title": "Cross-Match",
+      "file": ".ai/tasks/P07-09-cross-match.md",
+      "depends_on": "P07-08"
+    },
+    {
+      "id": "P07-10",
+      "phase": "P07",
+      "phase_name": "Blood Bank",
+      "title": "Issue/Return",
+      "file": ".ai/tasks/P07-10-issue-return.md",
+      "depends_on": "P07-09"
+    },
+    {
+      "id": "P07-11",
+      "phase": "P07",
+      "phase_name": "Blood Bank",
+      "title": "Adverse Events",
+      "file": ".ai/tasks/P07-11-adverse-events.md",
+      "depends_on": "P07-10"
+    },
+    {
+      "id": "P07-12",
+      "phase": "P07",
+      "phase_name": "Blood Bank",
+      "title": "Blood Bank E2E",
+      "file": ".ai/tasks/P07-12-blood-bank-e2e.md",
+      "depends_on": "P07-11"
+    },
+    {
+      "id": "P08-01",
+      "phase": "P08",
+      "phase_name": "Analyzer and External Integrations",
+      "title": "Connector Service",
+      "file": ".ai/tasks/P08-01-connector-service.md",
+      "depends_on": "previous phase gate"
+    },
+    {
+      "id": "P08-02",
+      "phase": "P08",
+      "phase_name": "Analyzer and External Integrations",
+      "title": "Adapter Interface",
+      "file": ".ai/tasks/P08-02-adapter-interface.md",
+      "depends_on": "P08-01"
+    },
+    {
+      "id": "P08-03",
+      "phase": "P08",
+      "phase_name": "Analyzer and External Integrations",
+      "title": "ASTM Adapter",
+      "file": ".ai/tasks/P08-03-astm-adapter.md",
+      "depends_on": "P08-02"
+    },
+    {
+      "id": "P08-04",
+      "phase": "P08",
+      "phase_name": "Analyzer and External Integrations",
+      "title": "HL7 Adapter",
+      "file": ".ai/tasks/P08-04-hl7-adapter.md",
+      "depends_on": "P08-03"
+    },
+    {
+      "id": "P08-05",
+      "phase": "P08",
+      "phase_name": "Analyzer and External Integrations",
+      "title": "Machine Mapping",
+      "file": ".ai/tasks/P08-05-machine-mapping.md",
+      "depends_on": "P08-04"
+    },
+    {
+      "id": "P08-06",
+      "phase": "P08",
+      "phase_name": "Analyzer and External Integrations",
+      "title": "Sample Matching",
+      "file": ".ai/tasks/P08-06-sample-matching.md",
+      "depends_on": "P08-05"
+    },
+    {
+      "id": "P08-07",
+      "phase": "P08",
+      "phase_name": "Analyzer and External Integrations",
+      "title": "Notification Adapters",
+      "file": ".ai/tasks/P08-07-notification-adapters.md",
+      "depends_on": "P08-06"
+    },
+    {
+      "id": "P08-08",
+      "phase": "P08",
+      "phase_name": "Analyzer and External Integrations",
+      "title": "Integration E2E",
+      "file": ".ai/tasks/P08-08-integration-e2e.md",
+      "depends_on": "P08-07"
+    },
+    {
+      "id": "P09-01",
+      "phase": "P09",
+      "phase_name": "Offline, Local Server, Sync and Licensing",
+      "title": "Local Deployment",
+      "file": ".ai/tasks/P09-01-local-deployment.md",
+      "depends_on": "previous phase gate"
+    },
+    {
+      "id": "P09-02",
+      "phase": "P09",
+      "phase_name": "Offline, Local Server, Sync and Licensing",
+      "title": "Local Auth",
+      "file": ".ai/tasks/P09-02-local-auth.md",
+      "depends_on": "P09-01"
+    },
+    {
+      "id": "P09-03",
+      "phase": "P09",
+      "phase_name": "Offline, Local Server, Sync and Licensing",
+      "title": "Sync Event Model",
+      "file": ".ai/tasks/P09-03-sync-event-model.md",
+      "depends_on": "P09-02"
+    },
+    {
+      "id": "P09-04",
+      "phase": "P09",
+      "phase_name": "Offline, Local Server, Sync and Licensing",
+      "title": "Sync Transport",
+      "file": ".ai/tasks/P09-04-sync-transport.md",
+      "depends_on": "P09-03"
+    },
+    {
+      "id": "P09-05",
+      "phase": "P09",
+      "phase_name": "Offline, Local Server, Sync and Licensing",
+      "title": "Conflict Detection",
+      "file": ".ai/tasks/P09-05-conflict-detection.md",
+      "depends_on": "P09-04"
+    },
+    {
+      "id": "P09-06",
+      "phase": "P09",
+      "phase_name": "Offline, Local Server, Sync and Licensing",
+      "title": "Conflict Resolution",
+      "file": ".ai/tasks/P09-06-conflict-resolution.md",
+      "depends_on": "P09-05"
+    },
+    {
+      "id": "P09-07",
+      "phase": "P09",
+      "phase_name": "Offline, Local Server, Sync and Licensing",
+      "title": "Offline Cache",
+      "file": ".ai/tasks/P09-07-offline-cache.md",
+      "depends_on": "P09-06"
+    },
+    {
+      "id": "P09-08",
+      "phase": "P09",
+      "phase_name": "Offline, Local Server, Sync and Licensing",
+      "title": "License Engine",
+      "file": ".ai/tasks/P09-08-license-engine.md",
+      "depends_on": "P09-07"
+    },
+    {
+      "id": "P09-09",
+      "phase": "P09",
+      "phase_name": "Offline, Local Server, Sync and Licensing",
+      "title": "Backup/Restore",
+      "file": ".ai/tasks/P09-09-backup-restore.md",
+      "depends_on": "P09-08"
+    },
+    {
+      "id": "P09-10",
+      "phase": "P09",
+      "phase_name": "Offline, Local Server, Sync and Licensing",
+      "title": "Hybrid E2E",
+      "file": ".ai/tasks/P09-10-hybrid-e2e.md",
+      "depends_on": "P09-09"
+    },
+    {
+      "id": "P10-01",
+      "phase": "P10",
+      "phase_name": "Ultra-Fast Web UX",
+      "title": "Unified Shell",
+      "file": ".ai/tasks/P10-01-unified-shell.md",
+      "depends_on": "previous phase gate"
+    },
+    {
+      "id": "P10-02",
+      "phase": "P10",
+      "phase_name": "Ultra-Fast Web UX",
+      "title": "Reception Workspace",
+      "file": ".ai/tasks/P10-02-reception-workspace.md",
+      "depends_on": "P10-01"
+    },
+    {
+      "id": "P10-03",
+      "phase": "P10",
+      "phase_name": "Ultra-Fast Web UX",
+      "title": "Operational Tables",
+      "file": ".ai/tasks/P10-03-operational-tables.md",
+      "depends_on": "P10-02"
+    },
+    {
+      "id": "P10-04",
+      "phase": "P10",
+      "phase_name": "Ultra-Fast Web UX",
+      "title": "Keyboard Workflow",
+      "file": ".ai/tasks/P10-04-keyboard-workflow.md",
+      "depends_on": "P10-03"
+    },
+    {
+      "id": "P10-05",
+      "phase": "P10",
+      "phase_name": "Ultra-Fast Web UX",
+      "title": "Lazy Loading",
+      "file": ".ai/tasks/P10-05-lazy-loading.md",
+      "depends_on": "P10-04"
+    },
+    {
+      "id": "P10-06",
+      "phase": "P10",
+      "phase_name": "Ultra-Fast Web UX",
+      "title": "Cache Strategy",
+      "file": ".ai/tasks/P10-06-cache-strategy.md",
+      "depends_on": "P10-05"
+    },
+    {
+      "id": "P10-07",
+      "phase": "P10",
+      "phase_name": "Ultra-Fast Web UX",
+      "title": "UX Performance Gate",
+      "file": ".ai/tasks/P10-07-ux-performance-gate.md",
+      "depends_on": "P10-06"
+    },
+    {
+      "id": "P11-01",
+      "phase": "P11",
+      "phase_name": "Desktop and Mobile",
+      "title": "Tauri Shell",
+      "file": ".ai/tasks/P11-01-tauri-shell.md",
+      "depends_on": "previous phase gate"
+    },
+    {
+      "id": "P11-02",
+      "phase": "P11",
+      "phase_name": "Desktop and Mobile",
+      "title": "Local Server Installer",
+      "file": ".ai/tasks/P11-02-local-server-installer.md",
+      "depends_on": "P11-01"
+    },
+    {
+      "id": "P11-03",
+      "phase": "P11",
+      "phase_name": "Desktop and Mobile",
+      "title": "Desktop Printing",
+      "file": ".ai/tasks/P11-03-desktop-printing.md",
+      "depends_on": "P11-02"
+    },
+    {
+      "id": "P11-04",
+      "phase": "P11",
+      "phase_name": "Desktop and Mobile",
+      "title": "Mobile Auth",
+      "file": ".ai/tasks/P11-04-mobile-auth.md",
+      "depends_on": "P11-03"
+    },
+    {
+      "id": "P11-05",
+      "phase": "P11",
+      "phase_name": "Desktop and Mobile",
+      "title": "Mobile Collection",
+      "file": ".ai/tasks/P11-05-mobile-collection.md",
+      "depends_on": "P11-04"
+    },
+    {
+      "id": "P11-06",
+      "phase": "P11",
+      "phase_name": "Desktop and Mobile",
+      "title": "Mobile Blood Bank",
+      "file": ".ai/tasks/P11-06-mobile-blood-bank.md",
+      "depends_on": "P11-05"
+    },
+    {
+      "id": "P11-07",
+      "phase": "P11",
+      "phase_name": "Desktop and Mobile",
+      "title": "Client Release",
+      "file": ".ai/tasks/P11-07-client-release.md",
+      "depends_on": "P11-06"
+    },
+    {
+      "id": "P12-01",
+      "phase": "P12",
+      "phase_name": "Security, QA, Performance and Observability",
+      "title": "Security Hardening",
+      "file": ".ai/tasks/P12-01-security-hardening.md",
+      "depends_on": "previous phase gate"
+    },
+    {
+      "id": "P12-02",
+      "phase": "P12",
+      "phase_name": "Security, QA, Performance and Observability",
+      "title": "API Load Tests",
+      "file": ".ai/tasks/P12-02-api-load-tests.md",
+      "depends_on": "P12-01"
+    },
+    {
+      "id": "P12-03",
+      "phase": "P12",
+      "phase_name": "Security, QA, Performance and Observability",
+      "title": "DB Performance",
+      "file": ".ai/tasks/P12-03-db-performance.md",
+      "depends_on": "P12-02"
+    },
+    {
+      "id": "P12-04",
+      "phase": "P12",
+      "phase_name": "Security, QA, Performance and Observability",
+      "title": "Frontend Performance",
+      "file": ".ai/tasks/P12-04-frontend-performance.md",
+      "depends_on": "P12-03"
+    },
+    {
+      "id": "P12-05",
+      "phase": "P12",
+      "phase_name": "Security, QA, Performance and Observability",
+      "title": "Report Throughput",
+      "file": ".ai/tasks/P12-05-report-throughput.md",
+      "depends_on": "P12-04"
+    },
+    {
+      "id": "P12-06",
+      "phase": "P12",
+      "phase_name": "Security, QA, Performance and Observability",
+      "title": "Observability",
+      "file": ".ai/tasks/P12-06-observability.md",
+      "depends_on": "P12-05"
+    },
+    {
+      "id": "P12-07",
+      "phase": "P12",
+      "phase_name": "Security, QA, Performance and Observability",
+      "title": "Backup Recovery Drill",
+      "file": ".ai/tasks/P12-07-backup-recovery-drill.md",
+      "depends_on": "P12-06"
+    },
+    {
+      "id": "P12-08",
+      "phase": "P12",
+      "phase_name": "Security, QA, Performance and Observability",
+      "title": "Regression Suite",
+      "file": ".ai/tasks/P12-08-regression-suite.md",
+      "depends_on": "P12-07"
+    },
+    {
+      "id": "P13-01",
+      "phase": "P13",
+      "phase_name": "Pilot and Production",
+      "title": "Demo Tenant",
+      "file": ".ai/tasks/P13-01-demo-tenant.md",
+      "depends_on": "previous phase gate"
+    },
+    {
+      "id": "P13-02",
+      "phase": "P13",
+      "phase_name": "Pilot and Production",
+      "title": "Pilot Checklist",
+      "file": ".ai/tasks/P13-02-pilot-checklist.md",
+      "depends_on": "P13-01"
+    },
+    {
+      "id": "P13-03",
+      "phase": "P13",
+      "phase_name": "Pilot and Production",
+      "title": "UAT",
+      "file": ".ai/tasks/P13-03-uat.md",
+      "depends_on": "P13-02"
+    },
+    {
+      "id": "P13-04",
+      "phase": "P13",
+      "phase_name": "Pilot and Production",
+      "title": "Data Migration",
+      "file": ".ai/tasks/P13-04-data-migration.md",
+      "depends_on": "P13-03"
+    },
+    {
+      "id": "P13-05",
+      "phase": "P13",
+      "phase_name": "Pilot and Production",
+      "title": "Production Hardening",
+      "file": ".ai/tasks/P13-05-production-hardening.md",
+      "depends_on": "P13-04"
+    },
+    {
+      "id": "P13-06",
+      "phase": "P13",
+      "phase_name": "Pilot and Production",
+      "title": "Pilot Rollout",
+      "file": ".ai/tasks/P13-06-pilot-rollout.md",
+      "depends_on": "P13-05"
+    },
+    {
+      "id": "P13-07",
+      "phase": "P13",
+      "phase_name": "Pilot and Production",
+      "title": "Production Release",
+      "file": ".ai/tasks/P13-07-production-release.md",
+      "depends_on": "P13-06"
+    },
+    {
+      "id": "P09-11",
+      "phase": "P09",
+      "phase_name": "Offline and Commercial Hardening",
+      "title": "Offline License Signing",
+      "file": ".ai/tasks/P09-11-offline-license-signing.md",
+      "depends_on": "P09-10"
+    },
+    {
+      "id": "P09-12",
+      "phase": "P09",
+      "phase_name": "Offline and Commercial Hardening",
+      "title": "Offline Activation Request",
+      "file": ".ai/tasks/P09-12-offline-activation-request.md",
+      "depends_on": "P09-11"
+    },
+    {
+      "id": "P09-13",
+      "phase": "P09",
+      "phase_name": "Offline and Commercial Hardening",
+      "title": "License Renewal Expiry",
+      "file": ".ai/tasks/P09-13-license-renewal-expiry.md",
+      "depends_on": "P09-12"
+    },
+    {
+      "id": "P09-14",
+      "phase": "P09",
+      "phase_name": "Offline and Commercial Hardening",
+      "title": "Cloud Optional Entitlement",
+      "file": ".ai/tasks/P09-14-cloud-optional-entitlement.md",
+      "depends_on": "P09-13"
+    },
+    {
+      "id": "P09-15",
+      "phase": "P09",
+      "phase_name": "Offline and Commercial Hardening",
+      "title": "Sync Checkpoints Resume",
+      "file": ".ai/tasks/P09-15-sync-checkpoints-resume.md",
+      "depends_on": "P09-14"
+    },
+    {
+      "id": "P09-16",
+      "phase": "P09",
+      "phase_name": "Offline and Commercial Hardening",
+      "title": "Offline 5K Multi-PC Acceptance",
+      "file": ".ai/tasks/P09-16-offline-5k-multipc-acceptance.md",
+      "depends_on": "P09-15"
+    },
+    {
+      "id": "P09-17",
+      "phase": "P09",
+      "phase_name": "Offline and Commercial Hardening",
+      "title": "Local Backup Restore",
+      "file": ".ai/tasks/P09-17-local-backup-restore.md",
+      "depends_on": "P09-16"
+    },
+    {
+      "id": "P09-18",
+      "phase": "P09",
+      "phase_name": "Offline and Commercial Hardening",
+      "title": "Local Server Installer",
+      "file": ".ai/tasks/P09-18-local-server-installer.md",
+      "depends_on": "P09-17"
+    },
+    {
+      "id": "P09-19",
+      "phase": "P09",
+      "phase_name": "Offline and Commercial Hardening",
+      "title": "Local Print Barcode Analyzer",
+      "file": ".ai/tasks/P09-19-local-print-barcode-analyzer.md",
+      "depends_on": "P09-18"
+    },
+    {
+      "id": "P09-20",
+      "phase": "P09",
+      "phase_name": "Offline and Commercial Hardening",
+      "title": "Commercial Offline Release",
+      "file": ".ai/tasks/P09-20-commercial-offline-release.md",
+      "depends_on": "P09-19"
+    }
+  ]
+}

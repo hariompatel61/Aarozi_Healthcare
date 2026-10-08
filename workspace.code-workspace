@@ -1,0 +1,12 @@
+{
+  "folders": [
+    {"path": "."}
+  ],
+  "settings": {
+    "editor.formatOnSave": true,
+    "files.exclude": {
+      "**/.git": true,
+      "**/node_modules": true
+    }
+  }
+}

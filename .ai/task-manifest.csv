@@ -1,0 +1,129 @@
+id,phase,title,file,dependency
+P00-01,P00,Scope Freeze,.ai/tasks/P00-01-scope-freeze.md,none
+P00-02,P00,Domain Glossary,.ai/tasks/P00-02-domain-glossary.md,P00-01
+P00-03,P00,Architecture Baseline,.ai/tasks/P00-03-architecture-baseline.md,P00-02
+P00-04,P00,UI/UX Baseline,.ai/tasks/P00-04-ui-ux-baseline.md,P00-03
+P00-05,P00,Performance Budgets,.ai/tasks/P00-05-performance-budgets.md,P00-04
+P00-06,P00,Agent Context Baseline,.ai/tasks/P00-06-agent-context-baseline.md,P00-05
+P01-01,P01,Monorepo Structure,.ai/tasks/P01-01-monorepo-structure.md,previous phase gate
+P01-02,P01,Dev Containers,.ai/tasks/P01-02-dev-containers.md,P01-01
+P01-03,P01,Database Boot,.ai/tasks/P01-03-database-boot.md,P01-02
+P01-04,P01,API Skeleton,.ai/tasks/P01-04-api-skeleton.md,P01-03
+P01-05,P01,Web Skeleton,.ai/tasks/P01-05-web-skeleton.md,P01-04
+P01-06,P01,Shared Contracts,.ai/tasks/P01-06-shared-contracts.md,P01-05
+P01-07,P01,CI Baseline,.ai/tasks/P01-07-ci-baseline.md,P01-06
+P01-08,P01,Developer Docs,.ai/tasks/P01-08-developer-docs.md,P01-07
+P02-01,P02,Core Schema,.ai/tasks/P02-01-core-schema.md,previous phase gate
+P02-02,P02,Identity Schema,.ai/tasks/P02-02-identity-schema.md,P02-01
+P02-03,P02,Permission Catalog,.ai/tasks/P02-03-permission-catalog.md,P02-02
+P02-04,P02,Role Management,.ai/tasks/P02-04-role-management.md,P02-03
+P02-05,P02,User Role Scope,.ai/tasks/P02-05-user-role-scope.md,P02-04
+P02-06,P02,Authorization Engine,.ai/tasks/P02-06-authorization-engine.md,P02-05
+P02-07,P02,Tenant Isolation,.ai/tasks/P02-07-tenant-isolation.md,P02-06
+P02-08,P02,Audit Foundation,.ai/tasks/P02-08-audit-foundation.md,P02-07
+P02-09,P02,Admin UI,.ai/tasks/P02-09-admin-ui.md,P02-08
+P02-10,P02,RBAC E2E,.ai/tasks/P02-10-rbac-e2e.md,P02-09
+P03-01,P03,Patient Model,.ai/tasks/P03-01-patient-model.md,previous phase gate
+P03-02,P03,Patient Search,.ai/tasks/P03-02-patient-search.md,P03-01
+P03-03,P03,Patient Registration UI,.ai/tasks/P03-03-patient-registration-ui.md,P03-02
+P03-04,P03,Duplicate Detection,.ai/tasks/P03-04-duplicate-detection.md,P03-03
+P03-05,P03,Test Master,.ai/tasks/P03-05-test-master.md,P03-04
+P03-06,P03,Profiles and Packages,.ai/tasks/P03-06-profiles-and-packages.md,P03-05
+P03-07,P03,Order Workflow,.ai/tasks/P03-07-order-workflow.md,P03-06
+P03-08,P03,Sample Workflow,.ai/tasks/P03-08-sample-workflow.md,P03-07
+P03-09,P03,Registration E2E,.ai/tasks/P03-09-registration-e2e.md,P03-08
+P04-01,P04,Price Lists,.ai/tasks/P04-01-price-lists.md,previous phase gate
+P04-02,P04,Invoice Engine,.ai/tasks/P04-02-invoice-engine.md,P04-01
+P04-03,P04,Discount Engine,.ai/tasks/P04-03-discount-engine.md,P04-02
+P04-04,P04,Payments,.ai/tasks/P04-04-payments.md,P04-03
+P04-05,P04,Refunds and Cancellation,.ai/tasks/P04-05-refunds-and-cancellation.md,P04-04
+P04-06,P04,Referral Partners,.ai/tasks/P04-06-referral-partners.md,P04-05
+P04-07,P04,Commission Ledger,.ai/tasks/P04-07-commission-ledger.md,P04-06
+P04-08,P04,Billing E2E,.ai/tasks/P04-08-billing-e2e.md,P04-07
+P05-01,P05,Reference Ranges,.ai/tasks/P05-01-reference-ranges.md,previous phase gate
+P05-02,P05,Result Value Model,.ai/tasks/P05-02-result-value-model.md,P05-01
+P05-03,P05,Calculation Engine,.ai/tasks/P05-03-calculation-engine.md,P05-02
+P05-04,P05,Abnormal/Critical Engine,.ai/tasks/P05-04-abnormal-critical-engine.md,P05-03
+P05-05,P05,Worklists,.ai/tasks/P05-05-worklists.md,P05-04
+P05-06,P05,Result Entry UI,.ai/tasks/P05-06-result-entry-ui.md,P05-05
+P05-07,P05,Verification,.ai/tasks/P05-07-verification.md,P05-06
+P05-08,P05,Pathologist Approval,.ai/tasks/P05-08-pathologist-approval.md,P05-07
+P05-09,P05,Amendment Versioning,.ai/tasks/P05-09-amendment-versioning.md,P05-08
+P05-10,P05,Pathology E2E,.ai/tasks/P05-10-pathology-e2e.md,P05-09
+P06-01,P06,Template Schema,.ai/tasks/P06-01-template-schema.md,previous phase gate
+P06-02,P06,Designer Core,.ai/tasks/P06-02-designer-core.md,P06-01
+P06-03,P06,Patient/Test Components,.ai/tasks/P06-03-patient-test-components.md,P06-02
+P06-04,P06,QR/Barcode,.ai/tasks/P06-04-qr-barcode.md,P06-03
+P06-05,P06,Signature/Stamp,.ai/tasks/P06-05-signature-stamp.md,P06-04
+P06-06,P06,Renderer,.ai/tasks/P06-06-renderer.md,P06-05
+P06-07,P06,Template Library,.ai/tasks/P06-07-template-library.md,P06-06
+P06-08,P06,Report Delivery,.ai/tasks/P06-08-report-delivery.md,P06-07
+P07-01,P07,Donor Master,.ai/tasks/P07-01-donor-master.md,previous phase gate
+P07-02,P07,Screening,.ai/tasks/P07-02-screening.md,P07-01
+P07-03,P07,Donation,.ai/tasks/P07-03-donation.md,P07-02
+P07-04,P07,Unit Identity,.ai/tasks/P07-04-unit-identity.md,P07-03
+P07-05,P07,TTI/Testing,.ai/tasks/P07-05-tti-testing.md,P07-04
+P07-06,P07,Quarantine/Release,.ai/tasks/P07-06-quarantine-release.md,P07-05
+P07-07,P07,Inventory,.ai/tasks/P07-07-inventory.md,P07-06
+P07-08,P07,Reservations,.ai/tasks/P07-08-reservations.md,P07-07
+P07-09,P07,Cross-Match,.ai/tasks/P07-09-cross-match.md,P07-08
+P07-10,P07,Issue/Return,.ai/tasks/P07-10-issue-return.md,P07-09
+P07-11,P07,Adverse Events,.ai/tasks/P07-11-adverse-events.md,P07-10
+P07-12,P07,Blood Bank E2E,.ai/tasks/P07-12-blood-bank-e2e.md,P07-11
+P08-01,P08,Connector Service,.ai/tasks/P08-01-connector-service.md,previous phase gate
+P08-02,P08,Adapter Interface,.ai/tasks/P08-02-adapter-interface.md,P08-01
+P08-03,P08,ASTM Adapter,.ai/tasks/P08-03-astm-adapter.md,P08-02
+P08-04,P08,HL7 Adapter,.ai/tasks/P08-04-hl7-adapter.md,P08-03
+P08-05,P08,Machine Mapping,.ai/tasks/P08-05-machine-mapping.md,P08-04
+P08-06,P08,Sample Matching,.ai/tasks/P08-06-sample-matching.md,P08-05
+P08-07,P08,Notification Adapters,.ai/tasks/P08-07-notification-adapters.md,P08-06
+P08-08,P08,Integration E2E,.ai/tasks/P08-08-integration-e2e.md,P08-07
+P09-01,P09,Local Deployment,.ai/tasks/P09-01-local-deployment.md,previous phase gate
+P09-02,P09,Local Auth,.ai/tasks/P09-02-local-auth.md,P09-01
+P09-03,P09,Sync Event Model,.ai/tasks/P09-03-sync-event-model.md,P09-02
+P09-04,P09,Sync Transport,.ai/tasks/P09-04-sync-transport.md,P09-03
+P09-05,P09,Conflict Detection,.ai/tasks/P09-05-conflict-detection.md,P09-04
+P09-06,P09,Conflict Resolution,.ai/tasks/P09-06-conflict-resolution.md,P09-05
+P09-07,P09,Offline Cache,.ai/tasks/P09-07-offline-cache.md,P09-06
+P09-08,P09,License Engine,.ai/tasks/P09-08-license-engine.md,P09-07
+P09-09,P09,Backup/Restore,.ai/tasks/P09-09-backup-restore.md,P09-08
+P09-10,P09,Hybrid E2E,.ai/tasks/P09-10-hybrid-e2e.md,P09-09
+P10-01,P10,Unified Shell,.ai/tasks/P10-01-unified-shell.md,previous phase gate
+P10-02,P10,Reception Workspace,.ai/tasks/P10-02-reception-workspace.md,P10-01
+P10-03,P10,Operational Tables,.ai/tasks/P10-03-operational-tables.md,P10-02
+P10-04,P10,Keyboard Workflow,.ai/tasks/P10-04-keyboard-workflow.md,P10-03
+P10-05,P10,Lazy Loading,.ai/tasks/P10-05-lazy-loading.md,P10-04
+P10-06,P10,Cache Strategy,.ai/tasks/P10-06-cache-strategy.md,P10-05
+P10-07,P10,UX Performance Gate,.ai/tasks/P10-07-ux-performance-gate.md,P10-06
+P11-01,P11,Tauri Shell,.ai/tasks/P11-01-tauri-shell.md,previous phase gate
+P11-02,P11,Local Server Installer,.ai/tasks/P11-02-local-server-installer.md,P11-01
+P11-03,P11,Desktop Printing,.ai/tasks/P11-03-desktop-printing.md,P11-02
+P11-04,P11,Mobile Auth,.ai/tasks/P11-04-mobile-auth.md,P11-03
+P11-05,P11,Mobile Collection,.ai/tasks/P11-05-mobile-collection.md,P11-04
+P11-06,P11,Mobile Blood Bank,.ai/tasks/P11-06-mobile-blood-bank.md,P11-05
+P11-07,P11,Client Release,.ai/tasks/P11-07-client-release.md,P11-06
+P12-01,P12,Security Hardening,.ai/tasks/P12-01-security-hardening.md,previous phase gate
+P12-02,P12,API Load Tests,.ai/tasks/P12-02-api-load-tests.md,P12-01
+P12-03,P12,DB Performance,.ai/tasks/P12-03-db-performance.md,P12-02
+P12-04,P12,Frontend Performance,.ai/tasks/P12-04-frontend-performance.md,P12-03
+P12-05,P12,Report Throughput,.ai/tasks/P12-05-report-throughput.md,P12-04
+P12-06,P12,Observability,.ai/tasks/P12-06-observability.md,P12-05
+P12-07,P12,Backup Recovery Drill,.ai/tasks/P12-07-backup-recovery-drill.md,P12-06
+P12-08,P12,Regression Suite,.ai/tasks/P12-08-regression-suite.md,P12-07
+P13-01,P13,Demo Tenant,.ai/tasks/P13-01-demo-tenant.md,previous phase gate
+P13-02,P13,Pilot Checklist,.ai/tasks/P13-02-pilot-checklist.md,P13-01
+P13-03,P13,UAT,.ai/tasks/P13-03-uat.md,P13-02
+P13-04,P13,Data Migration,.ai/tasks/P13-04-data-migration.md,P13-03
+P13-05,P13,Production Hardening,.ai/tasks/P13-05-production-hardening.md,P13-04
+P13-06,P13,Pilot Rollout,.ai/tasks/P13-06-pilot-rollout.md,P13-05
+P13-07,P13,Production Release,.ai/tasks/P13-07-production-release.md,P13-06
+P09-11,P09,Offline License Signing,.ai/tasks/P09-11-offline-license-signing.md,P09-10
+P09-12,P09,Offline Activation Request,.ai/tasks/P09-12-offline-activation-request.md,P09-11
+P09-13,P09,License Renewal Expiry,.ai/tasks/P09-13-license-renewal-expiry.md,P09-12
+P09-14,P09,Cloud Optional Entitlement,.ai/tasks/P09-14-cloud-optional-entitlement.md,P09-13
+P09-15,P09,Sync Checkpoints Resume,.ai/tasks/P09-15-sync-checkpoints-resume.md,P09-14
+P09-16,P09,Offline 5K Multi-PC Acceptance,.ai/tasks/P09-16-offline-5k-multipc-acceptance.md,P09-15
+P09-17,P09,Local Backup Restore,.ai/tasks/P09-17-local-backup-restore.md,P09-16
+P09-18,P09,Local Server Installer,.ai/tasks/P09-18-local-server-installer.md,P09-17
+P09-19,P09,Local Print Barcode Analyzer,.ai/tasks/P09-19-local-print-barcode-analyzer.md,P09-18
+P09-20,P09,Commercial Offline Release,.ai/tasks/P09-20-commercial-offline-release.md,P09-19

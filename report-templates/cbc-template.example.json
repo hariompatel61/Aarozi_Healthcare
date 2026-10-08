@@ -1,0 +1,11 @@
+{
+  "name": "CBC - Starter",
+  "version": 1,
+  "page": {"size": "A4", "orientation": "portrait", "margin_mm": 10},
+  "sections": [
+    {"type": "patient_header", "fields": ["patient_no", "name", "age", "sex"]},
+    {"type": "test_table", "columns": ["analyte", "result", "unit", "reference", "flag"]},
+    {"type": "signature", "role": "pathologist"},
+    {"type": "qr", "purpose": "report_verification"}
+  ]
+}

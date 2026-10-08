@@ -1,0 +1,22 @@
+{
+  "project": "Aarozi Healthcare",
+  "status": "foundation-kit",
+  "task_count": 128,
+  "current_task": "P00-04",
+  "next_action": ".ai/tasks/P00-04-ui-ux-baseline.md",
+  "completed_tasks": ["P00-01", "P00-02", "P00-03"],
+  "architecture": "modular-monolith",
+  "deployment_modes": [
+    "cloud",
+    "local-multi-pc",
+    "offline",
+    "hybrid"
+  ],
+  "client_surfaces": [
+    "web",
+    "desktop",
+    "mobile",
+    "analyzer-connector"
+  ],
+  "commercial_model": "OFFLINE_LOCAL annual license; HYBRID_SYNC optional cloud plan"
+}
