@@ -15,7 +15,7 @@ if _repo_root not in sys.path:
 
 from app.errors import register_exception_handlers  # noqa: E402
 from app.middleware import RequestIDMiddleware  # noqa: E402
-from app.routers import health, meta  # noqa: E402
+from app.routers import auth, backup, health, licensing, meta, patients, sync  # noqa: E402
 from app.settings import get_settings  # noqa: E402
 
 
@@ -66,7 +66,12 @@ def create_app() -> FastAPI:
     # Routers
     application.include_router(health.router)
     application.include_router(meta.router)
+    application.include_router(auth.router)
+    application.include_router(patients.router)
+    application.include_router(sync.router)
 
+    application.include_router(licensing.router)
+    application.include_router(backup.router)
     return application
 
 

@@ -35,7 +35,8 @@ from app.models.billing import (
     CommissionLedger,
 )
 from app.models.reporting import ReportTemplate, Report, DigitalSignature, ReportDelivery
-from app.models.blood_bank import Donor, DonorDeferral
+from app.models.blood_bank import Donor, DonorDeferral, DonorScreening, Donation, BloodUnit, BloodMovement, BloodUnitTest, CrossMatch, AdverseEvent
+from app.models.offline import Device, SyncEvent, SyncConflict, SyncCheckpoint, SyncBatch, LocalBackup
 
 
 
@@ -80,4 +81,17 @@ __all__ = [
     "ReportDelivery",
     "Donor",
     "DonorDeferral",
+    "DonorScreening",
+    "Donation",
+    "BloodUnit",
+    "BloodMovement",
+    "BloodUnitTest",
+    "CrossMatch",
+    "AdverseEvent",
+    "Device",
+    "SyncEvent",
+    "SyncConflict",
+    "SyncCheckpoint",
+    "SyncBatch",
+    "LocalBackup",
 ]

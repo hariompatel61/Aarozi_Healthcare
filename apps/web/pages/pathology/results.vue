@@ -114,7 +114,7 @@
               <td class="px-6 py-3 whitespace-nowrap">
                 <input
                   :id="'analyte-input-' + idx"
-                  :ref="el => { if (el) inputRefs[idx] = el }"
+                  :ref="el => { if (el) inputRefs[idx] = el as any }"
                   v-model="analyte.raw_value"
                   type="text"
                   class="w-36 h-9 px-3 rounded border text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"

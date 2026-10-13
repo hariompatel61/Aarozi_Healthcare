@@ -288,3 +288,135 @@ def lift_deferral(
     db.refresh(deferral)
     return deferral
 
+
+
+def _as_utc(dt: datetime | None) -> datetime | None:
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def check_donor_eligibility(
+    db: Session,
+    *,
+    tenant_context: TenantContext,
+    donor_id: str,
+    donation_type: str = "whole_blood",
+) -> dict[str, Any]:
+    """
+    Check donor eligibility based on status, active deferrals, and donation interval.
+    Whole blood minimum interval: 56 days.
+    """
+    verify_tenant_boundary(tenant_context.tenant_id, tenant_context)
+    donor = (
+        db.query(Donor)
+        .options(joinedload(Donor.deferrals))
+        .filter(Donor.id == donor_id, Donor.tenant_id == tenant_context.tenant_id)
+        .first()
+    )
+    if not donor:
+        raise NotFoundError(f"Donor '{donor_id}' not found")
+
+    now = datetime.now(timezone.utc)
+
+    # 1. Check permanent deferral
+    perm_def = next((d for d in donor.deferrals if d.status == "active" and d.deferral_type == "permanent"), None)
+    if perm_def:
+        return {
+            "is_eligible": False,
+            "status": "deferred_permanent",
+            "reason": f"Permanently deferred: {perm_def.reason}",
+            "days_until_eligible": None,
+        }
+
+    # 2. Check active temporary deferral
+    active_temp = [d for d in donor.deferrals if d.status == "active" and d.deferral_type == "temporary" and d.deferred_until and _as_utc(d.deferred_until) > now]
+    if active_temp:
+        latest = sorted(active_temp, key=lambda d: _as_utc(d.deferred_until), reverse=True)[0]
+        latest_dt = _as_utc(latest.deferred_until)
+        days_left = (latest_dt - now).days + 1
+        return {
+            "is_eligible": False,
+            "status": "deferred_temporary",
+            "reason": f"Temporarily deferred: {latest.reason} (until {latest_dt.strftime('%d-%b-%Y')})",
+            "days_until_eligible": max(1, days_left),
+        }
+
+    # 3. Check minimum donation interval (56 days for whole blood)
+    min_interval_days = 56 if donation_type == "whole_blood" else 14
+    if donor.last_donation_date:
+        last_dt = _as_utc(donor.last_donation_date)
+        next_allowed = last_dt + timedelta(days=min_interval_days)
+        if now < next_allowed:
+            days_left = (next_allowed - now).days + 1
+            return {
+                "is_eligible": False,
+                "status": "interval_not_met",
+                "reason": f"Minimum donation interval ({min_interval_days} days) not met. Next eligible on {next_allowed.strftime('%d-%b-%Y')}",
+                "days_until_eligible": max(1, days_left),
+            }
+
+    return {
+        "is_eligible": True,
+        "status": "eligible",
+        "reason": None,
+        "days_until_eligible": 0,
+    }
+
+
+
+def get_donor(
+    db: Session,
+    *,
+    tenant_context: TenantContext,
+    donor_id: str,
+) -> Donor:
+    verify_tenant_boundary(tenant_context.tenant_id, tenant_context)
+    donor = (
+        db.query(Donor)
+        .options(joinedload(Donor.deferrals))
+        .filter(Donor.id == donor_id, Donor.tenant_id == tenant_context.tenant_id)
+        .first()
+    )
+    if not donor:
+        raise NotFoundError(f"Donor '{donor_id}' not found")
+    return donor
+
+
+def list_donors(
+    db: Session,
+    *,
+    tenant_context: TenantContext,
+    blood_group: str | None = None,
+    status: str | None = None,
+    search: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+) -> tuple[list[Donor], int]:
+    verify_tenant_boundary(tenant_context.tenant_id, tenant_context)
+    limit = min(max(1, limit), 100)
+    offset = max(0, offset)
+
+    query = db.query(Donor).filter(Donor.tenant_id == tenant_context.tenant_id)
+    if blood_group:
+        query = query.filter(Donor.blood_group == blood_group.strip().upper())
+    if status:
+        query = query.filter(Donor.status == status.strip().lower())
+    if search:
+        s = f"%{search.strip()}%"
+        query = query.filter(
+            or_(
+                Donor.donor_no.ilike(s),
+                Donor.first_name.ilike(s),
+                Donor.last_name.ilike(s),
+                Donor.mobile.ilike(s),
+                Donor.national_id.ilike(s),
+            )
+        )
+
+    total = query.count()
+    items = query.order_by(desc(Donor.created_at)).offset(offset).limit(limit).all()
+    return items, total
+

@@ -3,11 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "description": "Aarozi Healthcare analyzer connector – local service near the instrument, adapter-based protocol handling",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "tsc --noEmit",
-    "lint": "eslint src --ext .ts"
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "node --test dist/**/*.test.js"
   },
   "devDependencies": {
+    "@types/node": "^26.6.5",
     "typescript": ">=5.4"
   }
 }

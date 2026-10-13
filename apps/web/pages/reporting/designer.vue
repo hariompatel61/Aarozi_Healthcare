@@ -161,7 +161,9 @@ function moveSection(idx: number, delta: number) {
   const target = idx + delta
   if (target < 0 || target >= template.sections.length) return
   const item = template.sections.splice(idx, 1)[0]
-  template.sections.splice(target, 0, item)
+  if (item) {
+    template.sections.splice(target, 0, item)
+  }
 }
 
 function togglePreview() {

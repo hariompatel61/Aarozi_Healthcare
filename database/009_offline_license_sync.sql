@@ -48,3 +48,14 @@ CREATE TABLE IF NOT EXISTS sync_conflicts (
   resolved_by uuid REFERENCES users(id),
   resolved_at timestamptz
 );
+
+CREATE TABLE IF NOT EXISTS local_backups (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL REFERENCES tenants(id),
+  file_path text NOT NULL,
+  file_size_bytes bigint NOT NULL DEFAULT 0,
+  checksum text NOT NULL,
+  status text NOT NULL DEFAULT 'completed',
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
