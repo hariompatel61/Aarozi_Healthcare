@@ -1,0 +1,14 @@
+{
+  "name": "@aarozi/ui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared UI primitives: tables, forms, dialogs, keyboard navigation, status chips, report designer primitives",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "eslint src --ext .ts"
+  },
+  "devDependencies": {
+    "typescript": ">=5.4"
+  }
+}

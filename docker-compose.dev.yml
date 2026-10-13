@@ -1,4 +1,27 @@
 services:
+  api:
+    build:
+      context: .
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - .:/workspaces/Aarozi_Healthcare:cached
+    environment:
+      APP_ENV: development
+      DATABASE_URL: postgresql+asyncpg://aarozi:aarozi@postgres:5432/aarozi_healthcare
+      REDIS_URL: redis://redis:6379/0
+      OBJECT_STORAGE_ENDPOINT: http://minio:9000
+      OBJECT_STORAGE_BUCKET: aarozi-dev
+      MINIO_ROOT_USER: aarozi
+      MINIO_ROOT_PASSWORD: aarozi-development-only
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --app-dir apps/api
+
   postgres:
     image: postgres:16
     environment:
@@ -7,10 +30,20 @@ services:
       POSTGRES_DB: aarozi_healthcare
     ports: ["5432:5432"]
     volumes: ["aarozi_pg:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aarozi -d aarozi_healthcare"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7
     ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   minio:
     image: minio/minio
@@ -20,7 +53,13 @@ services:
       MINIO_ROOT_PASSWORD: aarozi-development-only
     ports: ["9000:9000", "9001:9001"]
     volumes: ["aarozi_minio:/data"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 volumes:
   aarozi_pg:
   aarozi_minio:
+

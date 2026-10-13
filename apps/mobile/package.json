@@ -1,0 +1,10 @@
+{
+  "name": "@aarozi/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aarozi Healthcare mobile app – Flutter, collection/scanning/alerts/blood-bank field workflows",
+  "scripts": {
+    "build": "echo 'Flutter build: run flutter build apk from this directory'",
+    "lint": "echo 'Flutter lint: run flutter analyze from this directory'"
+  }
+}

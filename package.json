@@ -1,0 +1,29 @@
+{
+  "name": "aarozi-healthcare",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Aarozi Healthcare – unified diagnostic lab + blood bank + billing monorepo",
+  "workspaces": [
+    "apps/web",
+    "apps/desktop",
+    "apps/mobile",
+    "packages/contracts",
+    "packages/shared",
+    "packages/ui",
+    "packages/report-engine",
+    "services/analyzer-connector"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "build:web": "npm run build --workspace=apps/web",
+    "lint:web": "npm run lint --workspace=apps/web",
+    "lint:all": "npm run lint --workspaces --if-present",
+    "build:all": "npm run build --workspaces --if-present",
+    "test:all": "npm run test --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
+  }
+}

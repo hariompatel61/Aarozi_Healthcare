@@ -1,0 +1,25 @@
+{
+  "name": "Aarozi Healthcare Dev Environment",
+  "dockerComposeFile": "../docker-compose.dev.yml",
+  "service": "api",
+  "workspaceFolder": "/workspaces/Aarozi_Healthcare",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "charliermarsh.ruff",
+        "ms-python.python",
+        "ms-python.mypy-type-checker",
+        "Vue.volar",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "editor.formatOnSave": true
+      }
+    }
+  },
+  "postCreateCommand": "pip install -e ./apps/api -e . && npm install",
+  "remoteUser": "root"
+}

@@ -1,12 +1,129 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Aarozi Report Template",
+  "description": "Canonical schema-driven report template specification with primitives, styling, conditions, and immutable versioning.",
   "type": "object",
-  "required": ["name", "version", "page", "sections"],
+  "required": ["name", "code", "version", "page", "sections"],
   "properties": {
-    "name": {"type": "string"},
-    "version": {"type": "integer", "minimum": 1},
-    "page": {"type": "object"},
-    "sections": {"type": "array"}
+    "code": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 255
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "pathology",
+        "biochemistry",
+        "hematology",
+        "microbiology",
+        "histopathology",
+        "immunology",
+        "blood_bank",
+        "cytology",
+        "general"
+      ],
+      "default": "pathology"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "active", "superseded", "deprecated"],
+      "default": "draft"
+    },
+    "page": {
+      "type": "object",
+      "required": ["size", "orientation", "margins"],
+      "properties": {
+        "size": {
+          "type": "string",
+          "enum": ["A4", "A5", "LETTER", "LEGAL"],
+          "default": "A4"
+        },
+        "orientation": {
+          "type": "string",
+          "enum": ["portrait", "landscape"],
+          "default": "portrait"
+        },
+        "margins": {
+          "type": "object",
+          "required": ["top", "bottom", "left", "right"],
+          "properties": {
+            "top": { "type": "number", "minimum": 0 },
+            "bottom": { "type": "number", "minimum": 0 },
+            "left": { "type": "number", "minimum": 0 },
+            "right": { "type": "number", "minimum": 0 },
+            "unit": {
+              "type": "string",
+              "enum": ["mm", "in", "pt"],
+              "default": "mm"
+            }
+          }
+        },
+        "header_height_mm": { "type": "number", "minimum": 0, "default": 25 },
+        "footer_height_mm": { "type": "number", "minimum": 0, "default": 20 }
+      }
+    },
+    "sections": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "type"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "patient_header",
+              "test_table",
+              "result_summary",
+              "reference_range_legend",
+              "logo",
+              "signature_stamp",
+              "qr_code",
+              "barcode",
+              "graph",
+              "image",
+              "footer",
+              "custom_text",
+              "conditional_section"
+            ]
+          },
+          "condition": {
+            "type": ["string", "null"]
+          },
+          "config": {
+            "type": "object",
+            "default": {}
+          },
+          "styles": {
+            "type": "object",
+            "properties": {
+              "font_family": { "type": "string" },
+              "font_size_pt": { "type": "number" },
+              "color": { "type": "string" },
+              "background_color": { "type": "string" },
+              "padding_mm": { "type": "number" },
+              "border": { "type": "string" },
+              "alignment": { "type": "string", "enum": ["left", "center", "right", "justify"] }
+            }
+          }
+        }
+      }
+    }
   }
 }
+

@@ -1,87 +1,73 @@
+﻿from __future__ import annotations
+
 import sys
+from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import AsyncGenerator
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-# Allow importing from the contracts package at the repo root.
+# Ensure contracts package (repo root) is importable
 _repo_root = str(Path(__file__).resolve().parents[3])
 if _repo_root not in sys.path:
     sys.path.insert(0, _repo_root)
 
-from contracts.domain_glossary import (  # noqa: E402
-    CANONICAL_ENTITIES,
-    FORBIDDEN_SYNONYMS,
-)
-from contracts.architecture import ARCHITECTURE  # noqa: E402
-
-app = FastAPI(title="Aarozi Healthcare API", version="0.1.0")
+from app.errors import register_exception_handlers  # noqa: E402
+from app.middleware import RequestIDMiddleware  # noqa: E402
+from app.routers import health, meta  # noqa: E402
+from app.settings import get_settings  # noqa: E402
 
 
-@app.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok", "service": "api"}
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Open connections on startup; close them on shutdown."""
+    from app.cache import get_redis  # noqa: F401
+    from app.db import get_engine  # noqa: F401
+
+    yield
+
+    from app.cache import close_redis
+    from app.db import close_db
+
+    await close_redis()
+    await close_db()
 
 
-SCOPE_FREEZE = {
-    "status": "FROZEN",
-    "freeze_date": "2026-10-08",
-    "document_version": "1.0.0",
-    "boundaries": {
-        "mvp": {
-            "phases": ["P00", "P01", "P02", "P03", "P04", "P05", "P06"],
-            "modules": [
-                "identity_rbac",
-                "patient_management",
-                "registration_orders",
-                "pathology_lims",
-                "billing_referral",
-                "report_engine",
-            ],
-            "deployment_modes": ["cloud", "local_multi_pc"],
-        },
-        "v1": {
-            "phases": ["P07", "P08", "P09"],
-            "modules": [
-                "blood_bank",
-                "analyzer_integration",
-                "hybrid_offline",
-            ],
-            "deployment_modes": ["offline", "hybrid"],
-        },
-        "v2": {
-            "phases": ["P10", "P11", "P12", "P13"],
-            "modules": [
-                "ux_polish",
-                "desktop_mobile",
-                "hardening",
-                "launch",
-            ],
-            "deployment_modes": [],
-        },
-    },
-    "assumptions_count": 10,
-    "open_decisions_count": 7,
-}
+def create_app() -> FastAPI:
+    settings = get_settings()
+
+    application = FastAPI(
+        title="Aarozi Healthcare API",
+        version="0.1.0",
+        description=(
+            "Unified Diagnostic Laboratory + Blood Bank + Billing platform API. "
+            "Supports cloud, local multi-PC, offline, and hybrid deployment modes."
+        ),
+        docs_url="/docs" if not settings.is_production else None,
+        redoc_url="/redoc" if not settings.is_production else None,
+        openapi_url="/openapi.json" if not settings.is_production else None,
+        lifespan=lifespan,
+    )
+
+    # Middleware (outermost registered last, executes first)
+    application.add_middleware(RequestIDMiddleware)
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"] if not settings.is_production else [],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    # Exception handlers
+    register_exception_handlers(application)
+
+    # Routers
+    application.include_router(health.router)
+    application.include_router(meta.router)
+
+    return application
 
 
-@app.get("/scope-freeze")
-def scope_freeze() -> dict:
-    """Return the frozen scope boundaries, assumptions count and open decisions count."""
-    return SCOPE_FREEZE
-
-
-@app.get("/domain-glossary")
-def domain_glossary() -> dict:
-    """Return the canonical domain vocabulary and forbidden synonyms."""
-    return {
-        "entity_count": len(CANONICAL_ENTITIES),
-        "entities": CANONICAL_ENTITIES,
-        "forbidden_synonyms": FORBIDDEN_SYNONYMS,
-    }
-
-
-@app.get("/architecture")
-def architecture() -> dict:
-    """Return the frozen architecture baseline."""
-    return ARCHITECTURE
-
+app = create_app()

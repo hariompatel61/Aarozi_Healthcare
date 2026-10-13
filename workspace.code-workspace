@@ -1,12 +1,44 @@
 {
   "folders": [
-    {"path": "."}
+    { "name": "root", "path": "." },
+    { "name": "api", "path": "apps/api" },
+    { "name": "web", "path": "apps/web" },
+    { "name": "desktop", "path": "apps/desktop" },
+    { "name": "mobile", "path": "apps/mobile" },
+    { "name": "pkg-contracts", "path": "packages/contracts" },
+    { "name": "pkg-shared", "path": "packages/shared" },
+    { "name": "pkg-ui", "path": "packages/ui" },
+    { "name": "pkg-report-engine", "path": "packages/report-engine" },
+    { "name": "analyzer-connector", "path": "services/analyzer-connector" }
   ],
   "settings": {
     "editor.formatOnSave": true,
     "files.exclude": {
       "**/.git": true,
-      "**/node_modules": true
-    }
+      "**/node_modules": true,
+      "**/__pycache__": true,
+      "**/.pytest_cache": true,
+      "**/.ruff_cache": true,
+      "**/.mypy_cache": true
+    },
+    "python.defaultInterpreterPath": "${workspaceFolder:root}/.venv/bin/python",
+    "python.analysis.extraPaths": [
+      "${workspaceFolder:root}",
+      "${workspaceFolder:api}"
+    ],
+    "[python]": { "editor.defaultFormatter": "charliermarsh.ruff" },
+    "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+    "[vue]": { "editor.defaultFormatter": "esbenp.prettier-vscode" }
+  },
+  "extensions": {
+    "recommendations": [
+      "charliermarsh.ruff",
+      "ms-python.python",
+      "ms-python.mypy-type-checker",
+      "Vue.volar",
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "tauri-apps.tauri-vscode"
+    ]
   }
 }

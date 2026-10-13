@@ -1,0 +1,14 @@
+{
+  "name": "@aarozi/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aarozi Healthcare desktop app – Tauri + Vue, Windows offline/local workflows",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "lint": "eslint src --ext .ts,.vue"
+  },
+  "devDependencies": {
+    "typescript": ">=5.4"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@aarozi/analyzer-connector",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aarozi Healthcare analyzer connector – local service near the instrument, adapter-based protocol handling",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "eslint src --ext .ts"
+  },
+  "devDependencies": {
+    "typescript": ">=5.4"
+  }
+}
