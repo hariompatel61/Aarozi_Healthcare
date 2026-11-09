@@ -9,7 +9,7 @@
     "preview": "nuxt preview",
     "lint": "eslint .",
     "test": "vitest",
-    "typecheck": "vue-tsc --noEmit"
+    "typecheck": "nuxt prepare && vue-tsc --noEmit"
   },
   "dependencies": {
     "@pinia/nuxt": ">=0.9",
