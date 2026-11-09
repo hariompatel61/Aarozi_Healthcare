@@ -21,7 +21,7 @@ export function useApi() {
     })
   }
 
-  async function post<T>(endpoint: string, body: any, options: any = {}) {
+  async function post<T>(endpoint: string, body: any = {}, options: any = {}) {
     return await $fetch<T>(`${apiBase}${endpoint}`, {
       method: 'POST',
       body,
@@ -30,8 +30,37 @@ export function useApi() {
     })
   }
 
+  async function put<T>(endpoint: string, body: any = {}, options: any = {}) {
+    return await $fetch<T>(`${apiBase}${endpoint}`, {
+      method: 'PUT',
+      body,
+      ...options,
+      headers: getHeaders(options.headers || {})
+    })
+  }
+
+  async function patch<T>(endpoint: string, body: any = {}, options: any = {}) {
+    return await $fetch<T>(`${apiBase}${endpoint}`, {
+      method: 'PATCH',
+      body,
+      ...options,
+      headers: getHeaders(options.headers || {})
+    })
+  }
+
+  async function del<T>(endpoint: string, options: any = {}) {
+    return await $fetch<T>(`${apiBase}${endpoint}`, {
+      method: 'DELETE',
+      ...options,
+      headers: getHeaders(options.headers || {})
+    })
+  }
+
   return {
     get,
-    post
+    post,
+    put,
+    patch,
+    delete: del,
   }
 }

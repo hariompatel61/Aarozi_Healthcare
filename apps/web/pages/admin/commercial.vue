@@ -80,6 +80,12 @@ function issueManualLicense() {
   alert(`Commercial License created and cryptographically signed for ${manualForm.value.lab_name}!`)
 }
 
+function showAlert(msg: string) {
+  if (typeof window !== 'undefined') {
+    window.alert(msg)
+  }
+}
+
 function revokeLicense(labId: string) {
   if (confirm(`Are you sure you want to revoke license for ${labId}?`)) {
     const lab = laboratories.value.find(l => l.id === labId)
@@ -217,7 +223,7 @@ function revokeLicense(labId: string) {
                   <button
                     type="button"
                     class="text-indigo-600 hover:text-indigo-800 font-semibold"
-                    @click="alert(`Exporting signed license for ${lab.name}...`)"
+                    @click="showAlert(`Exporting signed license for ${lab.name}...`)"
                   >
                     Download .lic
                   </button>

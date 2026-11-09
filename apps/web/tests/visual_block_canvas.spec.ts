@@ -24,7 +24,7 @@ describe('Interactive Visual Block Canvas Report Designer', () => {
     function moveUp(arr: TestBlock[], index: number) {
       if (index > 0) {
         const item = arr.splice(index, 1)[0]
-        arr.splice(index - 1, 0, item)
+        if (item) arr.splice(index - 1, 0, item)
       }
     }
 
@@ -32,17 +32,17 @@ describe('Interactive Visual Block Canvas Report Designer', () => {
     function moveDown(arr: TestBlock[], index: number) {
       if (index < arr.length - 1) {
         const item = arr.splice(index, 1)[0]
-        arr.splice(index + 1, 0, item)
+        if (item) arr.splice(index + 1, 0, item)
       }
     }
 
     moveUp(blocks, 2)
-    expect(blocks[1].type).toBe('results_table')
-    expect(blocks[2].type).toBe('patient_info')
+    expect(blocks[1]?.type).toBe('results_table')
+    expect(blocks[2]?.type).toBe('patient_info')
 
     moveDown(blocks, 0)
-    expect(blocks[0].type).toBe('results_table')
-    expect(blocks[1].type).toBe('header')
+    expect(blocks[0]?.type).toBe('results_table')
+    expect(blocks[1]?.type).toBe('header')
   })
 
   it('validates block addition and removal integrity', () => {
@@ -55,7 +55,7 @@ describe('Interactive Visual Block Canvas Report Designer', () => {
     const newBlock = { instanceId: 'b-3', type: 'observation' }
     canvas.push(newBlock)
     expect(canvas).toHaveLength(3)
-    expect(canvas[2].type).toBe('observation')
+    expect(canvas[2]?.type).toBe('observation')
 
     // Remove block b-2
     const filtered = canvas.filter(b => b.instanceId !== 'b-2')

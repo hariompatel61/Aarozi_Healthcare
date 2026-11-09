@@ -881,14 +881,18 @@ function removeBlock(instanceId: string) {
 function moveBlockUp(idx: number) {
   if (idx > 0) {
     const item = canvasBlocks.value.splice(idx, 1)[0]
-    canvasBlocks.value.splice(idx - 1, 0, item)
+    if (item) {
+      canvasBlocks.value.splice(idx - 1, 0, item)
+    }
   }
 }
 
 function moveBlockDown(idx: number) {
   if (idx < canvasBlocks.value.length - 1) {
     const item = canvasBlocks.value.splice(idx, 1)[0]
-    canvasBlocks.value.splice(idx + 1, 0, item)
+    if (item) {
+      canvasBlocks.value.splice(idx + 1, 0, item)
+    }
   }
 }
 

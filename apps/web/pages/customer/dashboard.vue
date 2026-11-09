@@ -47,7 +47,13 @@ function submitHardwareTransfer() {
   customerData.value.registered_machine_id = newMachineId.value.trim()
   customerData.value.transfers_used += 1
   isTransferModalOpen.value = false
-  alert('Hardware migration recorded! Download your updated license file.')
+  showAlert('Hardware migration recorded! Download your updated license file.')
+}
+
+function showAlert(msg: string) {
+  if (typeof window !== 'undefined') {
+    window.alert(msg)
+  }
 }
 </script>
 
@@ -180,17 +186,16 @@ function submitHardwareTransfer() {
           </div>
 
           <div class="pt-4 flex items-center space-x-3">
-            <a
-              href="/licensing/status"
-              target="_blank"
+            <NuxtLink
+              to="/admin/licensing"
               class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-xs transition"
             >
-              Download Signed .lic License File
-            </a>
+              Open License Manager
+            </NuxtLink>
             <button
               type="button"
               class="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold rounded-lg transition"
-              @click="alert('License signature copied to clipboard!')"
+              @click="showAlert('License signature copied to clipboard!')"
             >
               Copy Signature Key
             </button>
@@ -229,7 +234,7 @@ function submitHardwareTransfer() {
             <a
               href="#"
               class="block text-center py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-xs transition"
-              @click.prevent="alert('Downloading Aarozi-Healthcare-Setup-v1.0.0.exe from Cloudflare R2...')"
+              @click.prevent="showAlert('Downloading Aarozi-Healthcare-Setup-v1.0.0.exe from Cloudflare R2...')"
             >
               Download Windows 64-bit Installer (.exe)
             </a>
@@ -246,7 +251,7 @@ function submitHardwareTransfer() {
             <a
               href="#"
               class="block text-center py-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-lg shadow-xs transition"
-              @click.prevent="alert('Downloading Portable ZIP Package...')"
+              @click.prevent="showAlert('Downloading Portable ZIP Package...')"
             >
               Download Portable ZIP Package
             </a>
@@ -313,7 +318,7 @@ function submitHardwareTransfer() {
                   <button
                     type="button"
                     class="text-indigo-600 hover:text-indigo-800 font-semibold cursor-pointer"
-                    @click="alert(`Downloading GST Tax Invoice ${inv.invoice_number}...`)"
+                    @click="showAlert(`Downloading GST Tax Invoice ${inv.invoice_number}...`)"
                   >
                     Download PDF
                   </button>

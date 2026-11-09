@@ -123,13 +123,22 @@ def verify_license_signature_and_claims(
 
     # 6. Expiry / Validity check
     try:
-        valid_from = datetime.fromisoformat(license_data["valid_from"])
-        valid_to = datetime.fromisoformat(license_data["valid_to"])
+        valid_from = datetime.fromisoformat(license_data["valid_from"].replace("Z", "+00:00") if isinstance(license_data["valid_from"], str) else license_data["valid_from"])
+        valid_to = datetime.fromisoformat(license_data["valid_to"].replace("Z", "+00:00") if isinstance(license_data["valid_to"], str) else license_data["valid_to"])
         grace_until = (
-            datetime.fromisoformat(license_data["grace_until"])
+            datetime.fromisoformat(license_data["grace_until"].replace("Z", "+00:00") if isinstance(license_data["grace_until"], str) else license_data["grace_until"])
             if license_data.get("grace_until")
             else None
         )
+        # Normalize to naive UTC datetimes for robust comparison
+        if valid_from.tzinfo is not None:
+            valid_from = valid_from.replace(tzinfo=None)
+        if valid_to.tzinfo is not None:
+            valid_to = valid_to.replace(tzinfo=None)
+        if grace_until and grace_until.tzinfo is not None:
+            grace_until = grace_until.replace(tzinfo=None)
+        if now.tzinfo is not None:
+            now = now.replace(tzinfo=None)
     except (KeyError, ValueError) as e:
         return {
             "valid": False,

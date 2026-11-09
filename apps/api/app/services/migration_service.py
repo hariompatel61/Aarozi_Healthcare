@@ -225,7 +225,7 @@ def execute_patient_migration(
                 patient_id=patient.id,
                 identifier_type="MIGRATED_SOURCE_ID",
                 identifier_value=legacy_id,
-                authority=source_name,
+                is_primary=False,
             )
             db.add(ident)
             imported_count += 1

@@ -8,9 +8,9 @@ Does not log secrets.
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Literal
+from typing import Any, Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -24,6 +24,19 @@ class Settings(BaseSettings):
     # Runtime environment
     APP_ENV: Literal["development", "test", "staging", "production"] = "development"
     DEBUG: bool = False
+
+    @field_validator("DEBUG", mode="before")
+    @classmethod
+    def parse_debug_val(cls, v: Any) -> bool:
+        if isinstance(v, bool):
+            return v
+        if isinstance(v, str):
+            clean = v.strip().lower()
+            if clean in ("1", "true", "yes", "on", "debug"):
+                return True
+            if clean in ("0", "false", "no", "off", "release", "prod", "production"):
+                return False
+        return bool(v)
 
     # Server binding
     PORT: int = 8000

@@ -59,6 +59,12 @@ hidden_imports = [
     'app.routers.patients',
     'app.routers.reports',
     'app.routers.sync',
+    'app.routers.commercial',
+    'app.routers.customer_portal',
+    'app.routers.google_drive',
+    'app.routers.migration',
+    'app.services.google_drive_service',
+    'app.services.migration_service',
 ]
 
 a = Analysis(

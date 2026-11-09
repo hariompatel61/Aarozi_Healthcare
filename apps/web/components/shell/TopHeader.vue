@@ -19,6 +19,7 @@ const emit = defineEmits<{
 const router = useRouter()
 const { branches, selectedBranch, switchBranch, currentBranch } = useBranch()
 const { success, info } = useToast()
+const api = useApi()
 
 function onBranchChange(event: Event) {
   const target = event.target as HTMLSelectElement

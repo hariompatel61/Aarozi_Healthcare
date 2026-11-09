@@ -32,8 +32,8 @@ describe('Lab Instrument Configuration & Interfacing UI', () => {
       { machine_code: 'GLU_F', system_code: 'BIO_001', test_name: 'Fasting Blood Glucose', unit: 'mg/dL', multiplier: 1.0 },
     ]
     expect(parameterMappings.length).toBe(4)
-    expect(parameterMappings[0].machine_code).toBe('WBC')
-    expect(parameterMappings[0].multiplier).toBe(1.0)
+    expect(parameterMappings[0]?.machine_code).toBe('WBC')
+    expect(parameterMappings[0]?.multiplier).toBe(1.0)
   })
 })
 
