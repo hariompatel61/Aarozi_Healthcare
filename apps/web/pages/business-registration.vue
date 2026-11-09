@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ layout: 'public' })
+definePageMeta({ layout: 'public' as any })
 useSeoMeta({ title: 'Register your laboratory | Aarozi Healthcare', description: 'Prepare a laboratory business registration request.' })
 const route = useRoute()
 const form = reactive({ laboratoryName: '', ownerName: '', email: '', phone: '', city: '', state: '', gstin: '', branches: '1', plan: String(route.query.plan || '') })
