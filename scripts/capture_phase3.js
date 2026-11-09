@@ -9,8 +9,8 @@ const HOST = '127.0.0.1';
 const BASE_URL = `http://${HOST}:${PORT}`;
 
 const targets = [
-  { url: `${BASE_URL}/pathology/samples?auth=demo_token`, name: 'samples-1366x768.png', width: 1366, height: 768 },
-  { url: `${BASE_URL}/pathology/samples?auth=demo_token`, name: 'samples-390x844.png', width: 390, height: 844 },
+  { url: `${BASE_URL}/reporting/release?auth=demo_token`, name: 'release-1366x768.png', width: 1366, height: 768 },
+  { url: `${BASE_URL}/reporting/release?auth=demo_token`, name: 'release-390x844.png', width: 390, height: 844 },
 ];
 
 const outDir = path.resolve(__dirname, '../docs/ux/after');
