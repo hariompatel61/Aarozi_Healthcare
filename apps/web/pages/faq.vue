@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ layout: 'public' })
+definePageMeta({ layout: 'public' as any })
 useSeoMeta({ title: 'Frequently asked questions | Aarozi Healthcare', description: 'Answers about Aarozi Healthcare deployment, licensing and data handling.' })
 const faqs = [
 ['Does the LIS require internet for daily work?','The product is designed around local laboratory operations. Exact offline behavior must be confirmed against the installed release and tested workflows.'],
