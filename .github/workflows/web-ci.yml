@@ -30,7 +30,7 @@ jobs:
           cache-dependency-path: apps/web/package-lock.json
 
       - name: Install web dependencies
-        run: npm ci --include=optional
+        run: npm install --include=optional
 
       - name: Type-check Nuxt application
         run: npm run typecheck
