@@ -1,0 +1,1 @@
+import{R as e,X as t,b as n,p as r}from"./C-y7zkwG.js";import{u as i}from"./C3AzdKw5.js";var a={class:`p-8 text-center text-slate-400 text-xs`},o=n({__name:`index`,async setup(n){let o,s;return[o,s]=t(()=>i(`/pathology/samples`)),await o,s(),(t,n)=>(e(),r(`div`,a,`Loading Pathology Workstation...`))}});export{o as default};

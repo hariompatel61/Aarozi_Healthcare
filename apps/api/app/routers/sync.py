@@ -27,6 +27,30 @@ from app.sync.service import (
 router = APIRouter(prefix="/sync", tags=["sync"])
 
 
+@router.get("/status")
+def api_get_sync_status(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Retrieve real-time edge sync health, connectivity, and outbox queue metrics."""
+    from app.sync.worker import global_sync_worker
+    stats = global_sync_worker.get_status()
+    stats["tenant_id"] = current_user.tenant_id if current_user else "AAROZI_HQ"
+    return stats
+
+
+@router.post("/trigger")
+async def api_trigger_sync_cycle(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Manually trigger an immediate push/pull sync transaction cycle."""
+    from app.sync.worker import global_sync_worker
+    res = await global_sync_worker.run_sync_cycle()
+    return res
+
+
+
 class SyncEventCreateRequest(BaseModel):
     entity_type: str = Field(..., min_length=1, max_length=100)
     entity_id: str = Field(..., min_length=1, max_length=36)

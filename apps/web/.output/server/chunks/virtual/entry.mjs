@@ -1,6 +1,6 @@
 import process from 'node:process';globalThis._importMeta_=globalThis._importMeta_||{url:"file:///_entry.js",env:process.env};import { defineProdDiagnostics } from 'nostics';
 import { ansiFormatter } from 'nostics/formatters/ansi';
-import { getCurrentScope, ref, watchEffect, getCurrentInstance, onBeforeUnmount, onDeactivated, onActivated, onScopeDispose, createApp, provide, onErrorCaptured, onServerPrefetch, unref, createVNode, resolveDynamicComponent, shallowReactive, reactive, effectScope, hasInjectionContext, inject, defineAsyncComponent, mergeProps, toRef, shallowRef, isReadonly, defineComponent, createElementBlock, cloneVNode, h, toRaw, computed, useSSRContext, isRef, isShallow, isReactive, isVNode, createCommentVNode, withCtx, Suspense, nextTick, resolveComponent, Fragment, toValue, queuePostFlushCb } from 'vue';
+import { getCurrentScope, ref, watchEffect, getCurrentInstance, onBeforeUnmount, onDeactivated, onActivated, onScopeDispose, shallowReactive, reactive, effectScope, hasInjectionContext, createApp, provide, onErrorCaptured, onServerPrefetch, unref, createVNode, resolveDynamicComponent, inject, defineAsyncComponent, mergeProps, toRef, shallowRef, isReadonly, defineComponent, createElementBlock, cloneVNode, h, toRaw, computed, useSSRContext, isRef, isShallow, isReactive, isVNode, createCommentVNode, withCtx, Suspense, nextTick, resolveComponent, Fragment, toValue, queuePostFlushCb } from 'vue';
 import { f as createError, $ as $fetch, m as hasProtocol, i as joinURL, n as defu, w as withQuery, o as sanitizeStatusCode, p as parseURL, e as encodePath, q as decodePath, v as parseQuery, x as isScriptProtocol, y as withTrailingSlash, z as withoutTrailingSlash } from '../_/nitro.mjs';
 import { i as injectHead$1, V as VueResolver, b as baseURL, h as headSymbol } from '../routes/renderer.mjs';
 import { createMemoryHistory, createRouter, START_LOCATION, useRoute, RouterView } from 'vue-router';
@@ -334,147 +334,6 @@ function executeAsync(function_) {
 	return [awaitable, restore];
 }
 
-//#region src/index.ts
-/**
-* Compute the 64-bit FNV-1a hash of a string as two 32-bit lanes.
-*
-* This is the fast core: no BigInt, no allocations, plain `Math.imul`-free
-* 32-bit arithmetic. Prefer {@link fnv1a64Hex} or {@link fnv1a64Base36} for a
-* usable key; use this directly only when you want to avoid string formatting.
-*
-* The hash is computed over UTF-16 code units (`str.charCodeAt(i)`), not UTF-8
-* bytes. For ASCII input this matches a canonical FNV-1a-64; for non-ASCII it
-* does not. See the README for details.
-*
-* @param str - The string to hash.
-* @returns The `{ high, low }` 32-bit lanes of the 64-bit hash.
-*/
-function fnv1a64(str) {
-	const len = str.length;
-	let i = 0;
-	let t0 = 0;
-	let v0 = 8997;
-	let t1 = 0;
-	let v1 = 33826;
-	let t2 = 0;
-	let v2 = 40164;
-	let t3 = 0;
-	let v3 = 52210;
-	while (i < len) {
-		v0 ^= str.charCodeAt(i++);
-		t0 = v0 * 435;
-		t1 = v1 * 435;
-		t2 = v2 * 435;
-		t3 = v3 * 435;
-		t2 += v0 << 8;
-		t3 += v1 << 8;
-		t1 += t0 >>> 16;
-		v0 = t0 & 65535;
-		t2 += t1 >>> 16;
-		v1 = t1 & 65535;
-		v3 = t3 + (t2 >>> 16) & 65535;
-		v2 = t2 & 65535;
-	}
-	return {
-		high: (v3 << 16 | v2) >>> 0,
-		low: (v1 << 16 | v0) >>> 0
-	};
-}
-/**
-* Compute the 64-bit FNV-1a hash of a string as a `bigint`.
-*
-* Ergonomic and comparable, at the cost of composing the two lanes into a
-* `bigint`. For a compact string key, prefer {@link fnv1a64Base36}.
-*
-* @param str - The string to hash.
-* @returns The 64-bit hash as an unsigned `bigint`.
-*/
-function fnv1a64BigInt(str) {
-	const { high, low } = fnv1a64(str);
-	return BigInt(high) << 32n | BigInt(low);
-}
-const hexDigits = "0123456789abcdef";
-/**
-* Every byte value rendered as its two hex digits, so a 32-bit lane formats in
-* 4 lookups instead of `toString(16)` plus a `padStart`. Leading zeros are
-* intrinsic to the table, which is what makes the padding free.
-*/
-Array.from({ length: 256 }, (_, i) => hexDigits.charAt(i >> 4) + hexDigits.charAt(i & 15));
-/**
-* Compute the 64-bit FNV-1a hash of a string as a base36 string.
-*
-* This is the shortest textual form (up to 13 characters) and is ideal for
-* cache keys. The length varies with the value; it is not zero-padded. Equal
-* inputs always produce identical strings.
-*
-* @param str - The string to hash.
-* @returns A base36 string of the 64-bit hash.
-*/
-function fnv1a64Base36(str) {
-	return fnv1a64BigInt(str).toString(36);
-}
-
-function walk(input, seen) {
-	if (input === null) return "L";
-	let out, i = 0, keys = input, tmp = typeof input;
-	if (tmp !== "object") {
-		if (tmp === "number") return input - input === 0 ? "n" + input : "L";
-		if (tmp === "string") return "s" + input;
-		if (tmp === "bigint") return "n" + input;
-		if (tmp === "boolean") return input ? "T" : "F";
-		return;
-	}
-	let is_arr = Array.isArray(input);
-	if (!is_arr) {
-		if (input instanceof Date) return "d" + +input;
-		if (input instanceof RegExp) return "r" + input.source + input.flags;
-	}
-	tmp = seen.indexOf(input);
-	if (~tmp) return "~" + (tmp + 1);
-	if (typeof input.toJSON === "function" && !ArrayBuffer.isView(input)) {
-		input = input.toJSON();
-		if (input === null || typeof input !== "object") return walk(input, seen);
-		tmp = seen.indexOf(input);
-		if (~tmp) return "~" + (tmp + 1);
-		is_arr = Array.isArray(input);
-	}
-	seen.push(keys);
-	if (is_arr) {
-		for (out = "a"; i < input.length; out += (tmp = walk(input[i++], seen)) === undefined ? "L" : tmp);
-	} else if (input instanceof Set) {
-		out = "e";
-		for (let value of input) out += (tmp = walk(value, seen)) === undefined ? "L" : tmp;
-	} else if (input instanceof Map) {
-		keys = [...input.keys()];
-		if (keys.length > 1) keys.sort();
-		for (out = "o"; i < keys.length; i++) {
-			if ((tmp = walk(input.get(keys[i]), seen)) !== undefined) out += keys[i] + tmp;
-		}
-	} else if (input[Symbol.toStringTag] === undefined || ArrayBuffer.isView(input)) {
-		keys = Object.keys(input);
-		if (keys.length > 1) keys.sort();
-		for (out = "o"; i < keys.length; i++) {
-			if ((tmp = walk(input[keys[i]], seen)) !== undefined) out += keys[i] + tmp;
-		}
-	} else {
-		throw new Error("Unsupported value");
-	}
-	seen.pop();
-	return out;
-}
-/**
-* Canonicalize a value into a stable identity string. Two structurally-equal
-* inputs return the same id, regardless of key order.
-*
-* @example
-* ```ts
-* identify({ a: 1, b: 2 }) === identify({ b: 2, a: 1 }); // true
-* ```
-*/
-function identify(input) {
-	return walk(input, []) ?? "U";
-}
-
 //#region node_modules/nuxt/dist/app/diagnostics/_shared.js
 /**
 * Shared configuration for the runtime (E<N>xxx) diagnostics catalogs.
@@ -671,7 +530,148 @@ function useRuntimeConfig(_event) {
 function defineGetter(obj, key, val) {
 	Object.defineProperty(obj, key, { get: () => val });
 }
-//#endregion
+
+//#region src/index.ts
+/**
+* Compute the 64-bit FNV-1a hash of a string as two 32-bit lanes.
+*
+* This is the fast core: no BigInt, no allocations, plain `Math.imul`-free
+* 32-bit arithmetic. Prefer {@link fnv1a64Hex} or {@link fnv1a64Base36} for a
+* usable key; use this directly only when you want to avoid string formatting.
+*
+* The hash is computed over UTF-16 code units (`str.charCodeAt(i)`), not UTF-8
+* bytes. For ASCII input this matches a canonical FNV-1a-64; for non-ASCII it
+* does not. See the README for details.
+*
+* @param str - The string to hash.
+* @returns The `{ high, low }` 32-bit lanes of the 64-bit hash.
+*/
+function fnv1a64(str) {
+	const len = str.length;
+	let i = 0;
+	let t0 = 0;
+	let v0 = 8997;
+	let t1 = 0;
+	let v1 = 33826;
+	let t2 = 0;
+	let v2 = 40164;
+	let t3 = 0;
+	let v3 = 52210;
+	while (i < len) {
+		v0 ^= str.charCodeAt(i++);
+		t0 = v0 * 435;
+		t1 = v1 * 435;
+		t2 = v2 * 435;
+		t3 = v3 * 435;
+		t2 += v0 << 8;
+		t3 += v1 << 8;
+		t1 += t0 >>> 16;
+		v0 = t0 & 65535;
+		t2 += t1 >>> 16;
+		v1 = t1 & 65535;
+		v3 = t3 + (t2 >>> 16) & 65535;
+		v2 = t2 & 65535;
+	}
+	return {
+		high: (v3 << 16 | v2) >>> 0,
+		low: (v1 << 16 | v0) >>> 0
+	};
+}
+/**
+* Compute the 64-bit FNV-1a hash of a string as a `bigint`.
+*
+* Ergonomic and comparable, at the cost of composing the two lanes into a
+* `bigint`. For a compact string key, prefer {@link fnv1a64Base36}.
+*
+* @param str - The string to hash.
+* @returns The 64-bit hash as an unsigned `bigint`.
+*/
+function fnv1a64BigInt(str) {
+	const { high, low } = fnv1a64(str);
+	return BigInt(high) << 32n | BigInt(low);
+}
+const hexDigits = "0123456789abcdef";
+/**
+* Every byte value rendered as its two hex digits, so a 32-bit lane formats in
+* 4 lookups instead of `toString(16)` plus a `padStart`. Leading zeros are
+* intrinsic to the table, which is what makes the padding free.
+*/
+Array.from({ length: 256 }, (_, i) => hexDigits.charAt(i >> 4) + hexDigits.charAt(i & 15));
+/**
+* Compute the 64-bit FNV-1a hash of a string as a base36 string.
+*
+* This is the shortest textual form (up to 13 characters) and is ideal for
+* cache keys. The length varies with the value; it is not zero-padded. Equal
+* inputs always produce identical strings.
+*
+* @param str - The string to hash.
+* @returns A base36 string of the 64-bit hash.
+*/
+function fnv1a64Base36(str) {
+	return fnv1a64BigInt(str).toString(36);
+}
+
+function walk(input, seen) {
+	if (input === null) return "L";
+	let out, i = 0, keys = input, tmp = typeof input;
+	if (tmp !== "object") {
+		if (tmp === "number") return input - input === 0 ? "n" + input : "L";
+		if (tmp === "string") return "s" + input;
+		if (tmp === "bigint") return "n" + input;
+		if (tmp === "boolean") return input ? "T" : "F";
+		return;
+	}
+	let is_arr = Array.isArray(input);
+	if (!is_arr) {
+		if (input instanceof Date) return "d" + +input;
+		if (input instanceof RegExp) return "r" + input.source + input.flags;
+	}
+	tmp = seen.indexOf(input);
+	if (~tmp) return "~" + (tmp + 1);
+	if (typeof input.toJSON === "function" && !ArrayBuffer.isView(input)) {
+		input = input.toJSON();
+		if (input === null || typeof input !== "object") return walk(input, seen);
+		tmp = seen.indexOf(input);
+		if (~tmp) return "~" + (tmp + 1);
+		is_arr = Array.isArray(input);
+	}
+	seen.push(keys);
+	if (is_arr) {
+		for (out = "a"; i < input.length; out += (tmp = walk(input[i++], seen)) === undefined ? "L" : tmp);
+	} else if (input instanceof Set) {
+		out = "e";
+		for (let value of input) out += (tmp = walk(value, seen)) === undefined ? "L" : tmp;
+	} else if (input instanceof Map) {
+		keys = [...input.keys()];
+		if (keys.length > 1) keys.sort();
+		for (out = "o"; i < keys.length; i++) {
+			if ((tmp = walk(input.get(keys[i]), seen)) !== undefined) out += keys[i] + tmp;
+		}
+	} else if (input[Symbol.toStringTag] === undefined || ArrayBuffer.isView(input)) {
+		keys = Object.keys(input);
+		if (keys.length > 1) keys.sort();
+		for (out = "o"; i < keys.length; i++) {
+			if ((tmp = walk(input[keys[i]], seen)) !== undefined) out += keys[i] + tmp;
+		}
+	} else {
+		throw new Error("Unsupported value");
+	}
+	seen.pop();
+	return out;
+}
+/**
+* Canonicalize a value into a stable identity string. Two structurally-equal
+* inputs return the same id, regardless of key order.
+*
+* @example
+* ```ts
+* identify({ a: 1, b: 2 }) === identify({ b: 2, a: 1 }); // true
+* ```
+*/
+function identify(input) {
+	return walk(input, []) ?? "U";
+}
+
 //#region node_modules/nuxt/dist/app/utils.js
 globalThis._importMeta_.url.replace(/\/app\/.*$/, "/");
 //#endregion
@@ -692,7 +692,7 @@ var navigationDiagnostics = /* #__PURE__ */ defineProdDiagnostics({
 //#endregion
 //#region node_modules/nuxt/dist/app/composables/router.js
 /** @since 3.0.0 */
-var useRouter = () => {
+var useRouter$1 = () => {
 	return useNuxtApp()?.$router;
 };
 /**
@@ -710,7 +710,7 @@ function isScopeWithinInstance(instance) {
 	return false;
 }
 /** @since 3.0.0 */
-var useRoute$1 = (() => {
+var useRoute$2 = (() => {
 	if (hasInjectionContext()) {
 		const instance = getCurrentInstance();
 		if (!instance || isScopeWithinInstance(instance)) return inject(PageRouteSymbol, useNuxtApp()._route);
@@ -754,7 +754,7 @@ function encodeForHtmlAttr(value) {
 */
 var navigateTo = (to, options) => {
 	to ||= "/";
-	const toPath = typeof to === "string" ? to : "path" in to ? resolveRouteObject(to) : useRouter().resolve(to).href;
+	const toPath = typeof to === "string" ? to : "path" in to ? resolveRouteObject(to) : useRouter$1().resolve(to).href;
 	const isExternalHost = hasProtocol(toPath, { acceptRelative: true });
 	const isExternal = options?.external || isExternalHost;
 	if (isExternal) {
@@ -766,7 +766,7 @@ var navigateTo = (to, options) => {
 		});
 	}
 	const inMiddleware = isProcessingMiddleware();
-	const router = useRouter();
+	const router = useRouter$1();
 	const nuxtApp = useNuxtApp();
 	if (nuxtApp.ssrContext) {
 		const fullPath = typeof to === "string" || isExternal ? toPath : router.resolve(to).fullPath || "/";
@@ -975,7 +975,7 @@ function _mergeTransitionProps(routeProps) {
 //#region node_modules/nuxt/dist/pages/runtime/router.options.js
 var router_options_default = { scrollBehavior(to, from, savedPosition) {
 	const nuxtApp = useNuxtApp();
-	const router = useRouter();
+	const router = useRouter$1();
 	const hashScrollBehaviour = router.options?.scrollBehaviorType ?? "auto";
 	if (to.path.replace(/\/$/, "") === from.path.replace(/\/$/, "")) {
 		if (from.hash && !to.hash) return savedPosition ?? {
@@ -1102,7 +1102,7 @@ function freezeHead(head) {
 }
 //#endregion
 //#region node_modules/nuxt/dist/head/runtime/plugins/unhead.server.js
-var plugin$3 = /* @__PURE__ */ defineNuxtPlugin({
+var plugin$3 = defineNuxtPlugin({
 	name: "nuxt:head",
 	enforce: "pre",
 	setup(nuxtApp) {
@@ -1152,59 +1152,125 @@ var namedMiddleware = {};
 //#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Froutes.mjs
 var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 	{
+		name: "admin-licensing",
+		path: "/admin/licensing",
+		component: () => import('../build/licensing-D7fHO7qC.mjs')
+	},
+	{
 		name: "admin-roles",
 		path: "/admin/roles",
-		component: () => import('../build/roles-BXNy1go8.mjs')
+		component: () => import('../build/roles-iJY237lK.mjs')
 	},
 	{
 		name: "admin-users",
 		path: "/admin/users",
-		component: () => import('../build/users-D8w2mwqY.mjs')
+		component: () => import('../build/users-B3zD552A.mjs')
+	},
+	{
+		name: "billing-invoices",
+		path: "/billing/invoices",
+		component: () => import('../build/invoices-bKOuVSGO.mjs')
+	},
+	{
+		name: "billing-referrals",
+		path: "/billing/referrals",
+		component: () => import('../build/referrals-Dj_vKYbB.mjs')
+	},
+	{
+		name: "blood_bank-crossmatch",
+		path: "/blood_bank/crossmatch",
+		component: () => import('../build/crossmatch-CvnqDBMR.mjs')
+	},
+	{
+		name: "blood_bank-donors",
+		path: "/blood_bank/donors",
+		component: () => import('../build/donors-tP7MS6si.mjs')
+	},
+	{
+		name: "blood_bank-inventory",
+		path: "/blood_bank/inventory",
+		component: () => import('../build/inventory-BJS2S1Hx.mjs')
+	},
+	{
+		name: "pathology-catalog",
+		path: "/pathology/catalog",
+		component: () => import('../build/catalog-CG-MrE41.mjs')
 	},
 	{
 		name: "pathology-results",
 		path: "/pathology/results",
-		component: () => import('../build/results-C_mmgTAl.mjs')
+		component: () => import('../build/results-BqWeGs3i.mjs')
+	},
+	{
+		name: "pathology-samples",
+		path: "/pathology/samples",
+		component: () => import('../build/samples-C7m3Waqz.mjs')
+	},
+	{
+		name: "pathology-verification",
+		path: "/pathology/verification",
+		component: () => import('../build/verification-DqQEB9TV.mjs')
 	},
 	{
 		name: "patients-register",
 		path: "/patients/register",
-		component: () => import('../build/register-BhtB3ajF.mjs')
+		component: () => import('../build/register-D0GoCLKq.mjs')
 	},
 	{
 		name: "reporting-designer",
 		path: "/reporting/designer",
-		component: () => import('../build/designer-BAvhaSJY.mjs')
+		component: () => import('../build/designer-N7NBvOfH.mjs')
+	},
+	{
+		name: "reporting-release",
+		path: "/reporting/release",
+		component: () => import('../build/release-pB24vzmJ.mjs')
+	},
+	{
+		name: "reporting-templates",
+		path: "/reporting/templates",
+		component: () => import('../build/templates-Be0thYMQ.mjs')
 	},
 	{
 		name: "dashboard",
 		path: "/dashboard",
-		component: () => import('../build/dashboard-CBUlJUZ9.mjs')
+		component: () => import('../build/dashboard-Dkmlfz71.mjs')
 	},
 	{
 		name: "login",
 		path: "/login",
-		component: () => import('../build/login-Cu3C7dYF.mjs')
+		meta: { layout: false },
+		component: () => import('../build/login-D_hGIf4S.mjs')
+	},
+	{
+		name: "pathology",
+		path: "/pathology",
+		component: () => import('../build/pathology-BRNiA04N.mjs')
 	},
 	{
 		name: "patients",
 		path: "/patients",
-		component: () => import('../build/patients-wmQvifBH.mjs')
+		component: () => import('../build/patients-BcfyNmH2.mjs')
+	},
+	{
+		name: "reporting",
+		path: "/reporting",
+		component: () => import('../build/reporting-Br079JIp.mjs')
 	},
 	{
 		name: "index",
 		path: "/",
-		component: () => import('../build/pages-DYLA6czg.mjs')
+		component: () => import('../build/pages-DHfqvD-E.mjs')
 	}
 ];
 //#endregion
 //#region node_modules/nuxt/dist/pages/runtime/plugins/router.js
-var plugin$2 = /* @__PURE__ */ defineNuxtPlugin({
+var plugin$2 = defineNuxtPlugin({
 	name: "nuxt:router",
 	enforce: "pre",
 	async setup(nuxtApp) {
 		let __temp, __restore;
-		let routerBase = (/* @__PURE__ */ useRuntimeConfig()).app.baseURL;
+		let routerBase = useRuntimeConfig().app.baseURL;
 		const history = virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Frouter_options_default.history?.(routerBase) ?? createMemoryHistory(routerBase);
 		const routes = virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Frouter_options_default.routes ? ([__temp, __restore] = executeAsync(() => virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Frouter_options_default.routes(virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default)), __temp = await __temp, __restore(), __temp) ?? virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default : virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default;
 		let startPosition;
@@ -1955,7 +2021,7 @@ function defineNuxtLink(options) {
 		};
 	}
 	function useNuxtLink(props) {
-		const router = useRouter();
+		const router = useRouter$1();
 		const config = /* @__PURE__ */ useRuntimeConfig();
 		const hasTarget = computed(() => !!unref(props.target) && unref(props.target) !== "_self");
 		const isAbsoluteUrl = computed(() => {
@@ -2099,7 +2165,7 @@ function defineNuxtLink(options) {
 		},
 		useLink: useNuxtLink,
 		setup(props, { slots }) {
-			const router = useRouter();
+			const router = useRouter$1();
 			const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl } = useNuxtLink(props);
 			const prefetched = shallowRef(false);
 			const el = void 0;
@@ -2191,7 +2257,7 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Fplugins_server_default =
 	plugin$3,
 	plugin$2,
 	plugin$1,
-	/* @__PURE__ */ defineNuxtPlugin({
+	defineNuxtPlugin({
 		name: "pinia",
 		setup(nuxtApp) {
 			const pinia = createPinia();
@@ -2206,11 +2272,11 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Fplugins_server_default =
 			setActivePinia(void 0);
 		} }
 	}),
-	/* @__PURE__ */ defineNuxtPlugin({ name: "nuxt:global-components" })
+	defineNuxtPlugin({ name: "nuxt:global-components" })
 ];
 //#endregion
 //#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Flayouts.mjs
-var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Flayouts_default = { default: defineAsyncComponent(() => import('../build/default-CZcdmmJ8.mjs').then((m) => m.default || m)) };
+var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Flayouts_default = { default: defineAsyncComponent(() => import('../build/default-C1HuUrpq.mjs').then((m) => m.default || m)) };
 //#endregion
 //#region node_modules/nuxt/dist/app/components/nuxt-layout.js
 var LayoutLoader = defineComponent({
@@ -2244,7 +2310,7 @@ var nuxt_layout_default = defineComponent({
 	setup(props, context) {
 		const nuxtApp = useNuxtApp();
 		const injectedRoute = inject(PageRouteSymbol);
-		const route = !injectedRoute || injectedRoute === useRoute$1() ? useRoute() : injectedRoute;
+		const route = !injectedRoute || injectedRoute === useRoute$2() ? useRoute() : injectedRoute;
 		const layout = computed(() => {
 			let layout = resolveLayoutName(route, props.name);
 			if (layout && !(layout in virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Flayouts_default)) {
@@ -2312,7 +2378,7 @@ var LayoutProvider = defineComponent({
 		const name = props.name;
 		if (props.shouldProvide) provide(LayoutMetaSymbol, { isCurrent: (route) => name === false || name === resolveLayoutName(route) });
 		const injectedRoute = inject(PageRouteSymbol);
-		const isNotWithinNuxtPage = injectedRoute && injectedRoute === useRoute$1();
+		const isNotWithinNuxtPage = injectedRoute && injectedRoute === useRoute$2();
 		const enclosingLayout = inject(LayoutMetaSymbol, null);
 		if (isNotWithinNuxtPage) {
 			const vueRouterRoute = useRoute();
@@ -2503,7 +2569,7 @@ var _sfc_main = {
 		nuxtApp.deferHydration();
 		nuxtApp.ssrContext.url;
 		const SingleRenderer = false;
-		provide(PageRouteSymbol, useRoute$1());
+		provide(PageRouteSymbol, useRoute$2());
 		nuxtApp.hooks.callHookWith((hooks) => hooks.map((hook) => hook()), "vue:setup", []);
 		const error = /* @__PURE__ */ useError();
 		const abortRender = error.value && !nuxtApp.ssrContext.error;
@@ -2570,5 +2636,5 @@ const entry = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   default: entry_default
 }, Symbol.toStringTag, { value: 'Module' }));
 
-export { NuxtLink as N, _plugin_vue_export_helper_default as _, entry as e, useHead$1 as u };
+export { $fetch$2 as $, NuxtLink as N, _plugin_vue_export_helper_default as _, useHead$1 as a, entry as e, navigateTo as n, useRuntimeConfig as u };
 //# sourceMappingURL=entry.mjs.map

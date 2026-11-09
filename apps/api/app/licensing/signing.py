@@ -11,6 +11,17 @@ from cryptography.exceptions import InvalidSignature
 # Production private signing keys are NEVER shipped to clients or stored here.
 _PUBLIC_KEY_REGISTRY: dict[str, Ed25519PublicKey] = {}
 
+# Official Aarozi Healthcare Vendor Root Public Key (Ed25519)
+DEFAULT_ROOT_KEY_ID = "aarozi-root-key-2026"
+DEFAULT_ROOT_PUBLIC_KEY_HEX = "5d27445909fb811c78dbe3d0850dc573715771f5983c9ca6bfcb7b41efecb09f"
+
+try:
+    _PUBLIC_KEY_REGISTRY[DEFAULT_ROOT_KEY_ID] = Ed25519PublicKey.from_public_bytes(
+        bytes.fromhex(DEFAULT_ROOT_PUBLIC_KEY_HEX)
+    )
+except Exception:
+    pass
+
 
 def register_public_key(key_id: str, public_key: Ed25519PublicKey) -> None:
     _PUBLIC_KEY_REGISTRY[key_id] = public_key

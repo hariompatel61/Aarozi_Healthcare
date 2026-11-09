@@ -64,7 +64,15 @@ def register_patient(
 
     if not first_name or not first_name.strip():
         raise PatientRegistrationError("Patient first name is required.")
-    if not sex or sex.lower() not in {"male", "female", "other"}:
+    
+    sex_str = (sex or "").strip().lower()
+    if sex_str in {"m", "male"}:
+        sex_normalized = "male"
+    elif sex_str in {"f", "female"}:
+        sex_normalized = "female"
+    elif sex_str in {"o", "other"}:
+        sex_normalized = "other"
+    else:
         raise PatientRegistrationError("Valid sex ('male', 'female', 'other') is required.")
 
     patient_no = generate_patient_no(db, tenant_id)
@@ -82,7 +90,7 @@ def register_patient(
         patient_no=patient_no,
         first_name=first_name.strip(),
         last_name=last_name.strip() if last_name else None,
-        sex=sex.lower(),
+        sex=sex_normalized,
         date_of_birth=date_of_birth,
         mobile_normalized=normalized_mobile,
         email=email.strip().lower() if email else None,

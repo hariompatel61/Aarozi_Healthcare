@@ -61,6 +61,18 @@ class Test(Base):
         nullable=True,
     )
 
+    # 3-Layer Catalog Architecture Fields
+    is_system_default: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    system_version: Mapped[str | None] = mapped_column(String(32), nullable=True, default="1.0.0")
+    base_price: Mapped[float] = mapped_column(Numeric(14, 2), nullable=False, default=0.0)
+    tat_hours: Mapped[int | None] = mapped_column(Integer, nullable=True, default=4)
+    parameters_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    system_test_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("tests.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
     # Status & Active Versioning
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="active", index=True)
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
@@ -97,6 +109,19 @@ class Test(Base):
         cascade="all, delete-orphan",
     )
 
+    overrides: Mapped[list[TenantTestOverride]] = relationship(
+        "TenantTestOverride",
+        back_populates="test",
+        cascade="all, delete-orphan",
+    )
+
+    parameters: Mapped[list[TestParameter]] = relationship(
+        "TestParameter",
+        back_populates="test",
+        cascade="all, delete-orphan",
+        order_by="TestParameter.sort_order",
+    )
+
     superseded_by: Mapped[Test | None] = relationship(
         "Test",
         remote_side=[id],
@@ -108,6 +133,112 @@ class Test(Base):
         UniqueConstraint("tenant_id", "code", "version", name="uq_tests_tenant_code_version"),
         Index("ix_tests_tenant_code", "tenant_id", "code"),
         Index("ix_tests_tenant_status", "tenant_id", "status"),
+        Index("ix_tests_system_default", "is_system_default"),
+    )
+
+
+class TenantTestOverride(Base):
+    __tablename__ = "tenant_test_overrides"
+
+    id: Mapped[str] = mapped_column(
+        String(36),
+        primary_key=True,
+        default=lambda: str(uuid.uuid4()),
+    )
+    tenant_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("tenants.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    test_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("tests.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    custom_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    custom_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    price: Mapped[float | None] = mapped_column(Numeric(14, 2), nullable=True)
+    tat_hours: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    specimen_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    container_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    sync_status: Mapped[str] = mapped_column(String(30), nullable=False, default="synced")
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    test: Mapped[Test] = relationship("Test", back_populates="overrides")
+
+    __table_args__ = (
+        UniqueConstraint("tenant_id", "test_id", name="uq_tenant_test_override"),
+        Index("ix_tenant_test_overrides_lookup", "tenant_id", "test_id"),
+    )
+
+
+class TestParameter(Base):
+    __tablename__ = "test_parameters"
+
+    id: Mapped[str] = mapped_column(
+        String(36),
+        primary_key=True,
+        default=lambda: str(uuid.uuid4()),
+    )
+    tenant_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("tenants.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    test_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("tests.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    system_parameter_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("test_parameters.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    code: Mapped[str] = mapped_column(String(64), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    unit: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    result_type: Mapped[str] = mapped_column(String(50), nullable=False, default="numeric")
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    validation_rules: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    test: Mapped[Test] = relationship("Test", back_populates="parameters")
+    reference_ranges: Mapped[list[TestReferenceRange]] = relationship(
+        "TestReferenceRange",
+        back_populates="parameter",
+        cascade="all, delete-orphan",
+    )
+
+    __table_args__ = (
+        Index("ix_test_parameters_test_id", "test_id"),
+        Index("ix_test_parameters_tenant_test", "tenant_id", "test_id"),
     )
 
 
@@ -125,6 +256,13 @@ class TestReferenceRange(Base):
         nullable=False,
         index=True,
     )
+    parameter_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("test_parameters.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+    )
+    tenant_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
     sex: Mapped[str] = mapped_column(String(20), nullable=False, default="all")  # all, male, female, other
     age_min: Mapped[Decimal | None] = mapped_column(Numeric(6, 2), nullable=True)
     age_max: Mapped[Decimal | None] = mapped_column(Numeric(6, 2), nullable=True)
@@ -136,6 +274,8 @@ class TestReferenceRange(Base):
     critical_low: Mapped[Decimal | None] = mapped_column(Numeric(14, 4), nullable=True)
     critical_high: Mapped[Decimal | None] = mapped_column(Numeric(14, 4), nullable=True)
     text_range: Mapped[str | None] = mapped_column(Text, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    needs_review: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     effective_from: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
@@ -144,10 +284,32 @@ class TestReferenceRange(Base):
     effective_to: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     test: Mapped[Test] = relationship("Test", back_populates="reference_ranges")
+    parameter: Mapped[TestParameter | None] = relationship("TestParameter", back_populates="reference_ranges")
+
+    @property
+    def age_min_days(self) -> int | None:
+        if self.age_min is None:
+            return None
+        mult = 365 if self.age_unit == "years" else (30 if self.age_unit == "months" else 1)
+        return int(float(self.age_min) * mult)
+
+    @property
+    def age_max_days(self) -> int | None:
+        if self.age_max is None:
+            return None
+        mult = 365 if self.age_unit == "years" else (30 if self.age_unit == "months" else 1)
+        return int(float(self.age_max) * mult)
+
+    @property
+    def unit(self) -> str | None:
+        if self.parameter and self.parameter.unit:
+            return self.parameter.unit
+        return self.test.unit if self.test else None
 
     __table_args__ = (
         Index("ix_test_ref_ranges_test_id", "test_id"),
         Index("ix_test_ref_ranges_lookup", "test_id", "sex", "context"),
+        Index("ix_test_ref_ranges_param", "parameter_id"),
     )
 
 
@@ -689,4 +851,87 @@ class CriticalAlert(Base):
         Index("ix_critical_alerts_patient_id", "patient_id"),
         Index("ix_critical_alerts_result_id", "result_id"),
     )
+
+
+class Analyzer(Base):
+    """Laboratory Instrument & Automated Analyzer Interfacing Configuration."""
+    __tablename__ = "analyzers"
+
+    id: Mapped[str] = mapped_column(
+        String(36),
+        primary_key=True,
+        default=lambda: str(uuid.uuid4()),
+    )
+    tenant_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("tenants.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    branch_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("branches.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    model: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    department: Mapped[str | None] = mapped_column(String(100), nullable=True, default="Hematology")
+    protocol: Mapped[str] = mapped_column(String(50), nullable=False, default="ASTM")  # ASTM, HL7, POCT1A
+    connection_type: Mapped[str] = mapped_column(String(50), nullable=False, default="tcp")  # tcp, serial
+    host: Mapped[str | None] = mapped_column(String(100), nullable=True, default="127.0.0.1")
+    port: Mapped[int | None] = mapped_column(Integer, nullable=True, default=5100)
+    serial_port: Mapped[str | None] = mapped_column(String(50), nullable=True, default="COM1")
+    baud_rate: Mapped[int | None] = mapped_column(Integer, nullable=True, default=9600)
+    is_bidirectional: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    connection_json: Mapped[str | None] = mapped_column(Text, nullable=True, default="{}")
+    mapping_json: Mapped[str | None] = mapped_column(Text, nullable=True, default="[]")
+    status: Mapped[str] = mapped_column(String(30), nullable=False, default="active")  # active, idle, offline
+    last_sync_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    messages: Mapped[list[AnalyzerMessage]] = relationship(
+        "AnalyzerMessage",
+        back_populates="analyzer",
+        cascade="all, delete-orphan",
+    )
+
+
+class AnalyzerMessage(Base):
+    """Raw and Parsed Laboratory Instrument Payload Ingestion Log."""
+    __tablename__ = "analyzer_messages"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    tenant_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("tenants.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    analyzer_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("analyzers.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    raw_payload: Mapped[str] = mapped_column(Text, nullable=False)
+    parse_status: Mapped[str] = mapped_column(String(50), nullable=False, default="received")  # received, parsed, error
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    received_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+
+    analyzer: Mapped[Analyzer] = relationship("Analyzer", back_populates="messages")
+
 

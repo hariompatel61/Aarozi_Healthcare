@@ -1,0 +1,32 @@
+{
+  "license_version": 1,
+  "license_id": "LIC-1794224164916-5121",
+  "lab_name": "Central Pathology & Diagnostic Center",
+  "tenant_id": "11111111-1111-1111-1111-111111111111",
+  "installation_id": null,
+  "plan_code": "COMMERCIAL_PRO",
+  "mode": "OFFLINE_LOCAL",
+  "valid_from": "2026-11-08T11:36:04.916Z",
+  "valid_to": "2027-11-09T11:36:04.916Z",
+  "grace_until": "2027-12-09T11:36:04.916Z",
+  "entitlements": {
+    "pathology": true,
+    "clinical_biochemistry": true,
+    "hematology": true,
+    "blood_bank": true,
+    "cashier_billing": true,
+    "whatsapp_dispatch": true,
+    "analyzer_interfacing": true,
+    "template_studio": true,
+    "offline_backups": true
+  },
+  "limits": {
+    "max_workstations": 15,
+    "max_users": 45,
+    "daily_sample_cap": 999999
+  },
+  "signing_key_id": "aarozi-root-key-2026",
+  "algorithm": "Ed25519",
+  "issued_at": "2026-11-09T11:36:04.916Z",
+  "signature": "353bc5669a736869b1e3105eb171ab83e2ad03c9df0049366102be6085b3426ec421638e4301803d4268405bb16dc87d32241e8da75cae5f94550f8afcaf5c02"
+}

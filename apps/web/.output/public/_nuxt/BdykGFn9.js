@@ -1,1 +1,0 @@
-import{F as e,f as t,l as n}from"./CH0uzKEO.js";import{t as r}from"#entry";var i={},a={style:{padding:`2rem`,"font-family":`system-ui`}};function o(r,i){return e(),t(`main`,a,[...i[0]||=[n(`h1`,null,`Aarozi Healthcare`,-1),n(`p`,null,`Unified Diagnostic Laboratory + Blood Bank platform.`,-1)]])}var s=r(i,[[`render`,o]]);export{s as default};

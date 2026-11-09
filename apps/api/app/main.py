@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import sys
 from contextlib import asynccontextmanager
@@ -15,7 +15,7 @@ if _repo_root not in sys.path:
 
 from app.errors import register_exception_handlers  # noqa: E402
 from app.middleware import RequestIDMiddleware  # noqa: E402
-from app.routers import auth, backup, health, licensing, meta, patients, sync  # noqa: E402
+from app.routers import auth, backup, billing, blood_bank, customer_portal, google_drive, health, integrations, licensing, meta, migration, pathology, patients, payments, reports, sync  # noqa: E402
 from app.settings import get_settings  # noqa: E402
 
 
@@ -68,10 +68,32 @@ def create_app() -> FastAPI:
     application.include_router(meta.router)
     application.include_router(auth.router)
     application.include_router(patients.router)
+    application.include_router(pathology.router)
+    application.include_router(billing.router)
+    application.include_router(blood_bank.router)
+    application.include_router(reports.router)
+    application.include_router(integrations.router)
     application.include_router(sync.router)
-
     application.include_router(licensing.router)
+    application.include_router(payments.router)
+    application.include_router(customer_portal.router)
     application.include_router(backup.router)
+    application.include_router(google_drive.router)
+    application.include_router(migration.router)
+
+    # Mount static frontend if available for offline/monolith distribution
+    root_p = Path(__file__).resolve().parents[3]
+    static_candidates = [
+        root_p / "dist" / "public",
+        root_p / "apps" / "web" / ".output" / "public",
+        Path(__file__).resolve().parent / "static",
+    ]
+    for s_dir in static_candidates:
+        if s_dir.exists() and (s_dir / "index.html").exists():
+            from fastapi.staticfiles import StaticFiles
+            application.mount("/", StaticFiles(directory=str(s_dir), html=True), name="static_frontend")
+            break
+
     return application
 
 

@@ -15,6 +15,7 @@ from app.licensing.service import (
     create_activation_request,
     create_renewal_request,
 )
+from app.licensing.fingerprint import generate_hardware_fingerprint
 
 router = APIRouter(prefix="/licensing", tags=["licensing"])
 
@@ -127,3 +128,10 @@ def api_import_license(
         "status": lic.status,
         "valid_to": lic.valid_to.isoformat(),
     }
+
+
+@router.get("/fingerprint")
+def api_get_hardware_fingerprint():
+    """Returns local host machine hardware fingerprint for license binding."""
+    return generate_hardware_fingerprint()
+

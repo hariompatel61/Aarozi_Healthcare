@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import urllib.parse
 from datetime import datetime, timezone
 from typing import Any
 
@@ -12,6 +13,7 @@ from app.audit.service import log_audit_event
 from app.errors import ConflictError, ForbiddenError, NotFoundError, ValidationError
 from app.models.identity import User
 from app.models.reporting import Report, ReportDelivery
+from app.models.integrations import IntegrationConfig
 from app.rbac.engine import authorize_action
 from app.security.tenant_guard import TenantContext, verify_tenant_boundary
 
@@ -79,11 +81,76 @@ def deliver_report(
 
     now = datetime.now(timezone.utc)
     delivery_status = "printed" if clean_channel == "print" else "sent"
+    error_msg: str | None = None
 
     meta_payload = dict(metadata or {})
     meta_payload["dispatched_at"] = now.isoformat()
     meta_payload["channel"] = clean_channel
     meta_payload["report_no"] = report.report_no
+
+    # Integration handling for WhatsApp
+    if clean_channel == "whatsapp":
+        integ = db.query(IntegrationConfig).filter(
+            IntegrationConfig.tenant_id == tenant_id,
+            IntegrationConfig.category == "whatsapp",
+        ).first()
+
+        provider = integ.provider if integ else "direct_web"
+        cfg = {}
+        if integ and integ.config_json:
+            try:
+                cfg = json.loads(integ.config_json)
+            except Exception:
+                pass
+
+        clean_phone = clean_recip.replace("+", "").replace(" ", "").replace("-", "")
+        if len(clean_phone) == 10:
+            clean_phone = f"91{clean_phone}"
+
+        template = cfg.get("message_template") or "Dear Patient, your diagnostic report ({{report_no}}) is ready. Download: {{report_url}}"
+        patient_name = meta_payload.get("patient_name", "Patient")
+        report_url = f"https://reports.aarozi.com/v/{report.report_no}"
+        msg = (
+            template.replace("{{patient_name}}", patient_name)
+            .replace("{{report_no}}", report.report_no)
+            .replace("{{lab_name}}", "Aarozi Diagnostics")
+            .replace("{{report_url}}", report_url)
+        )
+        meta_payload["formatted_message"] = msg
+
+        if provider == "direct_web":
+            web_url = f"https://api.whatsapp.com/send?phone={clean_phone}&text={urllib.parse.quote(msg)}"
+            meta_payload["whatsapp_web_url"] = web_url
+            delivery_status = "sent"
+        elif provider == "meta_cloud_api":
+            token = cfg.get("access_token")
+            phone_num_id = cfg.get("phone_number_id")
+            if token and phone_num_id:
+                try:
+                    import httpx
+                    with httpx.Client(timeout=10.0) as client:
+                        resp = client.post(
+                            f"https://graph.facebook.com/v19.0/{phone_num_id}/messages",
+                            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+                            json={
+                                "messaging_product": "whatsapp",
+                                "to": clean_phone,
+                                "type": "text",
+                                "text": {"preview_url": True, "body": msg},
+                            },
+                        )
+                        if resp.status_code in (200, 201):
+                            delivery_status = "delivered"
+                            meta_payload["meta_response"] = resp.json()
+                        else:
+                            delivery_status = "failed"
+                            error_msg = f"Meta API error {resp.status_code}: {resp.text[:200]}"
+                except Exception as ex:
+                    delivery_status = "failed"
+                    error_msg = f"Dispatch exception: {str(ex)}"
+            else:
+                delivery_status = "failed"
+                error_msg = "Meta Cloud API credentials missing or incomplete"
 
     record = ReportDelivery(
         tenant_id=tenant_id,
@@ -91,10 +158,11 @@ def deliver_report(
         channel=clean_channel,
         recipient=clean_recip,
         status=delivery_status,
+        error_message=error_msg,
         metadata_json=json.dumps(meta_payload),
         dispatched_by=effective_user_id,
         dispatched_at=now,
-        delivered_at=now,
+        delivered_at=now if delivery_status in ("sent", "delivered") else None,
     )
     db.add(record)
     db.flush()

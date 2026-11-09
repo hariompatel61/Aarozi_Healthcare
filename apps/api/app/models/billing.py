@@ -36,6 +36,7 @@ class ReferralPartner(Base):
     )
     partner_type: Mapped[str] = mapped_column(String(50), nullable=False)  # doctor, hospital, lab, collection_centre, corporate
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+    specialty: Mapped[str | None] = mapped_column(String(100), nullable=True)
     phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
     email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     status: Mapped[str] = mapped_column(String(30), nullable=False, default="active")  # active, inactive

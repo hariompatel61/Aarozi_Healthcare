@@ -97,11 +97,15 @@ def create_invoice(
     # 1. Verify Patient exists and belongs to the tenant
     patient = (
         db.query(Patient)
-        .filter(Patient.id == patient_id, Patient.tenant_id == tenant_id)
+        .filter(
+            (Patient.id == patient_id) | (Patient.patient_no == patient_id),
+            Patient.tenant_id == tenant_id,
+        )
         .first()
     )
     if not patient:
         raise NotFoundError(f"Patient '{patient_id}' not found")
+    patient_id = patient.id
 
     # 2. Status validation
     status = (status or "issued").strip().lower()
@@ -348,6 +352,7 @@ def list_invoices(
     tenant_context: TenantContext,
     patient_id: str | None = None,
     order_id: str | None = None,
+    referral_partner_id: str | None = None,
     branch_id: str | None = None,
     status: str | None = None,
     search: str | None = None,
@@ -367,6 +372,8 @@ def list_invoices(
         query = query.where(Invoice.patient_id == patient_id)
     if order_id:
         query = query.where(Invoice.order_id == order_id)
+    if referral_partner_id:
+        query = query.where(Invoice.referral_partner_id == referral_partner_id)
     if branch_id:
         query = query.where(Invoice.branch_id == branch_id)
     if status:

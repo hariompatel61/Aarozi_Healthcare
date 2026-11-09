@@ -1,0 +1,40 @@
+# Multi-stage production Dockerfile for Aarozi Healthcare Web App (Nuxt 3)
+FROM node:20-alpine AS builder
+
+WORKDIR /build
+
+# Install pnpm or npm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+COPY package.json pnpm-lock.yaml* package-lock.json* ./
+COPY apps/web/package.json ./apps/web/
+COPY packages/ ./packages/
+
+RUN npm install --workspace=apps/web
+
+COPY apps/web/ ./apps/web/
+
+ARG NUXT_PUBLIC_API_BASE
+ENV NUXT_PUBLIC_API_BASE=${NUXT_PUBLIC_API_BASE:-/api}
+
+RUN npm run build --workspace=apps/web
+
+# Lean runtime using Node
+FROM node:20-alpine AS runtime
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NITRO_HOST=0.0.0.0
+ENV NITRO_PORT=3000
+
+RUN addgroup -S aarozi && adduser -S aarozi -G aarozi
+
+COPY --from=builder --chown=aarozi:aarozi /build/apps/web/.output /app/.output
+
+USER aarozi
+
+EXPOSE 3000
+
+CMD ["node", ".output/server/index.mjs"]
+

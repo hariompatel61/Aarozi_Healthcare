@@ -24,23 +24,33 @@ from app.security.tenant_guard import TenantContext, verify_tenant_boundary
 VALID_PARTNER_TYPES = {
     "doctor",
     "hospital",
+    "clinic",
     "lab",
+    "pathology",
+    "pathology_lab",
+    "diagnostic_center",
     "external_lab",
     "collection_centre",
     "collection_center",
     "corporate",
     "corporate_account",
+    "other",
 }
 
 CANONICAL_PARTNER_TYPES = {
     "doctor": "doctor",
     "hospital": "hospital",
+    "clinic": "clinic",
     "lab": "lab",
+    "pathology": "lab",
+    "pathology_lab": "lab",
+    "diagnostic_center": "lab",
     "external_lab": "lab",
     "collection_centre": "collection_centre",
     "collection_center": "collection_centre",
     "corporate": "corporate",
     "corporate_account": "corporate",
+    "other": "other",
 }
 
 VALID_STATUSES = {"active", "inactive"}
@@ -81,6 +91,7 @@ def create_referral_partner(
     tenant_context: TenantContext,
     partner_type: str,
     name: str,
+    specialty: str | None = None,
     phone: str | None = None,
     email: str | None = None,
     status: str = "active",
@@ -115,6 +126,7 @@ def create_referral_partner(
     if clean_status not in VALID_STATUSES:
         raise ValidationError(f"Invalid status '{status}'", field="status")
 
+    clean_specialty = specialty.strip() if specialty else None
     clean_phone = phone.strip() if phone else None
     clean_email = email.strip().lower() if email else None
 
@@ -135,6 +147,7 @@ def create_referral_partner(
         tenant_id=tenant_id,
         partner_type=canonical_type,
         name=clean_name,
+        specialty=clean_specialty,
         phone=clean_phone,
         email=clean_email,
         status=clean_status,

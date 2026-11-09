@@ -82,6 +82,15 @@ class Patient(Base):
         parts = [p for p in (self.first_name, self.middle_name, self.last_name) if p]
         return " ".join(parts) if parts else "Unknown"
 
+    @property
+    def age_years(self) -> int | None:
+        if not self.date_of_birth:
+            return None
+        today = date.today()
+        return today.year - self.date_of_birth.year - (
+            (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day)
+        )
+
     __table_args__ = (
         Index("uq_patients_tenant_patient_no", "tenant_id", "patient_no", unique=True),
         Index("ix_patients_tenant_mobile", "tenant_id", "mobile_normalized"),
