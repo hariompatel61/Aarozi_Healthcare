@@ -39,4 +39,3 @@ export { usePagination } from '../composables/usePagination';
 export { REPORT_THEMES, useReportTheme, ThemeId, LabIdentity, Signatory, ThemePrintOptions, ReportThemeInfo } from '../composables/useReportTheme';
 export { useToast, ToastMessage } from '../composables/useToast';
 export { defineStore, acceptHMRUpdate, usePinia, storeToRefs } from '../node_modules/@pinia/nuxt/dist/runtime/composables';
-export { useNuxtDevTools } from '../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools';

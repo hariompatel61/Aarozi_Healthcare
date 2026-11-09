@@ -1,0 +1,1 @@
+import{R as e,X as t,b as n,p as r}from"./Cb95jdXZ.js";import{c as i}from"#entry";var a={class:`p-8 text-center text-slate-400 text-xs`},o=n({__name:`index`,async setup(n){let o,s;return[o,s]=t(()=>i(`/reporting/templates`)),await o,s(),(t,n)=>(e(),r(`div`,a,`Loading Reporting Module...`))}});export{o as default};

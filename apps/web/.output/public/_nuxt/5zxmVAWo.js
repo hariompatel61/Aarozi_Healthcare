@@ -1,0 +1,89 @@
+import{F as e,It as t,Nt as n,Q as r,R as i,V as ee,Z as a,_ as o,b as s,f as c,g as l,l as u,p as d,r as te,st as f,u as p,v as m}from"./Cb95jdXZ.js";import{m as ne,n as re,p as ie}from"#entry";import{t as h}from"./BQXHC-6T.js";import{t as g}from"./D3nomIjD.js";var ae={class:`space-y-4 max-w-7xl mx-auto text-left`},oe={class:`flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3`},se={class:`flex items-center space-x-2`},ce={class:`bg-white p-3 rounded-lg border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs`},le={class:`flex items-center flex-1 min-w-[260px] max-w-lg`},_={class:`relative flex-1`},v={class:`flex items-center space-x-2`},y={class:`bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden`},b={class:`overflow-x-auto`},x={class:`min-w-full divide-y divide-slate-200 text-xs`},S={class:`divide-y divide-slate-100 bg-white`},C={key:0},w={class:`px-4 py-2.5 font-mono font-bold text-blue-700`},T={class:`px-4 py-2.5 font-medium text-slate-900`},E={class:`text-[10px] text-slate-500 font-mono`},D={class:`px-4 py-2.5 text-slate-700`},O={class:`px-4 py-2.5 text-slate-800 font-medium`},k={class:`px-4 py-2.5 text-slate-500 font-mono`},A={class:`px-4 py-2.5 text-center`},j={class:`px-4 py-2.5 text-center space-x-1.5 whitespace-nowrap flex items-center justify-center`},M=[`onClick`],N=[`onClick`],P=[`onClick`],F=[`onClick`],I={key:0,class:`fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto`},L={class:`bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-2xl my-8 overflow-hidden text-left`},R={class:`px-5 py-3.5 bg-slate-100 border-b border-slate-200 flex items-center justify-between`},z={class:`p-8 bg-white font-sans text-xs text-slate-800 space-y-4 border m-4 rounded shadow-xs`},ue={class:`grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded border border-slate-200 text-[11px]`},B={class:`font-mono`},V={class:`text-right`},H={class:`font-mono`},U={class:`border-t pt-4 flex items-end justify-between text-[11px] mt-6`},de={class:`text-center`},fe={class:`font-bold text-slate-900`},pe={class:`p-3 bg-slate-50 border-t border-slate-200 flex justify-end space-x-2`},W=s({__name:`release`,setup(s){let W=g(),{success:G,info:me}=h(),K=f(``),q=f(`All`),J=f(!1),Y=f([]);async function he(){J.value=!0;try{let e=await W.get(`/reports`);if(Array.isArray(e)&&e.length>0){Y.value=e;return}let t=await W.get(`/pathology/dashboard/summary?see_all=true`);t&&Array.isArray(t.recent_patients)&&(Y.value=t.recent_patients.map((e,t)=>({id:String(e.order_id||t+1),report_no:`REP-${String(e.order_id||t+1).padStart(6,`0`)}`,patient_uhid:e.patient_id||`N/A`,patient_name:e.name||`Patient`,mobile:e.mobile||`N/A`,investigations:e.test||`Diagnostic Panel`,released_at:e.report_generation_time&&e.report_generation_time!==`Pending`?e.report_generation_time:`Ready for Release`,signed_by:`Authorized Pathologist`,delivery_status:e.report_generation_time&&e.report_generation_time!==`Pending`?`Released`:`Pending Dispatch`})))}catch(e){console.warn(`Failed to load reports from database:`,e)}finally{J.value=!1}}e(()=>{he()});let X=u(()=>Y.value.filter(e=>{let t=K.value.trim().toLowerCase(),n=!t||e.report_no.toLowerCase().includes(t)||e.patient_name.toLowerCase().includes(t)||e.patient_uhid.toLowerCase().includes(t)||e.investigations.toLowerCase().includes(t),r=q.value===`All`||e.delivery_status===q.value;return n&&r})),Z=f(!1),Q=f(null);function ge(e){Q.value=e,Z.value=!0}function _e(){window.print()}function $(e){let t=window.open(``,`_blank`);t?(t.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${e.report_no}_${e.patient_name.replace(/\\s+/g,`_`)}</title>
+          <style>
+            @page { size: A4 portrait; margin: 12mm; }
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; color: #1e293b; margin: 0; padding: 20px; }
+            .header { border-bottom: 2px solid #1e40af; padding-bottom: 10px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+            table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+            th, td { padding: 7px 10px; border-bottom: 1px solid #e2e8f0; font-size: 11px; }
+            th { background: #f8fafc; font-weight: 600; text-align: left; }
+            .high { color: #dc2626; font-weight: bold; }
+            @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <h2 style="margin:0; color:#1e40af; font-size:18px;">AAROZI HEALTHCARE CENTRAL LAB</h2>
+              <p style="margin:2px 0; font-size:11px; color:#64748b;">NABL Accredited &bull; ISO 15189:2022 Certified</p>
+            </div>
+            <div style="text-align:right;">
+              <p style="margin:0; font-weight:bold; font-size:12px;">Report: ${e.report_no}</p>
+              <p style="margin:2px 0; font-size:11px; color:#64748b;">Released: ${e.released_at}</p>
+            </div>
+          </div>
+          <table style="margin-bottom:12px; background:#f8fafc; border:1px solid #e2e8f0;">
+            <tr>
+              <td><strong>Patient:</strong> ${e.patient_name}</td>
+              <td><strong>UHID:</strong> ${e.patient_uhid}</td>
+              <td><strong>Mobile:</strong> ${e.mobile}</td>
+            </tr>
+            <tr>
+              <td colspan="2"><strong>Investigations:</strong> ${e.investigations}</td>
+              <td><strong>Ref Dr:</strong> Dr. Self / General OPD</td>
+            </tr>
+          </table>
+          <table>
+            <thead>
+              <tr>
+                <th>Investigation Analyte</th>
+                <th style="text-align:right;">Observed Value</th>
+                <th style="text-align:center;">Unit</th>
+                <th style="text-align:right;">Biological Reference Interval</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>HbA1c (Glycated Hemoglobin)</td>
+                <td style="text-align:right;" class="high">7.8 [H]</td>
+                <td style="text-align:center;">%</td>
+                <td style="text-align:right;">4.0 - 5.6</td>
+              </tr>
+              <tr>
+                <td>Estimated Average Glucose (eAG)</td>
+                <td style="text-align:right;" class="high">177 [H]</td>
+                <td style="text-align:center;">mg/dL</td>
+                <td style="text-align:right;">70 - 120</td>
+              </tr>
+              <tr>
+                <td>Hemoglobin (Hb)</td>
+                <td style="text-align:right;">14.6</td>
+                <td style="text-align:center;">g/dL</td>
+                <td style="text-align:right;">13.0 - 17.0</td>
+              </tr>
+              <tr>
+                <td>Total Leukocyte Count (TLC)</td>
+                <td style="text-align:right;">7,200</td>
+                <td style="text-align:center;">/uL</td>
+                <td style="text-align:right;">4,000 - 11,000</td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="margin-top:40px; border-top:1px solid #cbd5e1; padding-top:10px; display:flex; justify-content:space-between; font-size:11px;">
+            <div>Prepared by: Senior Technologist</div>
+            <div style="text-align:right;">
+              <strong>${e.signed_by}</strong><br/>
+              <span style="color:#64748b;">Consultant Pathologist &bull; Reg # 48921</span>
+            </div>
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+            };
+          <\/script>
+        </body>
+      </html>
+    `),t.document.close()):window.print(),G(`Downloading PDF for report ${e.report_no}`)}function ve(e){e.delivery_status=`Dispatched via WhatsApp`,G(`Secure PDF report link sent to patient WhatsApp (${e.mobile})!`)}function ye(e){e.delivery_status=`Emailed`,G(`Encrypted diagnostic report PDF dispatched to patient email!`)}return(e,s)=>{let u=re;return i(),d(`div`,ae,[p(`div`,oe,[s[9]||=p(`div`,null,[p(`h1`,{class:`text-xl font-bold text-slate-900 tracking-tight`},`Report Release & Delivery Dispatch`),p(`p`,{class:`text-xs text-slate-500 mt-0.5`},` Patient diagnostic report dispatch, automated WhatsApp delivery, email notification and thermal/A4 printing `)],-1),p(`div`,se,[m(u,{to:`/reporting/designer`,class:`btn-secondary`},{default:a(()=>[...s[7]||=[p(`span`,null,`Template Designer`,-1)]]),_:1}),m(u,{to:`/reporting/templates`,class:`btn-primary`},{default:a(()=>[...s[8]||=[p(`span`,null,`Template Catalog`,-1)]]),_:1})])]),p(`div`,ce,[p(`div`,le,[p(`div`,_,[s[11]||=p(`span`,{class:`absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 pointer-events-none`},[p(`svg`,{class:`h-4 w-4`,fill:`none`,viewBox:`0 0 24 24`,stroke:`currentColor`},[p(`path`,{"stroke-linecap":`round`,"stroke-linejoin":`round`,"stroke-width":`2`,d:`M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z`})])],-1),r(p(`input`,{"onUpdate:modelValue":s[0]||=e=>K.value=e,type:`search`,placeholder:`Search by Report #, Patient Name, UHID or Investigation...`,class:`input-faang w-full pl-9 pr-7 py-1.5 text-xs`},null,512),[[ne,K.value]]),K.value?(i(),d(`button`,{key:0,type:`button`,class:`absolute inset-y-0 right-0 flex items-center pr-2 text-slate-400 hover:text-slate-600 cursor-pointer`,title:`Clear search`,onClick:s[1]||=e=>K.value=``},[...s[10]||=[p(`span`,{class:`text-sm leading-none`},`×`,-1)]])):c(``,!0)])]),p(`div`,v,[r(p(`select`,{"onUpdate:modelValue":s[2]||=e=>q.value=e,class:`select-faang input-faang text-xs text-slate-700 cursor-pointer`},[...s[12]||=[l(`<option value="All">All Dispatch Statuses</option><option value="Pending Dispatch">Pending Dispatch</option><option value="Dispatched via WhatsApp">Dispatched via WhatsApp</option><option value="Emailed">Emailed</option><option value="Printed">Printed</option>`,5)]],512),[[ie,q.value]]),p(`button`,{type:`button`,class:`btn-secondary`,title:`Reset all filters`,onClick:s[3]||=e=>{K.value=``,q.value=`All`}},` Reset `)])]),p(`div`,y,[p(`div`,b,[p(`table`,x,[s[15]||=p(`thead`,{class:`bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider`},[p(`tr`,null,[p(`th`,{class:`px-4 py-2.5 text-left`},`Report #`),p(`th`,{class:`px-4 py-2.5 text-left`},`Patient Details`),p(`th`,{class:`px-4 py-2.5 text-left`},`Investigations`),p(`th`,{class:`px-4 py-2.5 text-left`},`Signing Doctor`),p(`th`,{class:`px-4 py-2.5 text-left`},`Released Time`),p(`th`,{class:`px-4 py-2.5 text-center`},`Dispatch Status`),p(`th`,{class:`px-4 py-2.5 text-center`},`Delivery Actions`)])],-1),p(`tbody`,S,[X.value.length===0?(i(),d(`tr`,C,[...s[13]||=[p(`td`,{colspan:`7`,class:`px-4 py-8 text-center text-slate-400`},` No matching diagnostic reports found `,-1)]])):(i(!0),d(te,{key:1},ee(X.value,e=>(i(),d(`tr`,{key:e.id,class:`hover:bg-blue-50/40 transition-colors`},[p(`td`,w,t(e.report_no),1),p(`td`,T,[p(`div`,null,t(e.patient_name),1),p(`div`,E,t(e.patient_uhid)+` • `+t(e.mobile),1)]),p(`td`,D,t(e.investigations),1),p(`td`,O,t(e.signed_by),1),p(`td`,k,t(e.released_at),1),p(`td`,A,[p(`span`,{class:n([`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border`,e.delivery_status.includes(`WhatsApp`)?`bg-emerald-50 text-emerald-700 border-emerald-200`:e.delivery_status===`Printed`?`bg-blue-50 text-blue-700 border-blue-200`:`bg-amber-50 text-amber-700 border-amber-200`])},t(e.delivery_status),3)]),p(`td`,j,[p(`button`,{type:`button`,class:`px-2 py-1 text-[11px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded transition cursor-pointer`,onClick:t=>ge(e)},` View A4 `,8,M),p(`button`,{type:`button`,class:`px-2.5 py-1 text-[11px] font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded transition cursor-pointer flex items-center space-x-1`,title:`Download PDF Document`,onClick:t=>$(e)},[...s[14]||=[p(`svg`,{class:`h-3 w-3`,fill:`none`,viewBox:`0 0 24 24`,stroke:`currentColor`},[p(`path`,{"stroke-linecap":`round`,"stroke-linejoin":`round`,"stroke-width":`2`,d:`M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4`})],-1),p(`span`,null,`Download PDF`,-1)]],8,N),p(`button`,{type:`button`,class:`px-2 py-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded transition cursor-pointer`,title:`Send via WhatsApp`,onClick:t=>ve(e)},` WhatsApp `,8,P),p(`button`,{type:`button`,class:`px-2 py-1 text-[11px] font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded transition cursor-pointer`,title:`Email PDF`,onClick:t=>ye(e)},` Email `,8,F)])]))),128))])])])]),Z.value&&Q.value?(i(),d(`div`,I,[p(`div`,L,[p(`div`,R,[s[16]||=p(`span`,{class:`text-xs font-bold text-slate-800`},`A4 Clinical Diagnostic Report Preview`,-1),p(`button`,{type:`button`,class:`text-slate-400 hover:text-slate-600 text-sm`,onClick:s[4]||=e=>Z.value=!1},`×`)]),p(`div`,z,[s[29]||=l(`<div class="flex items-center justify-between border-b-2 border-blue-900 pb-3"><div><h2 class="text-lg font-bold text-blue-950 tracking-tight">AAROZI CENTRAL DIAGNOSTICS</h2><p class="text-[10px] text-slate-500 font-medium">NABL Accredited Laboratory • ISO 15189:2022 Certified</p><p class="text-[9px] text-slate-400">12/A Ring Road, Medical Enclave • Ph: +91 98765 43210 • info@aarozi.com</p></div><div class="text-right"><div class="w-16 h-16 bg-slate-100 border border-slate-300 rounded flex items-center justify-center text-[9px] font-mono text-slate-500"> [QR Verify] </div></div></div>`,1),p(`div`,ue,[p(`div`,null,[p(`div`,null,[s[17]||=p(`span`,{class:`text-slate-500`},`Patient:`,-1),s[18]||=o(),p(`strong`,null,t(Q.value.patient_name),1)]),p(`div`,null,[s[19]||=p(`span`,{class:`text-slate-500`},`UHID:`,-1),s[20]||=o(),p(`span`,B,t(Q.value.patient_uhid),1)]),s[21]||=p(`div`,null,[p(`span`,{class:`text-slate-500`},`Age / Sex:`),o(` 34 Y / Male`)],-1)]),p(`div`,V,[p(`div`,null,[s[22]||=p(`span`,{class:`text-slate-500`},`Report No:`,-1),s[23]||=o(),p(`strong`,H,t(Q.value.report_no),1)]),s[25]||=p(`div`,null,[p(`span`,{class:`text-slate-500`},`Collected:`),o(` Today 09:15 AM`)],-1),p(`div`,null,[s[24]||=p(`span`,{class:`text-slate-500`},`Released:`,-1),o(` `+t(Q.value.released_at),1)])])]),s[30]||=l(`<div class="pt-2"><h4 class="font-bold text-slate-900 border-b pb-1 mb-2">COMPLETE BLOOD COUNT (CBC) &amp; BIOCHEMISTRY</h4><table class="w-full text-[11px] divide-y divide-slate-200"><thead><tr class="text-slate-500 font-semibold text-left"><th class="py-1">Parameter</th><th class="py-1 text-right">Observed Value</th><th class="py-1 text-center">Unit</th><th class="py-1 text-right">Biological Reference Interval</th></tr></thead><tbody class="divide-y divide-slate-100"><tr><td class="py-1.5 font-medium">HbA1c (Glycated Hemoglobin)</td><td class="py-1.5 text-right font-mono font-bold text-red-600">7.8 [H]</td><td class="py-1.5 text-center text-slate-500">%</td><td class="py-1.5 text-right font-mono text-slate-600">4.0 - 5.6</td></tr><tr><td class="py-1.5 font-medium">Estimated Average Glucose (eAG)</td><td class="py-1.5 text-right font-mono font-bold text-red-600">177 [H]</td><td class="py-1.5 text-center text-slate-500">mg/dL</td><td class="py-1.5 text-right font-mono text-slate-600">70 - 120</td></tr><tr><td class="py-1.5 font-medium">Hemoglobin (Hb)</td><td class="py-1.5 text-right font-mono font-semibold text-slate-800">14.6</td><td class="py-1.5 text-center text-slate-500">g/dL</td><td class="py-1.5 text-right font-mono text-slate-600">13.0 - 17.0</td></tr><tr><td class="py-1.5 font-medium">Total Leukocyte Count (TLC)</td><td class="py-1.5 text-right font-mono font-semibold text-slate-800">7,200</td><td class="py-1.5 text-center text-slate-500">/uL</td><td class="py-1.5 text-right font-mono text-slate-600">4,000 - 11,000</td></tr></tbody></table></div>`,1),p(`div`,U,[s[28]||=p(`div`,null,[p(`p`,{class:`text-slate-400 text-[10px]`},`Prepared by: Senior Technologist`)],-1),p(`div`,de,[s[26]||=p(`div`,{class:`font-script text-blue-900 font-bold italic text-base`},`Dr. A. Sharma`,-1),p(`div`,fe,t(Q.value.signed_by),1),s[27]||=p(`div`,{class:`text-[10px] text-slate-500`},`Consultant Pathologist • Reg # 48921`,-1)])])]),p(`div`,pe,[p(`button`,{type:`button`,class:`px-3 py-1.5 border border-slate-300 rounded text-xs text-slate-700 hover:bg-slate-100 cursor-pointer`,onClick:s[5]||=e=>Z.value=!1},` Close `),Q.value?(i(),d(`button`,{key:0,type:`button`,class:`px-3 py-1.5 border border-blue-600 bg-white text-blue-700 hover:bg-blue-50 rounded text-xs font-semibold flex items-center space-x-1 cursor-pointer`,onClick:s[6]||=e=>$(Q.value)},[...s[31]||=[p(`svg`,{class:`w-3.5 h-3.5`,fill:`none`,stroke:`currentColor`,viewBox:`0 0 24 24`},[p(`path`,{"stroke-linecap":`round`,"stroke-linejoin":`round`,"stroke-width":`2`,d:`M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4`})],-1),p(`span`,null,`Download PDF`,-1)]])):c(``,!0),p(`button`,{type:`button`,class:`px-4 py-1.5 bg-sky-600 text-white rounded text-xs font-semibold hover:bg-sky-700 cursor-pointer flex items-center space-x-1`,onClick:_e},[...s[32]||=[p(`svg`,{class:`w-3.5 h-3.5`,fill:`none`,stroke:`currentColor`,viewBox:`0 0 24 24`},[p(`path`,{"stroke-linecap":`round`,"stroke-linejoin":`round`,"stroke-width":`2`,d:`M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z`})],-1),p(`span`,null,`Print A4 Report`,-1)]])])])])):c(``,!0)])}}});export{W as default};

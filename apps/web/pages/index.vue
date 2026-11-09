@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
+definePageMeta({
+  layout: 'marketing',
+})
+
 const isAnnual = ref(true)
 const couponInput = ref('')
 const appliedCoupon = ref('')
@@ -120,47 +124,7 @@ async function handleCheckoutSubmit() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-white text-slate-900 font-sans antialiased selection:bg-indigo-500 selection:text-white">
-    <!-- Top Sticky Header -->
-    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-indigo-100 font-black text-lg">
-            A
-          </div>
-          <div>
-            <span class="text-lg font-black tracking-tight text-slate-900">Aarozi</span>
-            <span class="text-lg font-medium text-indigo-600 ml-1">Healthcare</span>
-            <span class="ml-2 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">LIS &bull; Offline-First</span>
-          </div>
-        </div>
-
-        <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-600">
-          <a href="#features" class="hover:text-indigo-600 transition">Features</a>
-          <a href="#analyzers" class="hover:text-indigo-600 transition">Analyzers</a>
-          <a href="#pricing" class="hover:text-indigo-600 transition">Pricing</a>
-          <a href="#faq" class="hover:text-indigo-600 transition">FAQ</a>
-          <NuxtLink to="/customer/dashboard" class="text-slate-700 hover:text-indigo-600 transition">Customer Portal</NuxtLink>
-        </nav>
-
-        <div class="flex items-center space-x-3">
-          <a
-            href="https://wa.me/919876543210?text=Hello%20Aarozi%20Healthcare,%20I%20want%20a%20demo%20of%20the%20LIS%20software"
-            target="_blank"
-            class="hidden sm:inline-flex items-center space-x-2 text-xs font-semibold px-3 py-2 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition"
-          >
-            <span>WhatsApp Demo</span>
-          </a>
-          <NuxtLink
-            to="/dashboard"
-            class="inline-flex items-center space-x-1.5 text-xs font-semibold px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition shadow-indigo-200"
-          >
-            <span>Launch LIS Workstation</span>
-            <span>&rarr;</span>
-          </NuxtLink>
-        </div>
-      </div>
-    </header>
+  <div class="min-h-screen bg-white text-slate-900 font-sans antialiased selection:bg-teal-500 selection:text-white">
 
     <!-- Hero Section -->
     <section class="relative pt-20 pb-16 overflow-hidden bg-gradient-to-b from-slate-50/70 to-white">

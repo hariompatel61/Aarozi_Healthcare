@@ -1,7 +1,7 @@
 import process from 'node:process';globalThis._importMeta_=globalThis._importMeta_||{url:"file:///_entry.js",env:process.env};globalThis.__timing__.logStart('Load chunks/virtual/entry');import { defineProdDiagnostics } from 'nostics';
 import { ansiFormatter } from 'nostics/formatters/ansi';
-import { getCurrentScope, ref, watchEffect, getCurrentInstance, onBeforeUnmount, onDeactivated, onActivated, onScopeDispose, shallowReactive, reactive, effectScope, hasInjectionContext, createApp, provide, onErrorCaptured, onServerPrefetch, unref, createVNode, resolveDynamicComponent, inject, defineAsyncComponent, mergeProps, toRef, shallowRef, isReadonly, defineComponent, createElementBlock, cloneVNode, h, toRaw, computed, useSSRContext, isRef, isShallow, isReactive, isVNode, createCommentVNode, withCtx, Suspense, nextTick, resolveComponent, Fragment, toValue, queuePostFlushCb } from 'vue';
-import { f as createError, $ as $fetch, m as hasProtocol, i as joinURL, n as defu, w as withQuery, o as sanitizeStatusCode, p as parseURL, e as encodePath, q as decodePath, v as parseQuery, x as isScriptProtocol, y as withTrailingSlash, z as withoutTrailingSlash } from '../_/nitro.mjs';
+import { getCurrentScope, ref, watchEffect, getCurrentInstance, onBeforeUnmount, onDeactivated, onActivated, onScopeDispose, shallowReactive, reactive, effectScope, hasInjectionContext, createApp, provide, onErrorCaptured, onServerPrefetch, unref, createVNode, resolveDynamicComponent, inject, defineAsyncComponent, mergeProps, toRef, shallowRef, isReadonly, defineComponent, createElementBlock, cloneVNode, h, toRaw, computed, useSSRContext, isRef, isShallow, isReactive, isVNode, createCommentVNode, withCtx, Suspense, nextTick, resolveComponent, Fragment, toValue, customRef, queuePostFlushCb } from 'vue';
+import { f as createError, $ as $fetch, m as hasProtocol, i as joinURL, n as defu, w as withQuery, o as sanitizeStatusCode, p as parseURL, e as encodePath, q as decodePath, v as parseQuery, x as isScriptProtocol, y as withTrailingSlash, z as withoutTrailingSlash, A as klona, B as getRequestHeader, C as isEqual, D as setCookie, E as getCookie, F as deleteCookie } from '../_/nitro.mjs';
 import { i as injectHead$1, V as VueResolver, b as baseURL, h as headSymbol } from '../routes/renderer.mjs';
 import { createMemoryHistory, createRouter, START_LOCATION, useRoute, RouterView } from 'vue-router';
 import { isPlainObject } from '@vue/shared';
@@ -561,6 +561,74 @@ function useRuntimeConfig(_event) {
 }
 function defineGetter(obj, key, val) {
 	Object.defineProperty(obj, key, { get: () => val });
+}
+
+function endIndex(str, min, len) {
+	const index = str.indexOf(";", min);
+	return index === -1 ? len : index;
+}
+function eqIndex(str, min, max) {
+	const index = str.indexOf("=", min);
+	return index < max ? index : -1;
+}
+function valueSlice(str, min, max) {
+	if (min === max) return "";
+	let start = min;
+	let end = max;
+	do {
+		const code = str.charCodeAt(start);
+		if (code !== 32 && code !== 9) break;
+	} while (++start < end);
+	while (end > start) {
+		const code = str.charCodeAt(end - 1);
+		if (code !== 32 && code !== 9) break;
+		end--;
+	}
+	return str.slice(start, end);
+}
+const NullObject = /* @__PURE__ */ (() => {
+	const C = function() {};
+	C.prototype = Object.create(null);
+	return C;
+})();
+function parse(str, options) {
+	const obj = new NullObject();
+	const len = str.length;
+	if (len < 2) return obj;
+	const dec = options?.decode || decode;
+	const allowMultiple = options?.allowMultiple || false;
+	let index = 0;
+	do {
+		const eqIdx = eqIndex(str, index, len);
+		if (eqIdx === -1) break;
+		const endIdx = endIndex(str, index, len);
+		if (eqIdx > endIdx) {
+			index = str.lastIndexOf(";", eqIdx - 1) + 1;
+			continue;
+		}
+		const key = valueSlice(str, index, eqIdx);
+		if (options?.filter && !options.filter(key)) {
+			index = endIdx + 1;
+			continue;
+		}
+		const val = dec(valueSlice(str, eqIdx + 1, endIdx));
+		if (allowMultiple) {
+			const existing = obj[key];
+			if (existing === void 0) obj[key] = val;
+			else if (Array.isArray(existing)) existing.push(val);
+			else obj[key] = [existing, val];
+		} else if (obj[key] === void 0) obj[key] = val;
+		index = endIdx + 1;
+	} while (index < len);
+	return obj;
+}
+function decode(str) {
+	if (!str.includes("%")) return str;
+	try {
+		return decodeURIComponent(str);
+	} catch {
+		return str;
+	}
 }
 
 //#region src/index.ts
@@ -1166,8 +1234,8 @@ function toArray(value) {
 Object.assign(Object.create(null), {});
 var pageIslandRoutes = Object.assign(Object.create(null), {});
 //#endregion
-//#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Fmiddleware.mjs
-var globalMiddleware = [/* @__PURE__ */ defineNuxtRouteMiddleware(async (to) => {
+//#region node_modules/nuxt/dist/pages/runtime/validate.js
+var middleware$1 = /* @__PURE__ */ defineNuxtRouteMiddleware(async (to) => {
 	let __temp, __restore;
 	if (!to.meta?.validate) return;
 	const result = ([__temp, __restore] = executeAsync(() => Promise.resolve(to.meta.validate(to))), __temp = await __temp, __restore(), __temp);
@@ -1178,7 +1246,143 @@ var globalMiddleware = [/* @__PURE__ */ defineNuxtRouteMiddleware(async (to) => 
 		statusText: result && (result.statusText || result.statusMessage) || `Page Not Found: ${to.fullPath}`,
 		data: { path: to.fullPath }
 	});
-}), /* @__PURE__ */ defineNuxtRouteMiddleware((to) => {})];
+});
+//#endregion
+//#region node_modules/nuxt/dist/app/composables/ssr.js
+var $fetch$1$1 = $fetch$2;
+/** @since 3.0.0 */
+function useRequestEvent(nuxtApp) {
+	nuxtApp ||= useNuxtApp();
+	return nuxtApp.ssrContext?.event;
+}
+/** @since 3.2.0 */
+function useRequestFetch() {
+	return useRequestEvent()?.$fetch || $fetch$1$1;
+}
+//#endregion
+//#region node_modules/nuxt/dist/app/composables/cookie.js
+function parseCookieValue(value) {
+	if (value === "undefined") return;
+	try {
+		const parsed = JSON.parse(value);
+		if (typeof parsed === "number" && String(parsed) !== value) return value;
+		return parsed;
+	} catch {
+		return value;
+	}
+}
+var CookieDefaults = {
+	path: "/",
+	watch: true,
+	decode: (val) => val ? parseCookieValue(decodeURIComponent(val)) : val,
+	encode: (val) => {
+		if (typeof val !== "string" || val === "undefined") return encodeURIComponent(JSON.stringify(val));
+		try {
+			if (typeof JSON.parse(val) !== "string") return encodeURIComponent(JSON.stringify(val));
+		} catch {}
+		return encodeURIComponent(val);
+	},
+	refresh: false
+};
+function useCookie(name, _opts) {
+	const opts = {
+		...CookieDefaults,
+		..._opts
+	};
+	opts.filter ??= (key) => key === name;
+	const cookies = readRawCookies(opts) || {};
+	let delay;
+	if (opts.maxAge !== void 0) delay = opts.maxAge * 1e3;
+	else if (opts.expires) delay = opts.expires.getTime() - Date.now();
+	const cookie = cookieServerRef(name, klona(delay !== void 0 && delay <= 0 ? void 0 : cookies[name] ?? opts.default?.()));
+	{
+		const nuxtApp = useNuxtApp();
+		const writeFinalCookieValue = () => {
+			const valueIsSame = isEqual(cookie.value, cookies[name]);
+			if (opts.readonly || valueIsSame && !opts.refresh) return;
+			nuxtApp._cookiesChanged ||= {};
+			if (valueIsSame && opts.refresh && !nuxtApp._cookiesChanged[name]) return;
+			nuxtApp._cookies ||= {};
+			if (name in nuxtApp._cookies) {
+				if (isEqual(cookie.value, nuxtApp._cookies[name])) return;
+			}
+			nuxtApp._cookies[name] = cookie.value;
+			const encoded = cookie.value === null || cookie.value === void 0 ? void 0 : opts.encode(cookie.value);
+			writeServerCookie(useRequestEvent(nuxtApp), name, encoded, opts);
+		};
+		const unhook = nuxtApp.hooks.hookOnce("app:rendered", writeFinalCookieValue);
+		nuxtApp.hooks.hookOnce("app:error", () => {
+			unhook();
+			return writeFinalCookieValue();
+		});
+	}
+	return cookie;
+}
+function readRawCookies(opts = {}) {
+	return parse(getRequestHeader(useRequestEvent(), "cookie") || "", opts);
+}
+var identityEncode = (val) => val;
+function toSerializeOptions(opts) {
+	const { encode: _encode, decode: _decode, ...rest } = opts;
+	return {
+		...rest,
+		encode: identityEncode
+	};
+}
+function writeServerCookie(event, name, value, opts = {}) {
+	if (event) {
+		const serializeOpts = toSerializeOptions(opts);
+		if (value !== void 0) return setCookie(event, name, value, serializeOpts);
+		if (getCookie(event, name) !== void 0) return deleteCookie(event, name, serializeOpts);
+	}
+}
+/**
+* Custom ref that tracks explicit cookie writes on the server.
+*
+* This is required for the `refresh` option to ensure the cookie is
+* re-written on SSR even when the value remains unchanged.
+*/
+function cookieServerRef(name, value) {
+	const internalRef = ref(value);
+	const nuxtApp = useNuxtApp();
+	return customRef((track, trigger) => {
+		return {
+			get() {
+				track();
+				return internalRef.value;
+			},
+			set(newValue) {
+				nuxtApp._cookiesChanged ||= {};
+				nuxtApp._cookiesChanged[name] = true;
+				internalRef.value = newValue;
+				trigger();
+			}
+		};
+	});
+}
+//#endregion
+//#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Fmiddleware.mjs
+var globalMiddleware = [
+	middleware$1,
+	/* @__PURE__ */ defineNuxtRouteMiddleware((to) => {
+		const publicRoutes = [
+			"/",
+			"/login",
+			"/design-system",
+			"/forgot-password",
+			"/reset-password"
+		];
+		const authCookie = useCookie("auth_token", { path: "/" });
+		if (to.query.auth) authCookie.value = String(to.query.auth);
+		const token = authCookie.value || null;
+		if (publicRoutes.includes(to.path)) {
+			if (to.path === "/login" && token && !to.query.force) return navigateTo("/dashboard");
+			return;
+		}
+		if (!token) return navigateTo(`/login?redirect=${encodeURIComponent(to.fullPath)}`);
+	}),
+	/* @__PURE__ */ defineNuxtRouteMiddleware((to) => {})
+];
 var namedMiddleware = {};
 //#endregion
 //#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Froutes.mjs
@@ -1196,7 +1400,7 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 	{
 		name: "admin-licensing",
 		path: "/admin/licensing",
-		component: () => import('../build/licensing-l6I5hync.mjs')
+		component: () => import('../build/licensing-NO_33UwT.mjs')
 	},
 	{
 		name: "admin-migration",
@@ -1206,7 +1410,7 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 	{
 		name: "admin-roles",
 		path: "/admin/roles",
-		component: () => import('../build/roles-B_tP49EY.mjs')
+		component: () => import('../build/roles-CN_eVjFG.mjs')
 	},
 	{
 		name: "admin-sync",
@@ -1216,32 +1420,32 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 	{
 		name: "admin-users",
 		path: "/admin/users",
-		component: () => import('../build/users-DQZh2766.mjs')
+		component: () => import('../build/users-LEu3YvFu.mjs')
 	},
 	{
 		name: "billing-invoices",
 		path: "/billing/invoices",
-		component: () => import('../build/invoices-De4HyXJq.mjs')
+		component: () => import('../build/invoices-D7rwEXIa.mjs')
 	},
 	{
 		name: "billing-referrals",
 		path: "/billing/referrals",
-		component: () => import('../build/referrals-BoKm1ZO7.mjs')
+		component: () => import('../build/referrals-D015OdpE.mjs')
 	},
 	{
 		name: "blood_bank-crossmatch",
 		path: "/blood_bank/crossmatch",
-		component: () => import('../build/crossmatch-C82pHL0F.mjs')
+		component: () => import('../build/crossmatch-D2xl_kg-.mjs')
 	},
 	{
 		name: "blood_bank-donors",
 		path: "/blood_bank/donors",
-		component: () => import('../build/donors-DBsnn6Ie.mjs')
+		component: () => import('../build/donors-B2vJmo5y.mjs')
 	},
 	{
 		name: "blood_bank-inventory",
 		path: "/blood_bank/inventory",
-		component: () => import('../build/inventory-BVltGrBU.mjs')
+		component: () => import('../build/inventory-DRIFaLnX.mjs')
 	},
 	{
 		name: "customer-dashboard",
@@ -1251,32 +1455,32 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 	{
 		name: "pathology-catalog",
 		path: "/pathology/catalog",
-		component: () => import('../build/catalog-DdIqhjvy.mjs')
+		component: () => import('../build/catalog-Dc2VRDpl.mjs')
 	},
 	{
 		name: "pathology-instruments",
 		path: "/pathology/instruments",
-		component: () => import('../build/instruments--micBqEJ.mjs')
+		component: () => import('../build/instruments-Bd0gR7-u.mjs')
 	},
 	{
 		name: "pathology-results",
 		path: "/pathology/results",
-		component: () => import('../build/results-B7kXKHCn.mjs')
+		component: () => import('../build/results-JFxfbkrC.mjs')
 	},
 	{
 		name: "pathology-samples",
 		path: "/pathology/samples",
-		component: () => import('../build/samples-C8b1ziSC.mjs')
+		component: () => import('../build/samples-Z69japNn.mjs')
 	},
 	{
 		name: "pathology-verification",
 		path: "/pathology/verification",
-		component: () => import('../build/verification-wHUpLu7K.mjs')
+		component: () => import('../build/verification-D9rqTPyI.mjs')
 	},
 	{
 		name: "patients-register",
 		path: "/patients/register",
-		component: () => import('../build/register-DmQoc3BK.mjs')
+		component: () => import('../build/register-PUlC8NOF.mjs')
 	},
 	{
 		name: "reporting-designer",
@@ -1286,7 +1490,7 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 	{
 		name: "reporting-release",
 		path: "/reporting/release",
-		component: () => import('../build/release-DaNEA8ZD.mjs')
+		component: () => import('../build/release-C8Ur-ITl.mjs')
 	},
 	{
 		name: "reporting-templates",
@@ -1302,13 +1506,13 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 		name: "design-system",
 		path: "/design-system",
 		meta: { layout: false },
-		component: () => import('../build/design-system-DayVO4bw.mjs')
+		component: () => import('../build/design-system-C5Um0DY7.mjs')
 	},
 	{
 		name: "login",
 		path: "/login",
-		meta: { layout: false },
-		component: () => import('../build/login-BbINeYBb.mjs')
+		meta: { layout: "auth" },
+		component: () => import('../build/login-Dkt1xiey.mjs')
 	},
 	{
 		name: "pathology",
@@ -1328,7 +1532,8 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 	{
 		name: "index",
 		path: "/",
-		component: () => import('../build/pages-6JBkr5yt.mjs')
+		meta: { layout: "marketing" },
+		component: () => import('../build/pages-B8ok-3dK.mjs')
 	}
 ];
 //#endregion
@@ -1940,18 +2145,6 @@ function mergeAbortSignals(signals, cleanupSignal, timeout) {
 	return controller.signal;
 }
 //#endregion
-//#region node_modules/nuxt/dist/app/composables/ssr.js
-var $fetch$1$1 = $fetch$2;
-/** @since 3.0.0 */
-function useRequestEvent(nuxtApp) {
-	nuxtApp ||= useNuxtApp();
-	return nuxtApp.ssrContext?.event;
-}
-/** @since 3.2.0 */
-function useRequestFetch() {
-	return useRequestEvent()?.$fetch || $fetch$1$1;
-}
-//#endregion
 //#region node_modules/nuxt/dist/app/composables/fetch.js
 var $fetch$1 = $fetch$2;
 var MAYBE_REF_OR_GETTER_OPTION_KEYS = [
@@ -2354,7 +2547,11 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Fplugins_server_default =
 ];
 //#endregion
 //#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Flayouts.mjs
-var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Flayouts_default = { default: defineAsyncComponent(() => import('../build/default-DmqLK51z.mjs').then((m) => m.default || m)) };
+var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Flayouts_default = {
+	auth: defineAsyncComponent(() => import('../build/auth-Cquo_R0W.mjs').then((m) => m.default || m)),
+	default: defineAsyncComponent(() => import('../build/default-CqlY0YCh.mjs').then((m) => m.default || m)),
+	marketing: defineAsyncComponent(() => import('../build/marketing-Doq_DzdS.mjs').then((m) => m.default || m))
+};
 //#endregion
 //#region node_modules/nuxt/dist/app/components/nuxt-layout.js
 var LayoutLoader = defineComponent({

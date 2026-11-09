@@ -14,16 +14,36 @@ type HydrationStrategies = {
 type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {}, {}, { hydrated: () => void }> & T
 
 interface _GlobalComponents {
+  ShellCommandPalette: typeof import("../../components/shell/CommandPalette.vue")['default']
   ShellSidebar: typeof import("../../components/shell/Sidebar.vue")['default']
   ShellTopHeader: typeof import("../../components/shell/TopHeader.vue")['default']
   UiBadge: typeof import("../../components/ui/Badge.vue")['default']
   UiButton: typeof import("../../components/ui/Button.vue")['default']
   UiCard: typeof import("../../components/ui/Card.vue")['default']
+  UiCheckbox: typeof import("../../components/ui/Checkbox.vue")['default']
+  UiChip: typeof import("../../components/ui/Chip.vue")['default']
+  UiConfirmDialog: typeof import("../../components/ui/ConfirmDialog.vue")['default']
   UiDataTable: typeof import("../../components/ui/DataTable.vue")['default']
+  UiDrawer: typeof import("../../components/ui/Drawer.vue")['default']
+  UiEmptyState: typeof import("../../components/ui/EmptyState.vue")['default']
+  UiFilterBar: typeof import("../../components/ui/FilterBar.vue")['default']
+  UiFormField: typeof import("../../components/ui/FormField.vue")['default']
+  UiIcon: typeof import("../../components/ui/Icon.vue")['default']
+  UiIconButton: typeof import("../../components/ui/IconButton.vue")['default']
   UiInput: typeof import("../../components/ui/Input.vue")['default']
+  UiKbd: typeof import("../../components/ui/Kbd.vue")['default']
   UiModal: typeof import("../../components/ui/Modal.vue")['default']
+  UiNumberInput: typeof import("../../components/ui/NumberInput.vue")['default']
+  UiPageHeader: typeof import("../../components/ui/PageHeader.vue")['default']
   UiPaginationBar: typeof import("../../components/ui/PaginationBar.vue")['default']
+  UiSearchField: typeof import("../../components/ui/SearchField.vue")['default']
+  UiSegmentedControl: typeof import("../../components/ui/SegmentedControl.vue")['default']
   UiSelect: typeof import("../../components/ui/Select.vue")['default']
+  UiSkeleton: typeof import("../../components/ui/Skeleton.vue")['default']
+  UiStatCard: typeof import("../../components/ui/StatCard.vue")['default']
+  UiSwitch: typeof import("../../components/ui/Switch.vue")['default']
+  UiTabs: typeof import("../../components/ui/Tabs.vue")['default']
+  UiToast: typeof import("../../components/ui/Toast.vue")['default']
   UiToastProvider: typeof import("../../components/ui/ToastProvider.vue")['default']
   NuxtWelcome: typeof import("../../node_modules/nuxt/dist/app/components/welcome.vue")['default']
   NuxtLayout: typeof import("../../node_modules/nuxt/dist/app/components/nuxt-layout")['default']
@@ -49,16 +69,36 @@ interface _GlobalComponents {
   Html: typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Html']
   Body: typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Body']
   NuxtIsland: typeof import("../../node_modules/nuxt/dist/app/components/nuxt-island")['default']
+  LazyShellCommandPalette: LazyComponent<typeof import("../../components/shell/CommandPalette.vue")['default']>
   LazyShellSidebar: LazyComponent<typeof import("../../components/shell/Sidebar.vue")['default']>
   LazyShellTopHeader: LazyComponent<typeof import("../../components/shell/TopHeader.vue")['default']>
   LazyUiBadge: LazyComponent<typeof import("../../components/ui/Badge.vue")['default']>
   LazyUiButton: LazyComponent<typeof import("../../components/ui/Button.vue")['default']>
   LazyUiCard: LazyComponent<typeof import("../../components/ui/Card.vue")['default']>
+  LazyUiCheckbox: LazyComponent<typeof import("../../components/ui/Checkbox.vue")['default']>
+  LazyUiChip: LazyComponent<typeof import("../../components/ui/Chip.vue")['default']>
+  LazyUiConfirmDialog: LazyComponent<typeof import("../../components/ui/ConfirmDialog.vue")['default']>
   LazyUiDataTable: LazyComponent<typeof import("../../components/ui/DataTable.vue")['default']>
+  LazyUiDrawer: LazyComponent<typeof import("../../components/ui/Drawer.vue")['default']>
+  LazyUiEmptyState: LazyComponent<typeof import("../../components/ui/EmptyState.vue")['default']>
+  LazyUiFilterBar: LazyComponent<typeof import("../../components/ui/FilterBar.vue")['default']>
+  LazyUiFormField: LazyComponent<typeof import("../../components/ui/FormField.vue")['default']>
+  LazyUiIcon: LazyComponent<typeof import("../../components/ui/Icon.vue")['default']>
+  LazyUiIconButton: LazyComponent<typeof import("../../components/ui/IconButton.vue")['default']>
   LazyUiInput: LazyComponent<typeof import("../../components/ui/Input.vue")['default']>
+  LazyUiKbd: LazyComponent<typeof import("../../components/ui/Kbd.vue")['default']>
   LazyUiModal: LazyComponent<typeof import("../../components/ui/Modal.vue")['default']>
+  LazyUiNumberInput: LazyComponent<typeof import("../../components/ui/NumberInput.vue")['default']>
+  LazyUiPageHeader: LazyComponent<typeof import("../../components/ui/PageHeader.vue")['default']>
   LazyUiPaginationBar: LazyComponent<typeof import("../../components/ui/PaginationBar.vue")['default']>
+  LazyUiSearchField: LazyComponent<typeof import("../../components/ui/SearchField.vue")['default']>
+  LazyUiSegmentedControl: LazyComponent<typeof import("../../components/ui/SegmentedControl.vue")['default']>
   LazyUiSelect: LazyComponent<typeof import("../../components/ui/Select.vue")['default']>
+  LazyUiSkeleton: LazyComponent<typeof import("../../components/ui/Skeleton.vue")['default']>
+  LazyUiStatCard: LazyComponent<typeof import("../../components/ui/StatCard.vue")['default']>
+  LazyUiSwitch: LazyComponent<typeof import("../../components/ui/Switch.vue")['default']>
+  LazyUiTabs: LazyComponent<typeof import("../../components/ui/Tabs.vue")['default']>
+  LazyUiToast: LazyComponent<typeof import("../../components/ui/Toast.vue")['default']>
   LazyUiToastProvider: LazyComponent<typeof import("../../components/ui/ToastProvider.vue")['default']>
   LazyNuxtWelcome: LazyComponent<typeof import("../../node_modules/nuxt/dist/app/components/welcome.vue")['default']>
   LazyNuxtLayout: LazyComponent<typeof import("../../node_modules/nuxt/dist/app/components/nuxt-layout")['default']>
