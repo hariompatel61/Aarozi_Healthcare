@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ layout: 'public' })
+definePageMeta({ layout: 'public' as any })
 useSeoMeta({ title: 'Installation & setup | Aarozi Healthcare', description: 'Prepare a Windows Master PC and local network for Aarozi Healthcare.' })
 const steps = [
 ['Prepare the Master PC','Use a supported Windows 10/11 computer with administrator access, reliable power and adequate disk capacity. Confirm final hardware requirements with support.'],
