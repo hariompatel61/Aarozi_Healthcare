@@ -1,18 +1,25 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from '~/composables/useToast'
+import PageHeader from '~/components/ui/PageHeader.vue'
+import Card from '~/components/ui/Card.vue'
+import Badge, { type BadgeVariant } from '~/components/ui/Badge.vue'
+import Button from '~/components/ui/Button.vue'
+import Icon from '~/components/ui/Icon.vue'
+import Kbd from '~/components/ui/Kbd.vue'
 import Modal from '~/components/ui/Modal.vue'
+import PaginationBar from '~/components/ui/PaginationBar.vue'
 
 const router = useRouter()
 const { success, info, warning } = useToast()
 
-// Top Navigation Tabs matching Screen 3
+// Top Navigation Tabs
 type SampleQueueTab = 'queue' | 'accessioning' | 'processing' | 'completed' | 'rejected'
 const activeTab = ref<SampleQueueTab>('queue')
 
-// Filters matching Screen 3
-const filterDate = ref('2026-10-13')
+// Filters
+const filterDate = ref(new Date().toISOString().split('T')[0])
 const filterDept = ref('All')
 const filterStatus = ref('All')
 const searchQuery = ref('')
@@ -54,7 +61,7 @@ async function fetchSamples() {
     const data: any = await api.get('/pathology/samples')
     if (Array.isArray(data)) {
       samples.value = data
-      if (data.length > 0) {
+      if (data.length > 0 && !selectedSample.value) {
         selectedSample.value = data[0]
       }
     }
@@ -73,7 +80,7 @@ onMounted(() => {
 const newSampleModalOpen = ref(false)
 const newSampleForm = ref({
   patient_name: '',
-  test_name: 'CBC',
+  test_name: 'CBC (Complete Blood Count)',
   department: 'Hematology',
   specimen_type: 'EDTA Whole Blood',
 })
@@ -181,174 +188,196 @@ function navigateToResultEntry() {
   if (!selectedSample.value) return
   router.push(`/pathology/results?sample_id=${selectedSample.value.sample_id}`)
 }
+
+function getStatusBadgeVariant(status: string): BadgeVariant {
+  switch (status) {
+    case 'Completed': return 'success'
+    case 'Received': return 'info'
+    case 'Processing': return 'warning'
+    case 'Rejected': return 'danger'
+    case 'Collected': return 'info'
+    default: return 'neutral'
+  }
+}
+
+// Counts for tabs
+const counts = computed(() => {
+  const all = samples.value.length
+  const accessioning = samples.value.filter(s => s.status === 'Collected' || s.status === 'Received').length
+  const processing = samples.value.filter(s => s.status === 'Processing').length
+  const completed = samples.value.filter(s => s.status === 'Completed').length
+  const rejected = samples.value.filter(s => s.status === 'Rejected').length
+  return { all, accessioning, processing, completed, rejected }
+})
 </script>
 
 <template>
   <div class="space-y-4 max-w-7xl mx-auto text-left">
-    <!-- Unified Diagnostic Workflow Navigation Banner -->
-    <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-lg p-3 text-white shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
-      <div class="flex items-center space-x-2">
-        <span class="px-2 py-0.5 rounded bg-blue-700/80 text-[10px] font-mono font-bold uppercase tracking-wider text-blue-100">
-          LIS Operations
-        </span>
-        <span class="font-bold text-sm">Pathology Laboratory Workstation</span>
-      </div>
+    <!-- Page Header with Workflow Breadcrumbs & Direct CTAs -->
+    <PageHeader
+      title="Specimen Accessioning & Sample Tracking"
+      subtitle="Barcoding, specimen validation, analyzer bench routing, and tube tracking"
+    >
+      <template #actions>
+        <div class="flex items-center gap-2 flex-wrap">
+          <Button
+            variant="secondary"
+            size="sm"
+            :loading="loading"
+            @click="fetchSamples"
+          >
+            <template #icon-left>
+              <Icon name="refresh" size="sm" :class="loading ? 'animate-spin' : ''" />
+            </template>
+            <span>Refresh</span>
+          </Button>
 
-      <div class="flex items-center space-x-2 flex-wrap">
-        <NuxtLink
-          to="/pathology/results"
-          class="px-3 py-1.5 rounded-md font-semibold text-xs bg-white/10 hover:bg-white/20 text-white transition flex items-center space-x-1.5 cursor-pointer"
-        >
-          <span>Result Entry</span>
-        </NuxtLink>
+          <NuxtLink to="/pathology/results">
+            <Button variant="secondary" size="sm">
+              <template #icon-left>
+                <Icon name="beaker" size="sm" />
+              </template>
+              <span>Result Workstation</span>
+            </Button>
+          </NuxtLink>
 
-        <NuxtLink
-          to="/pathology/samples"
-          class="px-3 py-1.5 rounded-md font-bold text-xs bg-white text-blue-900 shadow-2xs flex items-center space-x-1.5 cursor-pointer"
-        >
-          <span>Sample Tracking</span>
-        </NuxtLink>
+          <NuxtLink to="/pathology/verification">
+            <Button variant="secondary" size="sm">
+              <template #icon-left>
+                <Icon name="shield-check" size="sm" />
+              </template>
+              <span>Verification Desk</span>
+            </Button>
+          </NuxtLink>
 
-        <NuxtLink
-          to="/pathology/verification"
-          class="px-3 py-1.5 rounded-md font-medium text-xs bg-white/10 hover:bg-white/20 text-white transition flex items-center space-x-1.5 cursor-pointer"
-        >
-          <span>Verification</span>
-        </NuxtLink>
-      </div>
-    </div>
+          <Button
+            variant="primary"
+            size="sm"
+            @click="newSampleModalOpen = true"
+          >
+            <template #icon-left>
+              <Icon name="plus" size="sm" />
+            </template>
+            <span>New Specimen</span>
+            <Kbd class="ml-1 hidden sm:inline-block">F3</Kbd>
+          </Button>
+        </div>
+      </template>
+    </PageHeader>
 
-    <!-- Top Header Banner matching Screen 3 -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
-      <div>
-        <h1 class="text-xl font-bold text-slate-900 tracking-tight flex items-center space-x-2">
-          <span>Sample Tracking &mdash; Lab Workflow</span>
-        </h1>
-        <p class="text-xs text-slate-500 mt-0.5">
-          Track samples from collection to result with barcode and status
-        </p>
-      </div>
-
-      <!-- Quick Action Shortcuts -->
-      <div class="flex items-center space-x-2 text-xs">
-        <NuxtLink
-          to="/pathology/results"
-          class="btn-secondary"
-          title="Open diagnostic result workstation"
-        >
-          <span>Result Workstation</span>
-        </NuxtLink>
-        <button
-          type="button"
-          class="btn-primary"
-          @click="newSampleModalOpen = true"
-        >
-          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          <span>New Sample</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Top Workflow Tabs matching Screen 3 (Sample Queue, Accessioning, Processing, Completed, Rejected) -->
-    <div class="flex items-center space-x-1 border-b border-slate-200 overflow-x-auto">
+    <!-- Workflow Stage Tabs -->
+    <div class="flex items-center gap-1 border-b border-slate-200 dark:border-slate-800 overflow-x-auto pb-0.5">
       <button
         type="button"
         :class="[
-          'px-4 py-2 text-xs font-semibold rounded-t-md transition-colors cursor-pointer shrink-0',
+          'px-4 py-2.5 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer shrink-0 flex items-center gap-2 border-b-2',
           activeTab === 'queue'
-            ? 'bg-white border-t-2 border-t-blue-600 border-x border-b-0 border-slate-200 text-blue-700'
-            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            ? 'border-teal-600 text-teal-700 dark:text-teal-400 bg-white dark:bg-slate-900 border-x border-t border-slate-200 dark:border-slate-800'
+            : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100/60 dark:hover:bg-slate-800/40'
         ]"
         @click="activeTab = 'queue'"
       >
-        Sample Queue
+        <span>All Samples</span>
+        <span class="px-1.5 py-0.2 rounded-full font-mono text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+          {{ counts.all }}
+        </span>
       </button>
 
       <button
         type="button"
         :class="[
-          'px-4 py-2 text-xs font-semibold rounded-t-md transition-colors cursor-pointer shrink-0',
+          'px-4 py-2.5 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer shrink-0 flex items-center gap-2 border-b-2',
           activeTab === 'accessioning'
-            ? 'bg-white border-t-2 border-t-blue-600 border-x border-b-0 border-slate-200 text-blue-700'
-            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            ? 'border-teal-600 text-teal-700 dark:text-teal-400 bg-white dark:bg-slate-900 border-x border-t border-slate-200 dark:border-slate-800'
+            : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100/60 dark:hover:bg-slate-800/40'
         ]"
         @click="activeTab = 'accessioning'"
       >
-        Accessioning
+        <span>Accessioning Desk</span>
+        <span class="px-1.5 py-0.2 rounded-full font-mono text-[11px] bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300">
+          {{ counts.accessioning }}
+        </span>
       </button>
 
       <button
         type="button"
         :class="[
-          'px-4 py-2 text-xs font-semibold rounded-t-md transition-colors cursor-pointer shrink-0',
+          'px-4 py-2.5 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer shrink-0 flex items-center gap-2 border-b-2',
           activeTab === 'processing'
-            ? 'bg-white border-t-2 border-t-blue-600 border-x border-b-0 border-slate-200 text-blue-700'
-            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            ? 'border-teal-600 text-teal-700 dark:text-teal-400 bg-white dark:bg-slate-900 border-x border-t border-slate-200 dark:border-slate-800'
+            : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100/60 dark:hover:bg-slate-800/40'
         ]"
         @click="activeTab = 'processing'"
       >
-        Processing
+        <span>Processing (Analyzers)</span>
+        <span class="px-1.5 py-0.2 rounded-full font-mono text-[11px] bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300">
+          {{ counts.processing }}
+        </span>
       </button>
 
       <button
         type="button"
         :class="[
-          'px-4 py-2 text-xs font-semibold rounded-t-md transition-colors cursor-pointer shrink-0',
+          'px-4 py-2.5 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer shrink-0 flex items-center gap-2 border-b-2',
           activeTab === 'completed'
-            ? 'bg-white border-t-2 border-t-blue-600 border-x border-b-0 border-slate-200 text-blue-700'
-            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            ? 'border-teal-600 text-teal-700 dark:text-teal-400 bg-white dark:bg-slate-900 border-x border-t border-slate-200 dark:border-slate-800'
+            : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100/60 dark:hover:bg-slate-800/40'
         ]"
         @click="activeTab = 'completed'"
       >
-        Completed
+        <span>Completed</span>
+        <span class="px-1.5 py-0.2 rounded-full font-mono text-[11px] bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+          {{ counts.completed }}
+        </span>
       </button>
 
       <button
         type="button"
         :class="[
-          'px-4 py-2 text-xs font-semibold rounded-t-md transition-colors cursor-pointer shrink-0',
+          'px-4 py-2.5 text-xs font-semibold rounded-t-lg transition-colors cursor-pointer shrink-0 flex items-center gap-2 border-b-2',
           activeTab === 'rejected'
-            ? 'bg-white border-t-2 border-t-blue-600 border-x border-b-0 border-slate-200 text-blue-700'
-            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            ? 'border-teal-600 text-teal-700 dark:text-teal-400 bg-white dark:bg-slate-900 border-x border-t border-slate-200 dark:border-slate-800'
+            : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100/60 dark:hover:bg-slate-800/40'
         ]"
         @click="activeTab = 'rejected'"
       >
-        Rejected
+        <span>Rejected Specimen</span>
+        <span class="px-1.5 py-0.2 rounded-full font-mono text-[11px] bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300">
+          {{ counts.rejected }}
+        </span>
       </button>
     </div>
 
-    <!-- Filter Control Bar matching Screen 3 -->
-    <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
+    <!-- Filter Control Bar -->
+    <div class="bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
       <div class="flex flex-wrap items-center gap-3">
         <!-- Date Selector -->
-        <div class="flex items-center space-x-1.5">
-          <label class="text-slate-500 font-medium">Date</label>
+        <div class="flex items-center gap-1.5">
+          <label class="text-slate-500 dark:text-slate-400 font-medium">Date</label>
           <input
             v-model="filterDate"
             type="date"
-            class="input-faang px-2.5 py-1 text-xs text-slate-800"
+            class="px-2.5 py-1 text-xs text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:border-teal-500"
           />
         </div>
 
         <!-- Department Dropdown -->
-        <div class="flex items-center space-x-1.5">
-          <label class="text-slate-500 font-medium">Department</label>
+        <div class="flex items-center gap-1.5">
+          <label class="text-slate-500 dark:text-slate-400 font-medium">Department</label>
           <select
             v-model="filterDept"
-            class="select-faang input-faang text-xs text-slate-700 cursor-pointer"
+            class="px-2.5 py-1 text-xs text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:border-teal-500 cursor-pointer"
           >
             <option v-for="d in departments" :key="d" :value="d">{{ d }}</option>
           </select>
         </div>
 
         <!-- Status Dropdown -->
-        <div class="flex items-center space-x-1.5">
-          <label class="text-slate-500 font-medium">Status</label>
+        <div class="flex items-center gap-1.5">
+          <label class="text-slate-500 dark:text-slate-400 font-medium">Status</label>
           <select
             v-model="filterStatus"
-            class="select-faang input-faang text-xs text-slate-700 cursor-pointer"
+            class="px-2.5 py-1 text-xs text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:border-teal-500 cursor-pointer"
           >
             <option v-for="st in statuses" :key="st" :value="st">{{ st }}</option>
           </select>
@@ -356,67 +385,72 @@ function navigateToResultEntry() {
       </div>
 
       <!-- Search Input & Reset Button -->
-      <div class="flex items-center space-x-2">
+      <div class="flex items-center gap-2">
         <div class="relative w-64">
           <span class="absolute inset-y-0 left-0 flex items-center pl-2.5 text-slate-400 pointer-events-none">
-            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+            <Icon name="search" size="xs" />
           </span>
           <input
             v-model="searchQuery"
             type="search"
-            placeholder="Search by sample ID, barcode, patient..."
-            class="input-faang w-full pl-8 pr-7 py-1 text-xs"
+            placeholder="Search sample ID, barcode, patient..."
+            class="w-full pl-8 pr-7 py-1 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-teal-500"
           />
           <button
             v-if="searchQuery"
             type="button"
-            class="absolute inset-y-0 right-0 flex items-center pr-2 text-slate-400 hover:text-slate-600 cursor-pointer"
+            class="absolute inset-y-0 right-0 flex items-center pr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
             title="Clear search"
             @click="searchQuery = ''"
           >
-            <span class="text-sm leading-none">&times;</span>
+            <Icon name="x" size="xs" />
           </button>
         </div>
-        <button
-          type="button"
-          class="btn-secondary"
+
+        <Button
+          variant="secondary"
+          size="sm"
           title="Reset all filters"
           @click="resetAllFilters"
         >
           Reset
-        </button>
+        </Button>
       </div>
     </div>
 
-    <!-- Main Laboratory Samples Table matching Screen 3 -->
-    <div class="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+    <!-- Main Laboratory Samples Table -->
+    <Card no-padding>
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-slate-200 text-xs">
-          <thead class="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider">
+        <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+          <thead class="bg-slate-50/80 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wider text-[11px]">
             <tr>
-              <th class="w-10 px-3 py-2.5 text-center">#</th>
-              <th class="px-4 py-2.5 text-left">Sample ID</th>
-              <th class="px-4 py-2.5 text-left">Patient Name</th>
-              <th class="px-4 py-2.5 text-left">Test / Package</th>
-              <th class="px-4 py-2.5 text-left">Department</th>
-              <th class="px-4 py-2.5 text-left">Status</th>
-              <th class="px-4 py-2.5 text-left">Collected At</th>
-              <th class="px-4 py-2.5 text-center">Actions</th>
+              <th class="w-10 px-3 py-3 text-center">#</th>
+              <th class="px-4 py-3 text-left">Specimen / Barcode</th>
+              <th class="px-4 py-3 text-left">Patient Details</th>
+              <th class="px-4 py-3 text-left">Investigation</th>
+              <th class="px-4 py-3 text-left">Department</th>
+              <th class="px-4 py-3 text-left">Workflow Status</th>
+              <th class="px-4 py-3 text-left">Collected At</th>
+              <th class="px-4 py-3 text-center">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 bg-white">
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
             <tr v-if="loading">
               <td colspan="8" class="text-center py-8 text-slate-400 font-medium">
-                Loading samples from database...
+                <div class="flex items-center justify-center gap-2">
+                  <Icon name="refresh" size="sm" class="animate-spin text-teal-600" />
+                  <span>Loading samples from database...</span>
+                </div>
               </td>
             </tr>
+
             <tr v-else-if="filteredSamples.length === 0">
               <td colspan="8" class="text-center py-8 text-slate-400 font-medium">
-                No samples matching your filter criteria
+                <Icon name="search" size="md" class="mx-auto text-slate-300 mb-1" />
+                <span>No samples match your filter criteria.</span>
               </td>
             </tr>
+
             <tr
               v-for="(s, idx) in paginatedSamples"
               v-else
@@ -424,77 +458,66 @@ function navigateToResultEntry() {
               :class="[
                 'cursor-pointer transition-colors',
                 selectedSample?.sample_id === s.sample_id
-                  ? 'bg-blue-50/70 border-l-4 border-l-blue-600'
-                  : 'hover:bg-slate-50'
+                  ? 'bg-teal-50/60 dark:bg-teal-950/40 border-l-4 border-l-teal-600'
+                  : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40'
               ]"
               @click="selectSample(s)"
             >
-              <td class="px-3 py-2.5 text-center font-mono font-bold text-slate-400">
+              <td class="px-3 py-3 text-center font-mono font-bold text-slate-400">
                 {{ (currentPage - 1) * pageSize + idx + 1 }}
               </td>
-              <td class="px-4 py-2.5 font-mono font-semibold text-blue-700">
-                <span class="flex items-center space-x-1.5">
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-2">
                   <span
-                    class="w-2 h-2 rounded-full inline-block shrink-0"
+                    class="w-3 h-3 rounded-full shrink-0 ring-1 ring-slate-300 dark:ring-slate-700"
                     :style="{ backgroundColor: s.tube_color }"
-                    title="Specimen Container Indicator"
+                    :title="s.specimen_type"
                   />
-                  <span>{{ s.sample_id }}</span>
-                </span>
+                  <div>
+                    <span class="font-mono font-bold text-teal-700 dark:text-teal-400 text-xs">
+                      {{ s.sample_id }}
+                    </span>
+                    <p class="text-[11px] text-slate-500 font-medium truncate max-w-[140px]">
+                      {{ s.specimen_type }}
+                    </p>
+                  </div>
+                </div>
               </td>
-              <td class="px-4 py-2.5 font-medium text-slate-900">
-                {{ s.patient_name }}
+              <td class="px-4 py-3">
+                <p class="font-semibold text-slate-900 dark:text-slate-100 text-xs">
+                  {{ s.patient_name }}
+                </p>
+                <div class="flex items-center gap-1.5 text-[11px] text-slate-500 font-mono">
+                  <span>{{ s.patient_uhid }}</span>
+                  <span>&bull;</span>
+                  <span>{{ s.age_sex }}</span>
+                </div>
               </td>
-              <td class="px-4 py-2.5 text-slate-700 font-medium">
+              <td class="px-4 py-3 text-slate-800 dark:text-slate-200 font-medium">
                 {{ s.test_name }}
               </td>
-              <td class="px-4 py-2.5 text-slate-500">
+              <td class="px-4 py-3 text-slate-500 dark:text-slate-400">
                 {{ s.department }}
               </td>
-              <td class="px-4 py-2.5">
-                <span
-                  :class="[
-                    'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border',
-                    s.status === 'Collected' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : '',
-                    s.status === 'Received' ? 'bg-teal-50 text-teal-700 border-teal-200' : '',
-                    s.status === 'Processing' ? 'bg-blue-50 text-blue-700 border-blue-200' : '',
-                    s.status === 'Completed' ? 'bg-green-50 text-green-700 border-green-200' : '',
-                    s.status === 'Pending' ? 'bg-amber-50 text-amber-700 border-amber-200' : '',
-                    s.status === 'Rejected' ? 'bg-red-50 text-red-700 border-red-200' : ''
-                  ]"
-                >
-                  <span
-                    :class="[
-                      'w-1.5 h-1.5 rounded-full mr-1',
-                      s.status === 'Collected' ? 'bg-emerald-500' : '',
-                      s.status === 'Received' ? 'bg-teal-500' : '',
-                      s.status === 'Processing' ? 'bg-blue-500 animate-pulse' : '',
-                      s.status === 'Completed' ? 'bg-green-500' : '',
-                      s.status === 'Pending' ? 'bg-amber-500' : '',
-                      s.status === 'Rejected' ? 'bg-red-500' : ''
-                    ]"
-                  />
+              <td class="px-4 py-3">
+                <Badge :variant="getStatusBadgeVariant(s.status)" size="sm" :dot="true">
                   {{ s.status }}
-                </span>
+                </Badge>
               </td>
-              <td class="px-4 py-2.5 text-slate-500 font-mono">
+              <td class="px-4 py-3 text-slate-600 dark:text-slate-400 font-mono whitespace-nowrap">
                 {{ s.collected_at }}
               </td>
-              <td class="px-4 py-2.5 text-center" @click.stop>
-                <div class="flex items-center justify-center space-x-1.5">
-                  <NuxtLink
-                    :to="`/pathology/results?sample_id=${s.sample_id}`"
-                    class="btn-primary py-0.5 px-2 text-[11px]"
-                    title="Enter Results &amp; Generate Report"
-                  >
-                    Workstation
+              <td class="px-4 py-3 text-center whitespace-nowrap" @click.stop>
+                <div class="flex items-center justify-center gap-1.5">
+                  <NuxtLink :to="`/pathology/results?sample_id=${s.sample_id}`">
+                    <Button variant="primary" size="sm">
+                      <span>Workstation</span>
+                    </Button>
                   </NuxtLink>
-                  <NuxtLink
-                    :to="`/pathology/verification?sample_id=${s.sample_id}`"
-                    class="btn-secondary py-0.5 px-2 text-[11px]"
-                    title="Pathologist Approvals Desk"
-                  >
-                    Verify
+                  <NuxtLink :to="`/pathology/verification?sample_id=${s.sample_id}`">
+                    <Button variant="secondary" size="sm">
+                      <span>Verify</span>
+                    </Button>
                   </NuxtLink>
                 </div>
               </td>
@@ -504,32 +527,39 @@ function navigateToResultEntry() {
       </div>
 
       <!-- Pagination Component -->
-      <PaginationBar
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :total-items="filteredSamples.length"
-      />
-    </div>
+      <div class="p-3 border-t border-slate-100 dark:border-slate-800">
+        <PaginationBar
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :total-items="filteredSamples.length"
+        />
+      </div>
+    </Card>
 
-    <!-- Bottom Split Section matching Screen 3: Sample Barcode Label (Left) + Quick Actions (Right) -->
-    <div v-if="selectedSample" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <!-- Left Card: Sample Barcode Label matching Screen 3 -->
-      <div class="bg-white rounded-lg border border-slate-200 shadow-xs p-4 flex flex-col justify-between">
-        <div>
-          <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
-            <h3 class="text-xs font-bold text-slate-900 tracking-tight flex items-center space-x-1.5">
-              <span>Sample Barcode Label</span>
-            </h3>
-            <span class="text-[11px] font-mono text-slate-500">
-              Container: {{ selectedSample.specimen_type }}
-            </span>
-          </div>
+    <!-- Bottom Split Section: Barcode Label (Left) + Quick Workflow Actions (Right) -->
+    <div v-if="selectedSample" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- Left Card: Sample Barcode Label -->
+      <Card
+        title="Thermal Barcode Specimen Label"
+        :subtitle="`Container: ${selectedSample.specimen_type}`"
+      >
+        <template #header-right>
+          <Button
+            variant="secondary"
+            size="sm"
+            @click="printBarcodeLabel"
+          >
+            <template #icon-left>
+              <Icon name="printer" size="sm" />
+            </template>
+            <span>Print Label</span>
+          </Button>
+        </template>
 
-          <!-- Barcode Graphic Container matching Screen 3 -->
-          <div class="bg-slate-50 border border-slate-200 rounded p-4 flex flex-col items-center justify-center text-center">
-            <!-- Authentic Barcode SVG Rendering -->
+        <div class="space-y-3">
+          <!-- Authentic Barcode Container -->
+          <div class="bg-white dark:bg-slate-950 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-4 flex flex-col items-center justify-center text-center">
             <svg class="w-64 h-12" viewBox="0 0 200 40">
-              <!-- Barcode Lines Pattern -->
               <rect x="10" y="0" width="3" height="40" fill="#0f172a" />
               <rect x="16" y="0" width="2" height="40" fill="#0f172a" />
               <rect x="22" y="0" width="4" height="40" fill="#0f172a" />
@@ -558,154 +588,136 @@ function navigateToResultEntry() {
               <rect x="186" y="0" width="4" height="40" fill="#0f172a" />
             </svg>
 
-            <!-- Barcode Number -->
-            <p class="font-mono text-xs font-bold text-slate-800 tracking-wider mt-1">
+            <p class="font-mono text-sm font-bold text-slate-900 dark:text-slate-100 tracking-wider mt-1.5">
               *{{ selectedSample.sample_id }}*
             </p>
 
-            <!-- Patient Metadata matching Screen 3 -->
-            <div class="mt-2 text-xs text-slate-700 font-medium">
-              <span class="font-mono text-blue-700">{{ selectedSample.patient_uhid }}</span>
-              <span class="mx-1.5 text-slate-300">|</span>
-              <span>{{ selectedSample.age_sex }}</span>
-              <span class="mx-1.5 text-slate-300">|</span>
+            <div class="mt-2 text-xs text-slate-700 dark:text-slate-300 font-medium">
+              <span class="font-mono font-bold text-teal-700 dark:text-teal-400">{{ selectedSample.patient_uhid }}</span>
+              <span class="mx-1.5 text-slate-300 dark:text-slate-700">|</span>
               <span>{{ selectedSample.patient_name }}</span>
+              <span class="mx-1.5 text-slate-300 dark:text-slate-700">|</span>
+              <span>{{ selectedSample.age_sex }}</span>
             </div>
-            <p class="text-[11px] text-slate-500 mt-0.5">
+
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
               {{ selectedSample.test_name }} &bull; {{ selectedSample.department }}
             </p>
           </div>
         </div>
+      </Card>
 
-        <!-- Print Action Button matching Screen 3 -->
-        <div class="mt-3 flex justify-end">
-          <button
-            type="button"
-            class="inline-flex items-center space-x-1.5 px-3 py-1.5 border border-slate-300 rounded text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 transition cursor-pointer shadow-2xs"
-            @click="printBarcodeLabel"
-          >
-            <svg class="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-            </svg>
-            <span>Print Label</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Right Card: Quick Actions matching Screen 3 -->
-      <div class="bg-white rounded-lg border border-slate-200 shadow-xs p-4 flex flex-col justify-between">
-        <div>
-          <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
-            <h3 class="text-xs font-bold text-slate-900 tracking-tight">
-              Quick Actions for {{ selectedSample.sample_id }}
-            </h3>
-            <span class="text-[11px] text-slate-400">Workflow Transition</span>
-          </div>
-
-          <!-- Description -->
-          <p class="text-xs text-slate-600 mb-4">
-            Advance the specimen through laboratory reception, accessioning and automated analyzer processing benches.
+      <!-- Right Card: Quick Actions & Workflow Dispatch -->
+      <Card
+        title="Accessioning & Workflow Bench Actions"
+        :subtitle="`Active Specimen: ${selectedSample.sample_id}`"
+      >
+        <div class="space-y-4">
+          <p class="text-xs text-slate-600 dark:text-slate-400">
+            Advance the specimen container through accessioning checks, analyzer benches, and pathology sign-off.
           </p>
 
-          <!-- Action Buttons in Colorful Semantics matching Screen 3 -->
+          <!-- Action Buttons Grid -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            <!-- Receive Sample -->
-            <button
-              type="button"
-              class="btn-emerald py-2.5 px-3 flex flex-col items-center justify-center space-y-1 text-xs"
+            <Button
+              variant="secondary"
+              class="flex-col py-3 h-auto text-xs"
               @click="markSampleReceived"
             >
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
+              <template #icon-left>
+                <Icon name="check" size="md" class="text-teal-600 mb-1" />
+              </template>
               <span>Receive Sample</span>
-            </button>
+            </Button>
 
-            <!-- Mark Processing -->
-            <button
-              type="button"
-              class="btn-primary py-2.5 px-3 flex flex-col items-center justify-center space-y-1 text-xs"
+            <Button
+              variant="secondary"
+              class="flex-col py-3 h-auto text-xs"
               @click="markSampleProcessing"
             >
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>Mark Processing</span>
-            </button>
+              <template #icon-left>
+                <Icon name="beaker" size="md" class="text-sky-600 mb-1" />
+              </template>
+              <span>Route to Bench</span>
+            </Button>
 
-            <!-- Mark Completed -->
-            <button
-              type="button"
-              class="btn-secondary py-2.5 px-3 flex flex-col items-center justify-center space-y-1 text-xs text-purple-700 hover:text-purple-900 border-purple-200 hover:bg-purple-50"
+            <Button
+              variant="secondary"
+              class="flex-col py-3 h-auto text-xs"
               @click="markSampleCompleted"
             >
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>Mark Completed</span>
-            </button>
+              <template #icon-left>
+                <Icon name="shield-check" size="md" class="text-emerald-600 mb-1" />
+              </template>
+              <span>Mark Complete</span>
+            </Button>
           </div>
-        </div>
 
-        <!-- Result Entry & Verification Direct Actions -->
-        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-          <span class="text-slate-500">
-            Workstation actions for {{ selectedSample.sample_id }}:
-          </span>
-          <div class="flex items-center space-x-2">
-            <button
-              type="button"
-              class="text-blue-700 font-semibold hover:underline flex items-center space-x-1 cursor-pointer"
-              @click="navigateToResultEntry"
-            >
-              <span>Result Entry &rarr;</span>
-            </button>
-            <span class="text-slate-300">|</span>
-            <NuxtLink
-              :to="`/pathology/verification?sample_id=${selectedSample.sample_id}`"
-              class="text-emerald-700 font-semibold hover:underline flex items-center space-x-1 cursor-pointer"
-            >
-              <span>Verification Desk &rarr;</span>
-            </NuxtLink>
+          <!-- Direct Navigation Links -->
+          <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+            <span class="text-slate-500">
+              Workstation shortcuts:
+            </span>
+            <div class="flex items-center gap-3">
+              <button
+                type="button"
+                class="text-teal-700 dark:text-teal-400 font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+                @click="navigateToResultEntry"
+              >
+                <span>Result Entry &rarr;</span>
+              </button>
+              <span class="text-slate-300 dark:text-slate-700">|</span>
+              <NuxtLink
+                :to="`/pathology/verification?sample_id=${selectedSample.sample_id}`"
+                class="text-sky-700 dark:text-sky-400 font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <span>Verification Desk &rarr;</span>
+              </NuxtLink>
+            </div>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
 
-    <!-- New Sample Intake Modal -->
+    <!-- Accession New Specimen Modal -->
     <Modal
       v-model="newSampleModalOpen"
       title="Accession New Laboratory Specimen"
-      description="Record accessioning for a newly received blood, serum or urine container."
+      description="Record accessioning for a newly received specimen container"
     >
-      <form class="space-y-3 text-xs" @submit.prevent="handleAddSample">
+      <form class="space-y-4 text-xs" @submit.prevent="handleAddSample">
         <div>
-          <label class="block font-medium text-slate-700 mb-1">Patient Name *</label>
+          <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">
+            Patient Full Name *
+          </label>
           <input
             v-model="newSampleForm.patient_name"
             type="text"
             required
-            placeholder="e.g. Rahul Verma"
-            class="w-full px-3 py-1.5 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            placeholder="e.g. Ramesh Kumar"
+            class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-500"
           />
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-medium text-slate-700 mb-1">Investigation</label>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Investigation Profile *
+            </label>
             <input
               v-model="newSampleForm.test_name"
               type="text"
               required
-              class="w-full px-3 py-1.5 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-500"
             />
           </div>
           <div>
-            <label class="block font-medium text-slate-700 mb-1">Department</label>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Department
+            </label>
             <select
               v-model="newSampleForm.department"
-              class="w-full px-3 py-1.5 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-500 cursor-pointer"
             >
               <option value="Hematology">Hematology</option>
               <option value="Biochemistry">Biochemistry</option>
@@ -717,10 +729,12 @@ function navigateToResultEntry() {
         </div>
 
         <div>
-          <label class="block font-medium text-slate-700 mb-1">Specimen Container Type</label>
+          <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">
+            Specimen Container Cap / Type
+          </label>
           <select
             v-model="newSampleForm.specimen_type"
-            class="w-full px-3 py-1.5 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-500 cursor-pointer"
           >
             <option value="EDTA Whole Blood">EDTA Whole Blood (Lavender Top)</option>
             <option value="Serum">Serum / Clot Activator (Gold/Red Top)</option>
@@ -729,20 +743,22 @@ function navigateToResultEntry() {
           </select>
         </div>
 
-        <div class="pt-3 border-t border-slate-100 flex justify-end space-x-2">
-          <button
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
+          <Button
             type="button"
-            class="px-3 py-1.5 border border-slate-300 rounded text-slate-700 bg-white hover:bg-slate-50 text-xs font-medium cursor-pointer"
+            variant="secondary"
+            size="sm"
             @click="newSampleModalOpen = false"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
-            class="px-3.5 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded shadow-xs cursor-pointer"
+            variant="primary"
+            size="sm"
           >
-            Generate Barcode &amp; Accession
-          </button>
+            <span>Generate Barcode &amp; Accession</span>
+          </Button>
         </div>
       </form>
     </Modal>
