@@ -1,143 +1,230 @@
 <script setup lang="ts">
-export interface TableColumn {
+import { ref, computed } from 'vue'
+import Icon from './Icon.vue'
+import Checkbox from './Checkbox.vue'
+import Skeleton from './Skeleton.vue'
+import EmptyState from './EmptyState.vue'
+
+export interface ColumnDef {
   key: string
   label: string
   sortable?: boolean
   align?: 'left' | 'center' | 'right'
   width?: string
-  monospace?: boolean
 }
 
 interface Props {
-  columns: TableColumn[]
-  items: Array<Record<string, any>>
+  columns: ColumnDef[]
+  data: any[]
+  rowKey?: string
   loading?: boolean
-  emptyText?: string
-  totalItems?: number
-  pageSize?: number
-  currentPage?: number
+  dense?: boolean
+  zebra?: boolean
+  selectable?: boolean
+  selectedKeys?: any[]
+  emptyTitle?: string
+  emptyDescription?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  rowKey: 'id',
   loading: false,
-  emptyText: 'No records found',
-  totalItems: 0,
-  pageSize: 20,
-  currentPage: 1,
+  dense: true,
+  zebra: false,
+  selectable: false,
+  selectedKeys: () => [],
+  emptyTitle: 'No records found',
+  emptyDescription: 'There are no items to display in this list.',
 })
 
 const emit = defineEmits<{
-  (e: 'update:currentPage', page: number): void
-  (e: 'row-click', item: Record<string, any>): void
-  (e: 'sort', key: string): void
+  (e: 'update:selectedKeys', keys: any[]): void
+  (e: 'row-click', row: any, index: number): void
+  (e: 'sort', key: string, order: 'asc' | 'desc'): void
 }>()
+
+const sortKey = ref<string>('')
+const sortOrder = ref<'asc' | 'desc'>('asc')
+const activeRowIndex = ref<number>(-1)
+
+function handleSort(col: ColumnDef) {
+  if (!col.sortable) return
+  if (sortKey.value === col.key) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortKey.value = col.key
+    sortOrder.value = 'asc'
+  }
+  emit('sort', sortKey.value, sortOrder.value)
+}
+
+const isAllSelected = computed(() => {
+  if (!props.data.length) return false
+  return props.data.every((r) => props.selectedKeys.includes(r[props.rowKey]))
+})
+
+const isIndeterminate = computed(() => {
+  if (!props.data.length || isAllSelected.value) return false
+  return props.data.some((r) => props.selectedKeys.includes(r[props.rowKey]))
+})
+
+function toggleSelectAll() {
+  if (isAllSelected.value) {
+    emit('update:selectedKeys', [])
+  } else {
+    emit('update:selectedKeys', props.data.map((r) => r[props.rowKey]))
+  }
+}
+
+function toggleRowSelect(row: any, e?: Event) {
+  if (e) e.stopPropagation()
+  const key = row[props.rowKey]
+  const idx = props.selectedKeys.indexOf(key)
+  const next = [...props.selectedKeys]
+  if (idx >= 0) {
+    next.splice(idx, 1)
+  } else {
+    next.push(key)
+  }
+  emit('update:selectedKeys', next)
+}
+
+function onRowClick(row: any, idx: number) {
+  activeRowIndex.value = idx
+  emit('row-click', row, idx)
+}
 </script>
 
 <template>
-  <div class="w-full bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden flex flex-col text-left">
-    <div class="overflow-x-auto w-full">
-      <table class="min-w-full divide-y divide-slate-200 text-sm">
-        <thead class="bg-slate-50 sticky top-0 z-10">
+  <div class="w-full overflow-hidden border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-2xs">
+    <div class="overflow-x-auto max-h-[70vh]">
+      <table class="w-full text-left border-collapse select-none">
+        <!-- Sticky Table Header -->
+        <thead class="sticky top-0 z-10 bg-slate-50 dark:bg-slate-800/90 backdrop-blur-xs border-b border-slate-200 dark:border-slate-800">
           <tr>
+            <!-- Selection Checkbox Header -->
+            <th v-if="selectable" class="w-10 px-3 py-2 text-center">
+              <Checkbox
+                :model-value="isAllSelected"
+                :indeterminate="isIndeterminate"
+                @change="toggleSelectAll"
+              />
+            </th>
+
+            <!-- Data Column Headers -->
             <th
               v-for="col in columns"
               :key="col.key"
-              scope="col"
-              :style="col.width ? { width: col.width } : undefined"
+              :style="{ width: col.width }"
               :class="[
-                'px-3 py-2.5 text-xs font-semibold text-slate-600 uppercase tracking-wider select-none',
-                col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left',
-                col.sortable ? 'cursor-pointer hover:bg-slate-100' : ''
+                'px-3.5 py-2 font-semibold text-xs text-slate-600 dark:text-slate-300 tracking-wider whitespace-nowrap',
+                col.sortable ? 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors' : '',
+                col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
               ]"
-              @click="col.sortable ? emit('sort', col.key) : undefined"
+              @click="handleSort(col)"
             >
               <div
-                class="inline-flex items-center space-x-1"
-                :class="col.align === 'right' ? 'justify-end' : col.align === 'center' ? 'justify-center' : 'justify-start'"
+                class="inline-flex items-center gap-1.5"
+                :class="col.align === 'right' ? 'flex-row-reverse' : ''"
               >
                 <span>{{ col.label }}</span>
-                <span v-if="col.sortable" class="text-slate-400 text-xs">↕</span>
+                <span v-if="col.sortable" class="text-slate-400">
+                  <Icon
+                    v-if="sortKey === col.key && sortOrder === 'asc'"
+                    name="chevron-up"
+                    size="xs"
+                    className="text-teal-600"
+                  />
+                  <Icon
+                    v-else-if="sortKey === col.key && sortOrder === 'desc'"
+                    name="chevron-down"
+                    size="xs"
+                    className="text-teal-600"
+                  />
+                  <Icon
+                    v-else
+                    name="chevron-down"
+                    size="xs"
+                    className="opacity-40"
+                  />
+                </span>
               </div>
             </th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100 bg-white">
-          <tr v-if="loading">
-            <td :colspan="columns.length" class="py-8 text-center text-slate-500">
-              <div class="inline-flex items-center space-x-2 text-teal-600">
-                <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                </svg>
-                <span class="text-xs font-medium text-slate-600">Loading clinical records...</span>
-              </div>
+
+        <!-- Loading Skeletons -->
+        <tbody v-if="loading" class="divide-y divide-slate-100 dark:divide-slate-800">
+          <tr v-for="n in 5" :key="n" :class="dense ? 'h-9' : 'h-11'">
+            <td v-if="selectable" class="px-3 text-center">
+              <Skeleton width="16px" height="16px" rounded="sm" />
+            </td>
+            <td v-for="col in columns" :key="col.key" class="px-3.5">
+              <Skeleton height="14px" :width="col.width || '70%'" />
             </td>
           </tr>
-          <tr v-else-if="items.length === 0">
-            <td :colspan="columns.length" class="py-8 text-center text-slate-400 text-xs italic">
-              {{ emptyText }}
-            </td>
-          </tr>
+        </tbody>
+
+        <!-- Data Rows -->
+        <tbody v-else-if="data.length > 0" class="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
           <tr
-            v-for="(item, idx) in items"
-            v-else
-            :key="item.id || idx"
-            class="hover:bg-teal-50/40 cursor-pointer transition-colors"
-            @click="emit('row-click', item)"
+            v-for="(row, idx) in data"
+            :key="row[rowKey] || idx"
+            :class="[
+              'transition-colors cursor-pointer',
+              dense ? 'h-9' : 'h-11',
+              zebra && idx % 2 === 1 ? 'bg-slate-50/50 dark:bg-slate-800/20' : '',
+              selectedKeys.includes(row[rowKey])
+                ? 'bg-teal-50/70 dark:bg-teal-950/40'
+                : activeRowIndex === idx
+                ? 'bg-slate-100 dark:bg-slate-800'
+                : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'
+            ]"
+            @click="onRowClick(row, idx)"
           >
+            <!-- Row Checkbox -->
+            <td v-if="selectable" class="w-10 px-3 text-center" @click.stop>
+              <Checkbox
+                :model-value="selectedKeys.includes(row[rowKey])"
+                @change="toggleRowSelect(row)"
+              />
+            </td>
+
+            <!-- Cells -->
             <td
               v-for="col in columns"
               :key="col.key"
               :class="[
-                'px-3 py-2.5 whitespace-nowrap text-slate-700',
-                col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left',
-                col.monospace ? 'font-mono tabular-nums text-xs' : ''
+                'px-3.5 text-slate-800 dark:text-slate-200 whitespace-nowrap',
+                col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
               ]"
             >
-              <slot :name="`cell(${col.key})`" :item="item" :value="item[col.key]">
-                {{ item[col.key] !== null && item[col.key] !== undefined ? item[col.key] : '—' }}
+              <slot :name="`cell-${col.key}`" :row="row" :value="row[col.key]" :index="idx">
+                {{ row[col.key] !== undefined && row[col.key] !== null ? row[col.key] : '—' }}
               </slot>
             </td>
           </tr>
         </tbody>
       </table>
+
+      <!-- Empty State -->
+      <div v-if="!loading && data.length === 0" class="p-6">
+        <slot name="empty">
+          <EmptyState
+            icon="search"
+            :title="emptyTitle"
+            :description="emptyDescription"
+          />
+        </slot>
+      </div>
     </div>
 
-    <!-- Pagination Footer -->
+    <!-- Table Footer / Pagination Slot -->
     <div
-      v-if="totalItems > pageSize"
-      class="bg-slate-50 px-4 py-2.5 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500"
+      v-if="$slots.footer"
+      class="border-t border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 px-4 py-2.5"
     >
-      <div>
-        Showing
-        <span class="font-semibold text-slate-700 font-mono">{{ (currentPage - 1) * pageSize + 1 }}</span>
-        to
-        <span class="font-semibold text-slate-700 font-mono">
-          {{ Math.min(currentPage * pageSize, totalItems) }}
-        </span>
-        of
-        <span class="font-semibold text-slate-700 font-mono">{{ totalItems }}</span>
-        entries
-      </div>
-
-      <div class="flex items-center space-x-1">
-        <button
-          type="button"
-          :disabled="currentPage <= 1"
-          class="px-2.5 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-          @click="emit('update:currentPage', currentPage - 1)"
-        >
-          Previous
-        </button>
-        <button
-          type="button"
-          :disabled="currentPage * pageSize >= totalItems"
-          class="px-2.5 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-          @click="emit('update:currentPage', currentPage + 1)"
-        >
-          Next
-        </button>
-      </div>
+      <slot name="footer" />
     </div>
   </div>
 </template>

@@ -44,6 +44,7 @@ echo [OK] Frontend compiled successfully.
 echo.
 
 echo [3/5] Installing PyInstaller Dependencies...
+%PY_CMD% -m pip uninstall -y pathlib >nul 2>&1
 %PY_CMD% -m pip install --upgrade pip pyinstaller >nul 2>&1
 echo [OK] PyInstaller ready.
 echo.

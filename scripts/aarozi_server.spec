@@ -6,13 +6,17 @@ from pathlib import Path
 
 block_cipher = None
 
-repo_root = Path(os.path.abspath('.')).resolve()
+repo_root = Path(SPECPATH).resolve().parent if 'SPECPATH' in globals() else Path(os.path.abspath('.')).resolve()
 api_dir = repo_root / 'apps' / 'api'
 web_output = repo_root / 'apps' / 'web' / '.output' / 'public'
+entry_script = str(api_dir / 'run_server.py')
 
 datas = [
-    (str(api_dir / 'dev_aarozi.db'), '.') if (api_dir / 'dev_aarozi.db').exists() else (str(api_dir / 'app'), 'app'),
+    (str(api_dir / 'app'), 'app'),
 ]
+
+if (api_dir / 'dev_aarozi.db').exists():
+    datas.append((str(api_dir / 'dev_aarozi.db'), '.'))
 
 if web_output.exists():
     datas.append((str(web_output), 'apps/web/.output/public'))
@@ -68,7 +72,7 @@ hidden_imports = [
 ]
 
 a = Analysis(
-    ['apps/api/run_server.py'],
+    [entry_script],
     pathex=[str(repo_root), str(api_dir)],
     binaries=[],
     datas=datas,
