@@ -2,6 +2,7 @@
 const links = [
   { label: 'Product', to: '/product' },
   { label: 'Pricing', to: '/pricing' },
+  { label: 'FAQ', to: '/faq' },
   { label: 'Setup guide', to: '/setup' },
   { label: 'Downloads', to: '/download' },
 ]
@@ -28,8 +29,8 @@ const links = [
     <footer class="border-t border-slate-200 bg-slate-950 text-slate-300">
       <div class="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
         <div class="sm:col-span-2"><div class="font-bold text-white">Aarozi Healthcare</div><p class="mt-3 max-w-md text-sm leading-6 text-slate-400">Laboratory software designed around local operations, clear workflows and customer-controlled data.</p></div>
-        <div><div class="font-semibold text-white">Explore</div><div class="mt-3 grid gap-2 text-sm"><NuxtLink to="/product">Product information</NuxtLink><NuxtLink to="/pricing">Plans & pricing</NuxtLink><NuxtLink to="/setup">Installation guide</NuxtLink><NuxtLink to="/download">Software downloads</NuxtLink></div></div>
-        <div><div class="font-semibold text-white">Account & help</div><div class="mt-3 grid gap-2 text-sm"><NuxtLink to="/signup">Create account</NuxtLink><NuxtLink to="/portal/login">Customer login</NuxtLink><NuxtLink to="/business-registration">Lab registration</NuxtLink><NuxtLink to="/support">Support</NuxtLink><NuxtLink to="/privacy">Privacy information</NuxtLink></div></div>
+        <div><div class="font-semibold text-white">Explore</div><div class="mt-3 grid gap-2 text-sm"><NuxtLink to="/product">Product information</NuxtLink><NuxtLink to="/pricing">Plans & pricing</NuxtLink><NuxtLink to="/faq">Frequently asked questions</NuxtLink><NuxtLink to="/setup">Installation guide</NuxtLink><NuxtLink to="/download">Software downloads</NuxtLink></div></div>
+        <div><div class="font-semibold text-white">Account & help</div><div class="mt-3 grid gap-2 text-sm"><NuxtLink to="/signup">Create account</NuxtLink><NuxtLink to="/portal/login">Customer login</NuxtLink><NuxtLink to="/business-registration">Lab registration</NuxtLink><NuxtLink to="/contact">Contact</NuxtLink><NuxtLink to="/support">Support</NuxtLink><NuxtLink to="/privacy">Privacy information</NuxtLink><NuxtLink to="/terms">Terms</NuxtLink></div></div>
       </div>
       <div class="border-t border-slate-800 px-4 py-4 text-center text-xs text-slate-500">© {{ new Date().getFullYear() }} Aarozi Healthcare. Product website: labs.aarozi.in</div>
     </footer>
