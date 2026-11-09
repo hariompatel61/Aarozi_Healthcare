@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ layout: 'public' })
+definePageMeta({ layout: 'public' as any })
 useSeoMeta({ title: 'Product information | Aarozi Healthcare', description: 'Explore Aarozi Healthcare LIS modules and laboratory workflows.' })
 const modules = [
 ['Patient registration','Capture patient and referring details as part of the laboratory intake process.'],
