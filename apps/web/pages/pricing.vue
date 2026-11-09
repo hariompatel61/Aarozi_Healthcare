@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ layout: 'public' as any })
+definePageMeta({ layout: 'public' as any as any })
 useSeoMeta({ title: 'Pricing | Aarozi Healthcare', description: 'Compare Aarozi Healthcare commercial software plans.' })
 const api = useApi()
 const { data: pricing, pending, error } = await useAsyncData('commercial-plans', () => api.get<any>('/payments/plans'), { server: false })
