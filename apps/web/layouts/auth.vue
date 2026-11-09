@@ -47,3 +47,4 @@ import ToastProvider from '~/components/ui/ToastProvider.vue'
     <ToastProvider />
   </div>
 </template>
+

@@ -13,5 +13,7 @@ coverage/
 .vscode/*.local.json
 dist/
 build/
+.nuxt/
+.output/
 *.sqlite3
 *.db

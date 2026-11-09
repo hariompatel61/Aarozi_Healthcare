@@ -1,7 +1,13 @@
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useToast } from '~/composables/useToast'
+import PageHeader from '~/components/ui/PageHeader.vue'
+import Card from '~/components/ui/Card.vue'
+import Button from '~/components/ui/Button.vue'
+import Badge from '~/components/ui/Badge.vue'
+import Kbd from '~/components/ui/Kbd.vue'
+import Icon from '~/components/ui/Icon.vue'
 import Modal from '~/components/ui/Modal.vue'
 
 const router = useRouter()
@@ -13,9 +19,8 @@ const api = useApi()
 // 1. PATIENT DEMOGRAPHICS & MOBILE / NAME AUTO-LOOKUP
 // -------------------------------------------------------------
 const loading = ref(false)
-const errorState = ref<string | null>(null)
-const permission_denied = ref(false)
-const firstNameInput = ref<HTMLInputElement | null>(null)
+const mobileInputRef = ref<HTMLInputElement | null>(null)
+const testSearchInputRef = ref<HTMLInputElement | null>(null)
 
 const patientUhid = ref(`PAT25000${Math.floor(10 + Math.random() * 90)}`)
 const isExistingPatient = ref(false)
@@ -132,7 +137,6 @@ async function checkMobileLookup() {
   try {
     const data: any = await api.get(`/patients?query=${encodeURIComponent(cleanMobile.slice(-10))}`)
     if (Array.isArray(data) && data.length > 0) {
-      // Look for a confirmed match on phone number
       const match = data.find((p: any) => {
         const pMob = (p.mobile_normalized || p.mobile || '').replace(/\D/g, '')
         return pMob.endsWith(cleanMobile.slice(-10))
@@ -142,7 +146,6 @@ async function checkMobileLookup() {
         return
       }
     }
-    // If no match found, do NOT overwrite any user-entered name or details
     isExistingPatient.value = false
     info('New Patient', `No prior record for ${cleanMobile.slice(-10)}. Proceed with registration.`)
   } catch (err) {
@@ -209,7 +212,6 @@ async function loadReferralPartners() {
         partner_type: p.partner_type || 'doctor',
         commission_pct: Number(p.commission_value || 15),
       }))
-      // Ensure Self/Direct exists
       if (!partners.value.find((p) => p.id === 'ref-00')) {
         partners.value.push({ id: 'ref-00', name: 'Direct Walk-in / Self', specialty: 'None', partner_type: 'self', commission_pct: 0 })
       }
@@ -362,7 +364,7 @@ function removeTest(code: string) {
 }
 
 // -------------------------------------------------------------
-// 4. DISCOUNT & AUTOMATIC COMMISSION ENGINE
+// 4. DISCOUNT & COMMISSION ENGINE
 // -------------------------------------------------------------
 const discountType = ref<'flat' | 'percentage'>('flat')
 const discountValue = ref<number>(0)
@@ -383,20 +385,18 @@ const netPayable = computed(() => {
   return Math.max(0, grossAmount.value - calculatedDiscount.value)
 })
 
-// Automated Referral Doctor Commission Calculation
 const referralCommissionAmount = computed(() => {
   if (!selectedPartner.value || selectedPartner.value.commission_pct <= 0) return 0
   return Math.round((netPayable.value * selectedPartner.value.commission_pct) / 100)
 })
 
 // -------------------------------------------------------------
-// 5. PAYMENT COLLECTION (SPLIT TENDER)
+// 5. PAYMENT TENDER (SPLIT TENDER)
 // -------------------------------------------------------------
 const tenderCash = ref<number>(900)
 const tenderUpi = ref<number>(0)
 const tenderCard = ref<number>(0)
 
-// Keep cash in sync initially when net payable updates if no split has started
 watch(netPayable, (newNet) => {
   if (tenderUpi.value === 0 && tenderCard.value === 0) {
     tenderCash.value = newNet
@@ -442,11 +442,13 @@ const generatedInvoiceNo = ref('')
 async function handleSaveAndPrintInvoice() {
   if (!form.full_name.trim() || !form.mobile.trim()) {
     warning('Missing Information', 'Patient Name and Mobile Phone are required.')
+    mobileInputRef.value?.focus()
     return
   }
 
   if (selectedTests.value.length === 0) {
     warning('No Tests Selected', 'Please select at least one test from the catalog.')
+    testSearchInputRef.value?.focus()
     return
   }
 
@@ -454,7 +456,6 @@ async function handleSaveAndPrintInvoice() {
   generatedInvoiceNo.value = `INV-2026-${Math.floor(10000 + Math.random() * 90000)}`
 
   try {
-    // 1. Register/Ensure Patient in Database
     let registeredPatientId = existingPatientId.value || patientUhid.value
     if (!isExistingPatient.value || !existingPatientId.value) {
       try {
@@ -482,7 +483,6 @@ async function handleSaveAndPrintInvoice() {
       }
     }
 
-    // 2. Create Billing Invoice in Database
     try {
       await api.post('/billing/invoices/create', {
         patient_id: registeredPatientId,
@@ -499,7 +499,6 @@ async function handleSaveAndPrintInvoice() {
       console.warn('Billing invoice creation error:', invErr)
     }
 
-    // 3. Create Pathology Diagnostic Order in Laboratory Workstation
     try {
       await api.post('/pathology/orders/create', {
         patient_id: registeredPatientId,
@@ -510,7 +509,6 @@ async function handleSaveAndPrintInvoice() {
       console.warn('Pathology order workflow creation fallback:', ordErr)
     }
 
-    // 4. Record Payment Tender
     if (totalPaidNow.value > 0) {
       try {
         await api.post('/billing/payments/record', {
@@ -526,10 +524,9 @@ async function handleSaveAndPrintInvoice() {
 
     success(
       'Patient Registered & Invoice Saved',
-      `UHID: ${patientUhid.value} &bull; Patient: ${form.full_name} &bull; Net Bill: ₹${netPayable.value.toLocaleString('en-IN')}`
+      `UHID: ${patientUhid.value} • Patient: ${form.full_name} • Net Bill: ₹${netPayable.value.toLocaleString('en-IN')}`
     )
 
-    // Trigger Print Receipt Modal
     showReceiptModal.value = true
   } catch (err: any) {
     error('Registration Error', err?.message || 'Could not complete registration')
@@ -541,6 +538,7 @@ async function handleSaveAndPrintInvoice() {
 function handleSaveAndPrintBarcodes() {
   if (selectedTests.value.length === 0) {
     warning('No Tests Selected', 'Select investigations to generate specimen tube barcodes.')
+    return
   }
   showBarcodeModal.value = true
 }
@@ -557,31 +555,39 @@ function resetPosCounter() {
   tenderUpi.value = 0
   tenderCard.value = 0
   info('Counter Reset', 'Ready for next patient intake.')
+  nextTick(() => {
+    mobileInputRef.value?.focus()
+  })
 }
 
-// Global Keyboard Shortcut: F2 for Save & Print Invoice
 function handleGlobalKeydown(e: KeyboardEvent) {
-  if (e.key === 'F2') {
+  if (e.key === 'F2' || (e.altKey && e.key.toLowerCase() === 's')) {
     e.preventDefault()
     handleSaveAndPrintInvoice()
+  } else if (e.key === 'F3') {
+    e.preventDefault()
+    testSearchInputRef.value?.focus()
   } else if (e.key === 'Escape') {
     if (showSearchDropdown.value) showSearchDropdown.value = false
-    if (showReceiptModal.value) showReceiptModal.value = false
-    if (showBarcodeModal.value) showBarcodeModal.value = false
-    if (isAddDoctorModalOpen.value) isAddDoctorModalOpen.value = false
+    else if (showReceiptModal.value) showReceiptModal.value = false
+    else if (showBarcodeModal.value) showBarcodeModal.value = false
+    else if (isAddDoctorModalOpen.value) isAddDoctorModalOpen.value = false
   }
 }
 
 onMounted(() => {
   window.addEventListener('keydown', handleGlobalKeydown)
   loadReferralPartners()
-  // set initial cash amount
   tenderCash.value = netPayable.value
 
   const qPatientId = (route.query.patient_id as string) || (route.query.uhid as string)
   if (qPatientId) {
     loadPreselectedPatient(qPatientId)
   }
+
+  nextTick(() => {
+    mobileInputRef.value?.focus()
+  })
 })
 
 onUnmounted(() => {
@@ -590,551 +596,582 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div
-    class="space-y-4 max-w-7xl mx-auto text-left"
-    @keydown.alt.s.prevent="handleSaveAndPrintInvoice"
-    @keydown.esc.prevent="resetPosCounter"
-  >
-    <!-- Top Action Bar -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
-      <div>
-        <h1 class="text-xl font-bold text-slate-900 tracking-tight flex items-center space-x-2">
-          <span>Patient Intake &amp; Quick Billing POS</span>
-          <span class="text-xs px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 font-mono font-bold">
-            Counter Terminal #01
-          </span>
-        </h1>
-        <p class="text-xs text-slate-500 mt-0.5">
-          Single-screen registration, clinician mapping, multi-select test pricing, and instant split cashier tender
-        </p>
-      </div>
-
-      <!-- Quick Action Indicators -->
-      <div class="flex items-center space-x-2 text-xs">
-        <span class="inline-flex items-center px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium text-[11px]">
-          Instant Bill &amp; Print
+  <div class="space-y-4 max-w-7xl mx-auto text-left text-slate-900 dark:text-slate-100 pb-12">
+    <!-- Top Action Header -->
+    <PageHeader
+      title="Patient Intake & Quick Billing POS"
+      subtitle="Under-1-minute front desk intake: mobile lookup, investigation picker, and split cashier tender."
+      icon="users"
+      badge="Terminal #01"
+      badge-variant="info"
+    >
+      <template #meta>
+        <span class="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Local LAN Cashier Ready</span>
         </span>
-        <button
-          type="button"
-          class="px-2.5 py-1 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded font-semibold text-xs cursor-pointer transition"
+        <span class="text-slate-300 dark:text-slate-700">•</span>
+        <span class="text-xs text-slate-500">Shortcuts:</span>
+        <Kbd size="xs">F2</Kbd>
+        <span class="text-xs text-slate-400">Save & Print</span>
+        <Kbd size="xs">F3</Kbd>
+        <span class="text-xs text-slate-400">Search Tests</span>
+      </template>
+
+      <template #actions>
+        <Button
+          variant="secondary"
+          size="sm"
+          icon-left="refresh"
           @click="resetPosCounter"
         >
-          Clear POS
-        </button>
-      </div>
-    </div>
+          Clear POS [Esc]
+        </Button>
+        <Button
+          variant="success"
+          size="sm"
+          icon-left="printer"
+          :loading="isSubmitting"
+          @click="handleSaveAndPrintInvoice"
+        >
+          Save & Print [F2]
+        </Button>
+      </template>
+    </PageHeader>
 
-    <!-- Main POS Layout: Left Column (Intake & Tests) + Right Column (Billing, Commission & Tender) -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+    <!-- Main Two-Column POS Layout (7 cols Left / 5 cols Right) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
       <!-- ======================================================== -->
-      <!-- LEFT COLUMN (7 OF 12 COLS): DEMOGRAPHICS & TESTS         -->
+      <!-- LEFT COLUMN: PATIENT DEMOGRAPHICS & INVESTIGATION CATALOG -->
       <!-- ======================================================== -->
       <div class="lg:col-span-7 space-y-4">
-        <!-- 1. Patient Demographics & Mobile Lookup -->
-        <div class="bg-white rounded-lg border border-slate-200 shadow-xs p-4 space-y-3 text-xs">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-            <h2 class="font-bold text-slate-900 text-sm flex items-center space-x-1.5">
-              <span>1. Patient Demographics</span>
-              <span v-if="isExistingPatient" class="text-[10px] bg-emerald-100 text-emerald-800 font-mono px-2 py-0.5 rounded-full font-bold">
-                Returning Patient
-              </span>
-            </h2>
-            <div class="flex items-center space-x-1.5 font-mono text-[11px]">
-              <span class="text-slate-400">UHID:</span>
-              <span class="font-bold text-blue-700">{{ patientUhid }}</span>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 relative">
-            <!-- Mobile Phone Input (Auto-Search Repeat Patient) -->
-            <div class="relative">
-              <div class="flex items-center justify-between mb-1">
-                <label class="block font-semibold text-slate-700">
-                  Mobile Number <span class="text-red-500">*</span>
-                </label>
-                <button
-                  v-if="isExistingPatient"
-                  type="button"
-                  class="text-[10px] font-semibold text-amber-600 hover:text-amber-800 cursor-pointer"
-                  @click="resetToNewPatient"
-                >
-                  Change to New
-                </button>
-                <button
-                  v-else-if="form.mobile.replace(/\D/g, '').length >= 10"
-                  type="button"
-                  class="text-[10px] font-semibold text-blue-600 hover:text-blue-800 cursor-pointer"
-                  @click="checkMobileLookup"
-                >
-                  Check Past Record
-                </button>
+        <!-- 1. Patient Demographics & Repeat Search -->
+        <Card title="1. Patient Demographics" dense>
+          <template #header-right>
+            <div class="flex items-center gap-2">
+              <Badge v-if="isExistingPatient" variant="success" size="sm">
+                Repeat Patient Verified
+              </Badge>
+              <Badge v-else variant="neutral" size="sm">
+                New Patient
+              </Badge>
+              <div class="flex items-center gap-1 font-mono text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+                <span class="text-slate-400">UHID:</span>
+                <span class="font-bold text-teal-700 dark:text-teal-400">{{ patientUhid }}</span>
               </div>
+            </div>
+          </template>
+
+          <div class="p-4 space-y-3.5 relative">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <!-- Mobile Number -->
               <div class="relative">
-                <input
-                  v-model="form.mobile"
-                  type="tel"
-                  maxlength="10"
-                  placeholder="10-digit mobile"
-                  class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs font-mono focus:ring-1 focus:ring-blue-500 bg-white"
-                  :class="isExistingPatient ? 'border-emerald-400 bg-emerald-50/20' : ''"
-                  @input="triggerPatientSearch(form.mobile, 'mobile')"
-                  @focus="form.mobile.length >= 3 && triggerPatientSearch(form.mobile, 'mobile')"
-                  @keydown.enter.prevent="checkMobileLookup"
-                />
-                <span v-if="isSearchingPatients && activeSearchField === 'mobile'" class="absolute right-2 top-2 text-slate-400">
-                  <svg class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
-                </span>
-              </div>
-              <p class="text-[10px] text-slate-400 mt-0.5">Type 3+ digits to auto-search repeat patients</p>
-            </div>
-
-            <!-- Patient Name (Auto-Search Repeat Patient) -->
-            <div class="sm:col-span-2 relative">
-              <div class="flex items-center justify-between mb-1">
-                <label class="block font-semibold text-slate-700">
-                  Full Name <span class="text-red-500">*</span>
-                </label>
-                <span v-if="isExistingPatient" class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                  Returning Patient Verified
-                </span>
-                <span v-else class="text-[10px] text-slate-400">
-                  Auto-searches as you type
-                </span>
-              </div>
-              <div class="relative">
-                <input
-                  ref="firstNameInput"
-                  v-model="form.full_name"
-                  type="text"
-                  placeholder="e.g. Aarav Sharma (type 2+ letters to search returning patients)"
-                  class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500 bg-white"
-                  :class="isExistingPatient ? 'border-emerald-400 bg-emerald-50/20' : ''"
-                  @input="triggerPatientSearch(form.full_name, 'name')"
-                  @focus="form.full_name.length >= 2 && triggerPatientSearch(form.full_name, 'name')"
-                />
-                <span v-if="isSearchingPatients && activeSearchField === 'name'" class="absolute right-2 top-2 text-slate-400">
-                  <svg class="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
-                </span>
-              </div>
-              <p class="text-[10px] text-slate-400 mt-0.5">Type name to instantly choose from repeat patients</p>
-            </div>
-
-            <!-- Auto-Suggest Dropdown for Repeat Patients -->
-            <div
-              v-if="showSearchDropdown && searchSuggestions.length > 0"
-              class="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-blue-200 rounded-lg shadow-2xl overflow-hidden text-xs divide-y divide-slate-100 ring-1 ring-black/5"
-            >
-              <div class="bg-blue-50/90 px-3 py-1.5 flex items-center justify-between text-[11px] font-semibold text-blue-900 border-b border-blue-100">
-                <div class="flex items-center space-x-1.5">
-                  <span class="inline-block w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
-                  <span>Repeat Patients Found ({{ searchSuggestions.length }}) &mdash; Click to Auto-fill</span>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Mobile Number <span class="text-red-500">*</span>
+                  </label>
+                  <button
+                    v-if="isExistingPatient"
+                    type="button"
+                    class="text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+                    @click="resetToNewPatient"
+                  >
+                    Change to New
+                  </button>
+                  <button
+                    v-else-if="form.mobile.replace(/\D/g, '').length >= 10"
+                    type="button"
+                    class="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline cursor-pointer"
+                    @click="checkMobileLookup"
+                  >
+                    Check Past
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  class="text-slate-400 hover:text-slate-700 text-sm font-bold px-1"
-                  @click="showSearchDropdown = false"
-                >
-                  &times;
-                </button>
+
+                <div class="relative">
+                  <input
+                    ref="mobileInputRef"
+                    v-model="form.mobile"
+                    type="tel"
+                    maxlength="10"
+                    placeholder="10-digit mobile"
+                    class="w-full px-3 py-2 border rounded-lg text-xs font-mono bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
+                    :class="isExistingPatient ? 'border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/20' : ''"
+                    @input="triggerPatientSearch(form.mobile, 'mobile')"
+                    @focus="form.mobile.length >= 3 && triggerPatientSearch(form.mobile, 'mobile')"
+                    @keydown.enter.prevent="checkMobileLookup"
+                  />
+                  <span v-if="isSearchingPatients && activeSearchField === 'mobile'" class="absolute right-2.5 top-2.5 text-slate-400">
+                    <Icon name="refresh" size="xs" class="animate-spin" />
+                  </span>
+                </div>
+                <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Type 3+ digits to auto-suggest returning patients</p>
               </div>
 
-              <div class="max-h-56 overflow-y-auto divide-y divide-slate-100 bg-white">
-                <button
-                  v-for="sug in searchSuggestions"
-                  :key="sug.id"
-                  type="button"
-                  class="w-full text-left px-3 py-2 hover:bg-sky-50 focus:bg-sky-50 flex items-center justify-between transition cursor-pointer group"
-                  @click="selectExistingPatient(sug)"
-                >
-                  <div class="space-y-0.5">
-                    <div class="flex items-center space-x-2">
-                      <span class="font-bold text-slate-900 group-hover:text-blue-700">
-                        {{ sug.first_name }} {{ sug.last_name || '' }}
-                      </span>
-                      <span class="px-1.5 py-0.2 rounded text-[10px] font-mono font-semibold bg-blue-100 text-blue-800">
-                        {{ sug.patient_no || sug.id }}
-                      </span>
-                      <span v-if="sug.sex" class="text-[11px] text-slate-500 font-medium">
-                        {{ sug.age_years ? sug.age_years + 'y / ' : '' }}{{ sug.sex }}
-                      </span>
-                    </div>
-                    <div class="flex items-center space-x-3 text-[11px] text-slate-500">
-                      <span class="font-mono text-slate-600">📞 {{ sug.mobile_normalized || sug.mobile || 'No Mobile' }}</span>
-                      <span v-if="sug.city">&bull; 📍 {{ sug.city }}</span>
-                      <span v-if="sug.referral_doctor">&bull; Ref: {{ sug.referral_doctor }}</span>
-                    </div>
-                  </div>
+              <!-- Full Name Input -->
+              <div class="sm:col-span-2 relative">
+                <div class="flex items-center justify-between mb-1">
+                  <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Full Patient Name <span class="text-red-500">*</span>
+                  </label>
+                  <span class="text-xs text-slate-400 dark:text-slate-500">Auto-suggests repeat records</span>
+                </div>
 
-                  <div class="text-right shrink-0 ml-3">
-                    <span class="inline-flex items-center space-x-1 text-[11px] font-semibold text-blue-600 group-hover:text-white bg-blue-50 group-hover:bg-blue-600 px-2 py-1 rounded border border-blue-200 group-hover:border-blue-600 transition shadow-2xs">
-                      <span>Choose</span>
-                      <span>&rarr;</span>
-                    </span>
-                  </div>
-                </button>
+                <div class="relative">
+                  <input
+                    v-model="form.full_name"
+                    type="text"
+                    placeholder="e.g. Aarav Sharma (or search repeat name)"
+                    class="w-full px-3 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
+                    :class="isExistingPatient ? 'border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/20' : ''"
+                    @input="triggerPatientSearch(form.full_name, 'name')"
+                    @focus="form.full_name.length >= 2 && triggerPatientSearch(form.full_name, 'name')"
+                  />
+                  <span v-if="isSearchingPatients && activeSearchField === 'name'" class="absolute right-2.5 top-2.5 text-slate-400">
+                    <Icon name="refresh" size="xs" class="animate-spin" />
+                  </span>
+                </div>
+                <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Press Enter or click suggestion to auto-fill</p>
               </div>
 
-              <div class="bg-slate-50 px-3 py-1.5 text-[10px] text-slate-500 flex items-center justify-between">
-                <span>Press Escape to dismiss</span>
-                <button
-                  type="button"
-                  class="text-blue-600 font-semibold hover:underline"
-                  @click="showSearchDropdown = false"
-                >
-                  Register as New Patient
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-3 gap-3">
-            <!-- Age -->
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">Age (Years)</label>
-              <input
-                v-model="form.age"
-                type="number"
-                min="0"
-                max="120"
-                class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs font-mono focus:ring-1 focus:ring-blue-500 bg-white"
-              />
-            </div>
-
-            <!-- Gender -->
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">Gender</label>
-              <select
-                v-model="form.gender"
-                class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500 bg-white cursor-pointer"
+              <!-- Repeat Patient Dropdown Popover -->
+              <div
+                v-if="showSearchDropdown && searchSuggestions.length > 0"
+                class="absolute top-16 left-4 right-4 z-50 bg-white dark:bg-slate-900 border border-teal-200 dark:border-teal-800 rounded-xl shadow-2xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-800"
               >
-                <option value="Male">Male (M)</option>
-                <option value="Female">Female (F)</option>
-                <option value="Other">Other</option>
-              </select>
+                <div class="bg-teal-50 dark:bg-teal-950/80 px-3.5 py-2 flex items-center justify-between text-xs font-bold text-teal-900 dark:text-teal-200 border-b border-teal-100 dark:border-teal-900">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-teal-600 animate-pulse" />
+                    <span>Repeat Records Found ({{ searchSuggestions.length }}) — Click to Auto-fill</span>
+                  </div>
+                  <button
+                    type="button"
+                    class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-sm font-bold px-1 cursor-pointer"
+                    @click="showSearchDropdown = false"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div class="max-h-60 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+                  <button
+                    v-for="sug in searchSuggestions"
+                    :key="sug.id"
+                    type="button"
+                    class="w-full text-left p-3 hover:bg-teal-50/60 dark:hover:bg-teal-950/40 flex items-center justify-between transition cursor-pointer group"
+                    @click="selectExistingPatient(sug)"
+                  >
+                    <div class="space-y-1 min-w-0">
+                      <div class="flex items-center gap-2 flex-wrap">
+                        <span class="font-bold text-slate-900 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400 text-xs">
+                          {{ sug.first_name }} {{ sug.last_name || '' }}
+                        </span>
+                        <Badge variant="info" size="sm">
+                          {{ sug.patient_no || sug.id }}
+                        </Badge>
+                        <span v-if="sug.sex" class="text-xs text-slate-500 font-medium">
+                          {{ sug.age_years ? sug.age_years + 'y / ' : '' }}{{ sug.sex }}
+                        </span>
+                      </div>
+                      <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                        <span class="font-mono">📞 {{ sug.mobile_normalized || sug.mobile || 'No Mobile' }}</span>
+                        <span v-if="sug.city">• 📍 {{ sug.city }}</span>
+                        <span v-if="sug.referral_doctor">• Ref: {{ sug.referral_doctor }}</span>
+                      </div>
+                    </div>
+
+                    <div class="shrink-0 ml-3">
+                      <span class="inline-flex items-center gap-1 text-xs font-semibold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950 px-2.5 py-1 rounded-md border border-teal-200 dark:border-teal-800 group-hover:bg-teal-600 group-hover:text-white transition">
+                        <span>Select</span>
+                        <span>→</span>
+                      </span>
+                    </div>
+                  </button>
+                </div>
+
+                <div class="bg-slate-50 dark:bg-slate-800/60 px-3.5 py-2 text-xs text-slate-500 flex items-center justify-between">
+                  <span>Press Escape to dismiss</span>
+                  <button
+                    type="button"
+                    class="text-teal-600 dark:text-teal-400 font-bold hover:underline cursor-pointer"
+                    @click="showSearchDropdown = false"
+                  >
+                    Register as New Patient
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <!-- City -->
-            <div>
-              <label class="block font-semibold text-slate-700 mb-1">City / Area</label>
-              <input
-                v-model="form.city"
-                type="text"
-                placeholder="City"
-                class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-blue-500 bg-white"
-              />
+            <!-- Age, Gender, City -->
+            <div class="grid grid-cols-3 gap-3 pt-1">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Age (Years)</label>
+                <input
+                  v-model.number="form.age"
+                  type="number"
+                  min="0"
+                  max="125"
+                  class="w-full px-3 py-2 border rounded-lg text-xs font-mono bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Gender</label>
+                <select
+                  v-model="form.gender"
+                  class="w-full px-3 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                >
+                  <option value="Male">Male (M)</option>
+                  <option value="Female">Female (F)</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">City / Area</label>
+                <input
+                  v-model="form.city"
+                  type="text"
+                  placeholder="e.g. Noida / Delhi"
+                  class="w-full px-3 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                />
+              </div>
             </div>
           </div>
-        </div>
+        </Card>
 
         <!-- 2. Prescribing Doctor & Healthcare Partner Selection -->
-        <div class="bg-white rounded-lg border border-slate-200 shadow-xs p-4 space-y-3 text-xs">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div>
-              <h2 class="font-bold text-slate-900 text-sm">2. Prescribing Doctor &amp; Healthcare Partner</h2>
-              <p class="text-[11px] text-slate-500 mt-0.5">Consulting doctor, referral hospital, pathology lab or clinic</p>
-            </div>
+        <Card title="2. Prescribing Doctor & Healthcare Partner" dense>
+          <template #header-right>
             <button
               type="button"
-              class="text-sky-600 hover:text-sky-700 font-semibold flex items-center space-x-1 cursor-pointer"
+              class="text-xs font-bold text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 flex items-center gap-1 cursor-pointer"
               @click="isAddDoctorModalOpen = true"
             >
-              <span>+ Add Partner / Center</span>
+              <Icon name="plus" size="xs" />
+              <span>Add Doctor / Center</span>
             </button>
-          </div>
+          </template>
 
-          <div>
-            <label class="block font-semibold text-slate-700 mb-1">Prescribing Clinician / Healthcare Partner *</label>
+          <div class="p-4 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                Prescribing Clinician or Referral Source *
+              </label>
+              <span v-if="selectedPartner.commission_pct > 0" class="text-xs font-semibold text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/80 px-2 py-0.5 rounded border border-teal-200 dark:border-teal-800">
+                {{ selectedPartner.commission_pct }}% Referral Commission
+              </span>
+            </div>
+
             <select
               v-model="selectedPartnerId"
-              class="w-full px-3 py-2 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-sky-500 bg-white font-medium cursor-pointer"
+              class="w-full px-3 py-2 border rounded-lg text-xs font-medium bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
             >
               <option v-for="p in partners" :key="p.id" :value="p.id">
                 {{ getPartnerDisplayLabel(p) }}
               </option>
             </select>
           </div>
-        </div>
+        </Card>
 
-        <!-- 3. Test & Package Catalog Selector -->
-        <div class="bg-white rounded-lg border border-slate-200 shadow-xs p-4 space-y-3 text-xs">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-            <h2 class="font-bold text-slate-900 text-sm">3. Investigation &amp; Package Selector</h2>
-            <span class="text-slate-500 text-[11px] font-mono">Selected: {{ selectedTests.length }} tests</span>
-          </div>
+        <!-- 3. Investigation & Package Catalog Selector -->
+        <Card title="3. Investigation & Package Selector" dense>
+          <template #header-right>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-500 font-mono">Selected: {{ selectedTests.length }} tests</span>
+              <Badge variant="info" size="sm">Catalog Active</Badge>
+            </div>
+          </template>
 
-          <!-- Search Bar for Tests -->
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </span>
-            <input
-              v-model="testSearchQuery"
-              type="text"
-              placeholder="Search test name or code (e.g., CBC, LFT, Lipid, HbA1c)..."
-              class="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
+          <div class="p-4 space-y-3">
+            <!-- Test Search Input -->
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 pointer-events-none">
+                <Icon name="search" size="sm" />
+              </span>
+              <input
+                ref="testSearchInputRef"
+                v-model="testSearchQuery"
+                type="text"
+                placeholder="Search test name or code (e.g., CBC, LFT, Lipid, HbA1c)... [F3]"
+                class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white dark:focus:bg-slate-800 transition"
+              />
+            </div>
 
-          <!-- Category Pills -->
-          <div class="flex items-center space-x-1.5 overflow-x-auto pb-1 text-xs scrollbar-none">
-            <button
-              v-for="cat in categories"
-              :key="cat"
-              type="button"
-              :class="[
-                'px-2.5 py-1 rounded-full text-xs font-medium transition cursor-pointer shrink-0',
-                selectedCategory === cat ? 'bg-blue-600 text-white shadow-2xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              ]"
-              @click="selectedCategory = cat"
-            >
-              {{ cat }}
-            </button>
-          </div>
+            <!-- Category Filter Pills -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+              <button
+                v-for="cat in categories"
+                :key="cat"
+                type="button"
+                :class="[
+                  'px-3 py-1 rounded-full text-xs font-semibold transition cursor-pointer shrink-0 border select-none',
+                  selectedCategory === cat
+                    ? 'bg-teal-600 text-white border-teal-600 shadow-2xs'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
+                ]"
+                @click="selectedCategory = cat"
+              >
+                {{ cat }}
+              </button>
+            </div>
 
-          <!-- Test Catalog Table -->
-          <div class="overflow-x-auto border border-slate-200 rounded max-h-56 overflow-y-auto">
-            <table class="min-w-full divide-y divide-slate-200 text-xs">
-              <thead class="bg-slate-50 text-slate-600 font-semibold sticky top-0 z-10">
-                <tr>
-                  <th class="w-8 px-2 py-1.5 text-center"></th>
-                  <th class="px-3 py-1.5 text-left">Code</th>
-                  <th class="px-3 py-1.5 text-left">Investigation</th>
-                  <th class="px-3 py-1.5 text-left">Tube</th>
-                  <th class="px-3 py-1.5 text-right">Standard Rate</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 bg-white">
-                <tr
-                  v-for="t in filteredCatalog"
-                  :key="t.code"
-                  class="hover:bg-blue-50/50 cursor-pointer transition-colors"
-                  :class="selectedTestCodes.includes(t.code) ? 'bg-blue-50/40 font-medium' : ''"
-                  @click="toggleTest(t.code)"
-                >
-                  <td class="px-2 py-1.5 text-center" @click.stop>
-                    <input
-                      type="checkbox"
-                      :checked="selectedTestCodes.includes(t.code)"
-                      class="h-3.5 w-3.5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
-                      @change="toggleTest(t.code)"
-                    />
-                  </td>
-                  <td class="px-3 py-1.5 font-mono font-bold text-blue-900">{{ t.code }}</td>
-                  <td class="px-3 py-1.5 text-slate-800">{{ t.name }}</td>
-                  <td class="px-3 py-1.5 text-slate-500 font-mono text-[10px]">{{ t.sample }}</td>
-                  <td class="px-3 py-1.5 text-right font-mono font-bold text-slate-900">₹{{ t.price }}</td>
-                </tr>
-              </tbody>
-            </table>
+            <!-- Investigation Table -->
+            <div class="border border-slate-200 dark:border-slate-700 rounded-lg max-h-60 overflow-y-auto overflow-x-auto">
+              <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-xs text-left">
+                <thead class="bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold sticky top-0 z-10 select-none">
+                  <tr>
+                    <th class="w-10 px-3 py-2 text-center"></th>
+                    <th class="px-3 py-2">Code</th>
+                    <th class="px-3 py-2">Investigation Name</th>
+                    <th class="px-3 py-2">Sample Tube</th>
+                    <th class="px-3 py-2 text-right">Standard MRP</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                  <tr
+                    v-for="t in filteredCatalog"
+                    :key="t.code"
+                    :class="[
+                      'cursor-pointer transition-colors',
+                      selectedTestCodes.includes(t.code)
+                        ? 'bg-teal-50/70 dark:bg-teal-950/40 font-semibold'
+                        : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                    ]"
+                    @click="toggleTest(t.code)"
+                  >
+                    <td class="px-3 py-2 text-center" @click.stop>
+                      <input
+                        type="checkbox"
+                        :checked="selectedTestCodes.includes(t.code)"
+                        class="h-4 w-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500 cursor-pointer"
+                        @change="toggleTest(t.code)"
+                      />
+                    </td>
+                    <td class="px-3 py-2 font-mono font-bold text-teal-700 dark:text-teal-400">{{ t.code }}</td>
+                    <td class="px-3 py-2 text-slate-800 dark:text-slate-200">{{ t.name }}</td>
+                    <td class="px-3 py-2">
+                      <span class="inline-block px-2 py-0.5 rounded font-mono text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                        {{ t.sample }}
+                      </span>
+                    </td>
+                    <td class="px-3 py-2 text-right font-mono font-bold text-slate-900 dark:text-white">₹{{ t.price }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        </Card>
       </div>
 
       <!-- ======================================================== -->
-      <!-- RIGHT COLUMN (5 OF 12 COLS): POS SUMMARY & TENDER        -->
+      <!-- RIGHT COLUMN: POS BILLING SUMMARY, DISCOUNT & SPLIT TENDER -->
       <!-- ======================================================== -->
       <div class="lg:col-span-5 space-y-4">
-        <!-- Selected Items & Real-Time Bill Calculation Card -->
-        <div class="bg-white rounded-lg border border-slate-200 shadow-xs p-4 space-y-3 text-xs">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-            <h2 class="font-bold text-slate-900 text-sm">POS Billing Summary</h2>
-            <span class="text-[10px] font-mono text-slate-400">Order Slip</span>
-          </div>
+        <!-- Billing Summary & Selected Cart -->
+        <Card title="POS Billing Summary" dense>
+          <template #header-right>
+            <Badge variant="neutral" size="sm">
+              {{ selectedTests.length }} Items
+            </Badge>
+          </template>
 
-          <!-- Selected Tests Itemized List -->
-          <div v-if="selectedTests.length === 0" class="py-6 text-center text-slate-400 italic">
-            No tests added yet. Check investigations on the left.
-          </div>
-
-          <div v-else class="space-y-1.5 max-h-44 overflow-y-auto pr-1">
-            <div
-              v-for="(t, idx) in selectedTests"
-              :key="t.code"
-              class="flex items-center justify-between p-2 rounded bg-slate-50 border border-slate-100"
-            >
-              <div class="truncate mr-2">
-                <span class="font-mono text-slate-400 mr-1">{{ idx + 1 }}.</span>
-                <span class="font-semibold text-slate-800">{{ t.name }}</span>
-              </div>
-              <div class="flex items-center space-x-2 shrink-0">
-                <span class="font-mono font-bold text-slate-900">₹{{ t.price }}</span>
-                <button
-                  type="button"
-                  class="text-slate-400 hover:text-red-600 p-0.5 rounded cursor-pointer transition"
-                  title="Remove"
-                  @click="removeTest(t.code)"
-                >
-                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pricing Breakdowns & Discount Controls -->
-          <div class="border-t border-slate-100 pt-2 space-y-2">
-            <div class="flex items-center justify-between text-slate-600">
-              <span>Gross Total:</span>
-              <span class="font-mono font-bold text-slate-800">₹{{ grossAmount.toLocaleString('en-IN') }}</span>
+          <div class="p-4 space-y-3.5 text-xs">
+            <!-- Selected Tests Itemized List -->
+            <div v-if="selectedTests.length === 0" class="py-8 text-center text-slate-400 italic">
+              No tests added yet. Select investigations on the left.
             </div>
 
-            <!-- Discount Input Field (% or Flat ₹) -->
-            <div class="flex items-center justify-between gap-2">
-              <div class="flex items-center space-x-1 shrink-0">
-                <span class="text-slate-600">Discount:</span>
-                <div class="inline-flex rounded border border-slate-300 overflow-hidden text-[10px]">
+            <div v-else class="space-y-2 max-h-48 overflow-y-auto pr-1">
+              <div
+                v-for="(t, idx) in selectedTests"
+                :key="t.code"
+                class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs"
+              >
+                <div class="truncate mr-2 flex items-center gap-1.5">
+                  <span class="font-mono text-slate-400">{{ idx + 1 }}.</span>
+                  <span class="font-bold text-slate-800 dark:text-slate-200 truncate">{{ t.name }}</span>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <span class="font-mono font-bold text-slate-900 dark:text-slate-100">₹{{ t.price }}</span>
                   <button
                     type="button"
-                    :class="[discountType === 'flat' ? 'bg-blue-600 text-white font-bold' : 'bg-slate-50 text-slate-700']"
-                    class="px-1.5 py-0.5 cursor-pointer"
-                    @click="discountType = 'flat'"
+                    class="p-1 text-slate-400 hover:text-red-600 dark:hover:text-red-400 rounded cursor-pointer transition"
+                    title="Remove item"
+                    @click="removeTest(t.code)"
                   >
-                    ₹ Flat
-                  </button>
-                  <button
-                    type="button"
-                    :class="[discountType === 'percentage' ? 'bg-blue-600 text-white font-bold' : 'bg-slate-50 text-slate-700']"
-                    class="px-1.5 py-0.5 cursor-pointer"
-                    @click="discountType = 'percentage'"
-                  >
-                    %
+                    <Icon name="trash" size="xs" />
                   </button>
                 </div>
               </div>
+            </div>
 
-              <div class="flex items-center space-x-1">
-                <input
-                  v-model.number="discountValue"
-                  type="number"
-                  min="0"
-                  class="w-20 px-2 py-0.5 border border-slate-300 rounded text-right font-mono font-semibold text-xs"
-                  placeholder="0"
-                />
-                <span v-if="calculatedDiscount > 0" class="text-red-600 font-mono text-[11px] font-bold">
-                  (-₹{{ calculatedDiscount }})
+            <!-- Pricing Breakdown -->
+            <div class="border-t border-slate-200 dark:border-slate-700 pt-3 space-y-2.5">
+              <div class="flex items-center justify-between text-slate-600 dark:text-slate-400">
+                <span class="font-medium">Gross Investigation Total:</span>
+                <span class="font-mono font-bold text-slate-800 dark:text-slate-200">₹{{ grossAmount.toLocaleString('en-IN') }}</span>
+              </div>
+
+              <!-- Discount Engine (% or Flat) -->
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <span class="font-medium text-slate-600 dark:text-slate-400">Discount:</span>
+                  <div class="inline-flex rounded-md border border-slate-300 dark:border-slate-700 overflow-hidden text-xs">
+                    <button
+                      type="button"
+                      :class="[
+                        'px-2 py-0.5 cursor-pointer font-bold transition-colors',
+                        discountType === 'flat' ? 'bg-teal-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                      ]"
+                      @click="discountType = 'flat'"
+                    >
+                      ₹ Flat
+                    </button>
+                    <button
+                      type="button"
+                      :class="[
+                        'px-2 py-0.5 cursor-pointer font-bold transition-colors',
+                        discountType === 'percentage' ? 'bg-teal-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                      ]"
+                      @click="discountType === 'percentage'"
+                    >
+                      % Pct
+                    </button>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1">
+                  <input
+                    v-model.number="discountValue"
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    class="w-20 px-2 py-1 border rounded text-right font-mono font-bold text-xs bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700"
+                  />
+                  <span v-if="calculatedDiscount > 0" class="text-red-600 dark:text-red-400 font-mono font-bold text-xs">
+                    (-₹{{ calculatedDiscount }})
+                  </span>
+                </div>
+              </div>
+
+              <!-- Net Payable Total Display -->
+              <div class="flex items-center justify-between border-t border-slate-200 dark:border-slate-700 pt-3">
+                <span class="text-sm font-bold text-slate-900 dark:text-white">Net Bill Payable:</span>
+                <span class="text-xl font-extrabold font-mono text-teal-700 dark:text-teal-400">
+                  ₹{{ netPayable.toLocaleString('en-IN') }}
                 </span>
               </div>
             </div>
-
-            <!-- Net Payable -->
-            <div class="flex items-center justify-between text-sm sm:text-base border-t border-slate-200 pt-2">
-              <span class="font-bold text-slate-900">Net Payable Total:</span>
-              <span class="font-extrabold font-mono text-blue-900 text-lg">
-                ₹{{ netPayable.toLocaleString('en-IN') }}
-              </span>
-            </div>
           </div>
-        </div>
+        </Card>
 
-        <!-- 5. Payment Tender (Split Multi-Mode) Card -->
-        <div class="bg-white rounded-lg border border-slate-200 shadow-xs p-4 space-y-3 text-xs">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-            <h2 class="font-bold text-slate-900 text-sm">Payment Tender Collection</h2>
-            <div class="flex items-center space-x-1 text-[10px]">
+        <!-- Payment Tender Collection (Split Multi-Mode) -->
+        <Card title="Payment Tender Collection" dense>
+          <template #header-right>
+            <div class="flex items-center gap-1">
               <button
                 type="button"
-                class="px-1.5 py-0.5 bg-slate-100 hover:bg-slate-200 rounded font-medium cursor-pointer"
+                class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 rounded text-xs font-semibold cursor-pointer border border-slate-200 dark:border-slate-700"
                 @click="setPaymentMode('cash')"
               >
-                All Cash
+                Cash
               </button>
               <button
                 type="button"
-                class="px-1.5 py-0.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded font-medium cursor-pointer"
+                class="px-2 py-0.5 bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 hover:bg-teal-100 rounded text-xs font-semibold cursor-pointer border border-teal-200 dark:border-teal-800"
                 @click="setPaymentMode('upi')"
               >
-                All UPI
+                UPI QR
               </button>
               <button
                 type="button"
-                class="px-1.5 py-0.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded font-medium cursor-pointer"
+                class="px-2 py-0.5 bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 hover:bg-amber-100 rounded text-xs font-semibold cursor-pointer border border-amber-200 dark:border-amber-800"
                 @click="setPaymentMode('due')"
               >
                 Mark Due
               </button>
             </div>
-          </div>
+          </template>
 
-          <!-- Split Tender Inputs -->
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block font-medium text-slate-700 mb-1">Cash Tender (₹)</label>
-              <input
-                v-model.number="tenderCash"
-                type="number"
-                min="0"
-                class="w-full px-2.5 py-1.5 border border-slate-300 rounded font-mono font-bold text-xs"
-              />
-            </div>
+          <div class="p-4 space-y-3.5 text-xs">
+            <!-- Split Tender Inputs -->
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Cash Tender (₹)</label>
+                <input
+                  v-model.number="tenderCash"
+                  type="number"
+                  min="0"
+                  class="w-full px-3 py-2 border rounded-lg font-mono font-bold text-xs bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                />
+              </div>
 
-            <div>
-              <label class="block font-medium text-slate-700 mb-1">UPI / QR Code (₹)</label>
-              <input
-                v-model.number="tenderUpi"
-                type="number"
-                min="0"
-                class="w-full px-2.5 py-1.5 border border-slate-300 rounded font-mono font-bold text-xs"
-              />
-            </div>
+              <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">UPI / QR (₹)</label>
+                <input
+                  v-model.number="tenderUpi"
+                  type="number"
+                  min="0"
+                  class="w-full px-3 py-2 border rounded-lg font-mono font-bold text-xs bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                />
+              </div>
 
-            <div>
-              <label class="block font-medium text-slate-700 mb-1">Card / POS Swipe (₹)</label>
-              <input
-                v-model.number="tenderCard"
-                type="number"
-                min="0"
-                class="w-full px-2.5 py-1.5 border border-slate-300 rounded font-mono font-bold text-xs"
-              />
-            </div>
+              <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Card / POS Swipe (₹)</label>
+                <input
+                  v-model.number="tenderCard"
+                  type="number"
+                  min="0"
+                  class="w-full px-3 py-2 border rounded-lg font-mono font-bold text-xs bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                />
+              </div>
 
-            <div>
-              <label class="block font-medium text-slate-700 mb-1">Balance Due / Credit</label>
-              <div
-                class="px-2.5 py-1.5 rounded font-mono font-bold text-xs border"
-                :class="balanceDue > 0 ? 'bg-amber-50 text-amber-800 border-amber-300' : 'bg-slate-100 text-slate-500 border-slate-200'"
-              >
-                ₹{{ balanceDue.toLocaleString('en-IN') }}
+              <div>
+                <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Balance Due / Credit</label>
+                <div
+                  :class="[
+                    'px-3 py-2 rounded-lg font-mono font-bold text-xs border flex items-center justify-between',
+                    balanceDue > 0
+                      ? 'bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700'
+                      : 'bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700'
+                  ]"
+                >
+                  <span>₹{{ balanceDue.toLocaleString('en-IN') }}</span>
+                  <Badge v-if="balanceDue > 0" variant="warning" size="sm">DUE</Badge>
+                  <Badge v-else variant="success" size="sm">SETTLED</Badge>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Action Buttons Bar -->
-          <div class="pt-3 border-t border-slate-100 space-y-2">
-            <!-- Save & Print Invoice (F2) -->
-            <button
-              type="button"
-              :disabled="isSubmitting || selectedTests.length === 0"
-              class="btn-emerald w-full py-2.5 px-4 text-xs sm:text-sm"
-              @click="handleSaveAndPrintInvoice"
-            >
-              <svg v-if="isSubmitting" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-              </svg>
-              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-              </svg>
-              <span>Save &amp; Print Invoice</span>
-              <kbd class="ml-1 px-1.5 py-0.2 text-[9px] font-mono text-emerald-100 bg-emerald-800/60 rounded">F2</kbd>
-            </button>
+            <!-- Action Buttons Bar -->
+            <div class="pt-3 border-t border-slate-200 dark:border-slate-700 space-y-2">
+              <Button
+                variant="success"
+                size="lg"
+                full-width
+                icon-left="printer"
+                :disabled="isSubmitting || selectedTests.length === 0"
+                :loading="isSubmitting"
+                @click="handleSaveAndPrintInvoice"
+              >
+                <span>Save &amp; Print Invoice</span>
+                <Kbd size="xs" class="ml-2 text-white bg-emerald-800/80 border-emerald-700">F2</Kbd>
+              </Button>
 
-            <!-- Save & Print Barcodes -->
-            <button
-              type="button"
-              :disabled="selectedTests.length === 0"
-              class="btn-primary w-full py-2 px-4 text-xs"
-              @click="handleSaveAndPrintBarcodes"
-            >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-              </svg>
-              <span>Save &amp; Print Barcodes</span>
-            </button>
+              <Button
+                variant="primary"
+                size="md"
+                full-width
+                icon-left="barcode"
+                :disabled="selectedTests.length === 0"
+                @click="handleSaveAndPrintBarcodes"
+              >
+                <span>Generate Specimen Barcodes (50×25mm)</span>
+              </Button>
+            </div>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
 
@@ -1142,15 +1179,14 @@ onUnmounted(() => {
     <Modal
       v-model="isAddDoctorModalOpen"
       title="Register Referral Partner / Center"
-      description="Quickly onboard a consulting physician, pathology lab, hospital or clinic"
+      description="Quickly onboard a consulting clinician, pathology lab, hospital or polyclinic"
     >
-      <div class="space-y-3 text-xs">
-        <!-- Partner Category Dropdown -->
+      <div class="space-y-3.5 text-xs">
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">Partner Category / Entity Type *</label>
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Partner Category / Entity Type *</label>
           <select
             v-model="newDoctor.partner_type"
-            class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-sky-500 bg-white cursor-pointer"
+            class="w-full px-3 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
             @change="onQuickPartnerTypeChange"
           >
             <option v-for="t in partnerTypesList" :key="t.id" :value="t.id">
@@ -1160,53 +1196,45 @@ onUnmounted(() => {
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">Doctor / Center Name *</label>
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Doctor / Center Name *</label>
           <input
             v-model="newDoctor.name"
             type="text"
             placeholder="e.g. Dr. Rajesh Khanna, Metro Path Lab or Apex Hospital"
-            class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs focus:ring-1 focus:ring-sky-500"
+            class="w-full px-3 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-semibold text-slate-700 mb-1">Specialty / Discipline</label>
+            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Specialty / Discipline</label>
             <input
               v-model="newDoctor.specialty"
               type="text"
-              placeholder="e.g. Cardiology / Pathology"
-              class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs"
+              placeholder="e.g. Cardiology / Internal Medicine"
+              class="w-full px-3 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700"
             />
           </div>
 
           <div>
-            <label class="block font-semibold text-slate-700 mb-1">Contact Phone</label>
+            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Contact Phone</label>
             <input
               v-model="newDoctor.phone"
               type="tel"
-              placeholder="Mobile / Center phone"
-              class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs font-mono"
+              placeholder="10-digit mobile"
+              class="w-full px-3 py-2 border rounded-lg text-xs font-mono bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700"
             />
           </div>
         </div>
       </div>
 
       <template #footer="{ close }">
-        <button
-          type="button"
-          class="px-3 py-1.5 border border-slate-300 rounded text-slate-700 bg-white hover:bg-slate-50 text-xs font-semibold cursor-pointer"
-          @click="close"
-        >
+        <Button variant="secondary" size="sm" @click="close">
           Cancel
-        </button>
-        <button
-          type="button"
-          class="px-4 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded text-xs font-bold cursor-pointer shadow-2xs"
-          @click="submitAddDoctor"
-        >
+        </Button>
+        <Button variant="primary" size="sm" @click="submitAddDoctor">
           Save &amp; Select Partner
-        </button>
+        </Button>
       </template>
     </Modal>
 
@@ -1216,36 +1244,36 @@ onUnmounted(() => {
       title="POS Payment Receipt"
       description="Official laboratory tax invoice & payment receipt"
     >
-      <div class="space-y-3 text-xs bg-slate-50 p-4 rounded border border-slate-200 font-mono">
-        <div class="text-center border-b border-dashed border-slate-300 pb-2">
-          <h3 class="font-bold text-slate-900 text-sm">AAROZI HEALTHCARE CENTRAL LAB</h3>
-          <p class="text-[10px] text-slate-500">ISO 15189:2022 &bull; GSTIN: 09AAACA1234D1Z5</p>
-          <p class="text-[11px] font-bold text-blue-800 mt-1">{{ generatedInvoiceNo }}</p>
+      <div class="space-y-3 text-xs bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 font-mono">
+        <div class="text-center border-b border-dashed border-slate-300 dark:border-slate-700 pb-2.5">
+          <h3 class="font-bold text-slate-900 dark:text-white text-sm">AAROZI HEALTHCARE CENTRAL LAB</h3>
+          <p class="text-xs text-slate-500">ISO 15189:2022 • GSTIN: 09AAACA1234D1Z5</p>
+          <p class="text-xs font-bold text-teal-700 dark:text-teal-400 mt-1">{{ generatedInvoiceNo }}</p>
         </div>
 
-        <div class="text-[11px] space-y-0.5 border-b border-dashed border-slate-300 pb-2">
+        <div class="text-xs space-y-1 border-b border-dashed border-slate-300 dark:border-slate-700 pb-2.5">
           <div class="flex justify-between"><span>Patient:</span><strong>{{ form.full_name }}</strong></div>
           <div class="flex justify-between"><span>UHID:</span><strong>{{ patientUhid }}</strong></div>
-          <div class="flex justify-between"><span>Age/Sex:</span><strong>{{ form.age }}Y / {{ form.gender }}</strong></div>
-          <div class="flex justify-between"><span>Doctor:</span><strong>{{ selectedPartner.name }}</strong></div>
-          <div class="flex justify-between"><span>Date:</span><strong>20-Oct-2026</strong></div>
+          <div class="flex justify-between"><span>Age / Sex:</span><strong>{{ form.age }}Y / {{ form.gender }}</strong></div>
+          <div class="flex justify-between"><span>Clinician:</span><strong>{{ selectedPartner.name }}</strong></div>
+          <div class="flex justify-between"><span>Date:</span><strong>{{ new Date().toLocaleDateString('en-IN') }}</strong></div>
         </div>
 
-        <div class="space-y-1 border-b border-dashed border-slate-300 pb-2 text-[11px]">
+        <div class="space-y-1.5 border-b border-dashed border-slate-300 dark:border-slate-700 pb-2.5 text-xs">
           <div v-for="t in selectedTests" :key="t.code" class="flex justify-between">
             <span class="truncate mr-2">{{ t.name }}</span>
-            <span>₹{{ t.price }}</span>
+            <span class="font-bold">₹{{ t.price }}</span>
           </div>
         </div>
 
-        <div class="space-y-0.5 text-[11px]">
+        <div class="space-y-1 text-xs">
           <div class="flex justify-between"><span>Gross Total:</span><span>₹{{ grossAmount }}</span></div>
           <div v-if="calculatedDiscount > 0" class="flex justify-between text-red-600"><span>Discount:</span><span>-₹{{ calculatedDiscount }}</span></div>
-          <div class="flex justify-between text-sm font-bold pt-1 border-t border-slate-300">
+          <div class="flex justify-between text-sm font-bold pt-1.5 border-t border-slate-300 dark:border-slate-700">
             <span>Net Amount:</span>
             <span>₹{{ netPayable }}</span>
           </div>
-          <div class="flex justify-between text-emerald-700"><span>Paid (Cash/UPI):</span><span>₹{{ totalPaidNow }}</span></div>
+          <div class="flex justify-between text-emerald-700 font-bold"><span>Paid Tender:</span><span>₹{{ totalPaidNow }}</span></div>
           <div v-if="balanceDue > 0" class="flex justify-between text-amber-700 font-bold"><span>Balance Due:</span><span>₹{{ balanceDue }}</span></div>
         </div>
       </div>
@@ -1253,26 +1281,17 @@ onUnmounted(() => {
       <template #footer="{ close }">
         <NuxtLink
           to="/patients"
-          class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer flex items-center space-x-1"
+          class="text-xs font-bold text-teal-600 hover:underline flex items-center gap-1"
         >
-          <span>View in Patient Directory &rarr;</span>
+          <span>View Patient Directory →</span>
         </NuxtLink>
-        <div class="flex items-center space-x-2">
-          <button
-            type="button"
-            class="px-3 py-1.5 border border-slate-300 rounded text-slate-700 text-xs font-semibold cursor-pointer"
-            @click="close"
-          >
+        <div class="flex items-center gap-2">
+          <Button variant="secondary" size="sm" @click="close">
             Close
-          </button>
-          <button
-            type="button"
-            class="px-4 py-1.5 bg-[#059669] hover:bg-emerald-700 text-white rounded text-xs font-bold cursor-pointer shadow-2xs flex items-center space-x-1"
-            @click="printReceiptWindow"
-          >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-            <span>Print Receipt</span>
-          </button>
+          </Button>
+          <Button variant="success" size="sm" icon-left="printer" @click="printReceiptWindow">
+            Print Official Receipt
+          </Button>
         </div>
       </template>
     </Modal>
@@ -1281,55 +1300,46 @@ onUnmounted(() => {
     <Modal
       v-model="showBarcodeModal"
       title="Specimen Tube Barcode Labels"
-      description="Thermal labels for vacutainer collection tubes (50x25mm)"
+      description="Thermal labels for vacutainer collection tubes (50x25mm standard)"
     >
       <div class="space-y-3 text-xs">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div
             v-for="(t, idx) in selectedTests"
             :key="t.code"
-            class="p-3 border-2 border-dashed border-slate-300 bg-white rounded flex flex-col justify-between font-mono"
+            class="p-3.5 border-2 border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl flex flex-col justify-between font-mono"
           >
-            <div class="flex justify-between items-start text-[10px]">
+            <div class="flex justify-between items-start text-xs">
               <div>
-                <strong class="text-slate-900 block">{{ form.full_name || 'PATIENT' }}</strong>
-                <span class="text-blue-700 font-bold">{{ patientUhid }}</span> &bull; {{ form.age }}Y/{{ form.gender.charAt(0) }}
+                <strong class="text-slate-900 dark:text-white block">{{ form.full_name || 'PATIENT' }}</strong>
+                <span class="text-teal-700 dark:text-teal-400 font-bold">{{ patientUhid }}</span> • {{ form.age }}Y/{{ form.gender.charAt(0) }}
               </div>
-              <span class="px-1 py-0.2 bg-slate-100 rounded text-[9px] font-bold">{{ t.sample }}</span>
+              <Badge variant="neutral" size="sm">{{ t.sample }}</Badge>
             </div>
 
             <!-- Barcode Graphic Simulation -->
-            <div class="my-2 py-1 bg-slate-50 border border-slate-200 rounded text-center">
-              <div class="text-xl tracking-widest font-barcode font-serif select-none">
+            <div class="my-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-center">
+              <div class="text-2xl tracking-widest font-mono select-none text-slate-900 dark:text-slate-100 font-bold">
                 ||| | |||| | ||| |||| |
               </div>
-              <span class="text-[9px] text-slate-600 block font-mono">SMP-{{ patientUhid.slice(-5) }}-0{{ idx + 1 }}</span>
+              <span class="text-xs text-slate-500 dark:text-slate-400 block font-mono mt-0.5">SMP-{{ patientUhid.slice(-5) }}-0{{ idx + 1 }}</span>
             </div>
 
-            <div class="flex justify-between items-center text-[9px] text-slate-500">
-              <span>{{ t.name.slice(0, 18) }}</span>
-              <span>20-Oct-26</span>
+            <div class="flex justify-between items-center text-xs text-slate-500">
+              <span class="truncate max-w-[140px]">{{ t.name }}</span>
+              <span>{{ new Date().toLocaleDateString('en-IN') }}</span>
             </div>
           </div>
         </div>
       </div>
 
       <template #footer="{ close }">
-        <button
-          type="button"
-          class="px-3 py-1.5 border border-slate-300 rounded text-slate-700 text-xs font-semibold cursor-pointer"
-          @click="close"
-        >
+        <Button variant="secondary" size="sm" @click="close">
           Cancel
-        </button>
-        <button
-          type="button"
-          class="px-4 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded text-xs font-bold cursor-pointer shadow-2xs flex items-center space-x-1"
-          @click="printReceiptWindow"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-          <span>Print Thermal Barcodes</span>
-        </button>
+        </Button>
+        <Button variant="primary" size="sm" icon-left="printer" @click="printReceiptWindow">
+          Print 50×25mm Labels
+        </Button>
       </template>
     </Modal>
   </div>
