@@ -1,21 +1,5 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'public' })
-useSeoMeta({ title: 'Customer portal login | Aarozi Healthcare', description: 'Sign in to the Aarozi Healthcare customer portal.' })
-const form = reactive({ tenant: '', username: '', password: '' })
-const errorMessage = ref('')
-const busy = ref(false)
-const api = useApi()
-async function login() {
-  errorMessage.value = ''
-  busy.value = true
-  try {
-    const result = await api.post<any>('/auth/login', { tenant_id_or_code: form.tenant, username: form.username, password: form.password })
-    if (!result?.access_token) throw new Error('The server did not return a valid session.')
-    if (import.meta.client) localStorage.setItem('token', result.access_token)
-    await navigateTo('/customer/dashboard')
-  } catch {
-    errorMessage.value = 'Sign-in failed. Check your laboratory code and credentials, or contact your administrator.'
-  } finally { busy.value = false }
-}
+useSeoMeta({ title: 'Customer portal | Aarozi Healthcare', description: 'Aarozi Healthcare customer portal access.' })
 </script>
-<template><div class="mx-auto max-w-xl px-4 py-20 sm:px-6"><form class="rounded-3xl border border-slate-200 p-8 shadow-sm" @submit.prevent="login"><p class="text-xs font-bold uppercase tracking-[.2em] text-teal-700">Customer portal</p><h1 class="mt-3 text-3xl font-black">Welcome back.</h1><p class="mt-3 text-sm leading-6 text-slate-600">Sign in with the laboratory code and user credentials issued by your administrator.</p><label class="mt-7 grid gap-2 text-sm font-semibold">Laboratory code<input v-model="form.tenant" required autocomplete="organization" class="rounded-lg border border-slate-300 px-3 py-3 font-normal" /></label><label class="mt-4 grid gap-2 text-sm font-semibold">Username or email<input v-model="form.username" required autocomplete="username" class="rounded-lg border border-slate-300 px-3 py-3 font-normal" /></label><label class="mt-4 grid gap-2 text-sm font-semibold">Password<input v-model="form.password" required type="password" autocomplete="current-password" class="rounded-lg border border-slate-300 px-3 py-3 font-normal" /></label><p v-if="errorMessage" role="alert" class="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{{ errorMessage }}</p><button :disabled="busy" class="mt-6 w-full rounded-xl bg-teal-700 px-5 py-3 font-bold text-white disabled:opacity-50">{{ busy ? 'Signing in…' : 'Sign in securely' }}</button><p class="mt-5 text-xs leading-5 text-slate-500">This login uses the configured API. There is no offline demo-token bypass on this page.</p></form></div></template>
+<template><div class="mx-auto max-w-xl px-4 py-20 sm:px-6"><section class="rounded-3xl border border-slate-200 p-8 shadow-sm"><p class="text-xs font-bold uppercase tracking-[.2em] text-teal-700">Customer portal</p><h1 class="mt-3 text-3xl font-black">Customer portal access.</h1><p class="mt-4 leading-7 text-slate-600">The hosted customer portal authentication service has not yet been deployed. The laboratory workstation login is a separate local service and is not used as a public cloud account system.</p><div class="mt-7 rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-950"><strong>Portal login is not active yet.</strong><p class="mt-1">No password is collected and no local workstation API is called from this page.</p></div><NuxtLink to="/login" class="mt-7 inline-flex rounded-xl border border-slate-300 px-5 py-3 font-semibold text-slate-800 hover:bg-slate-50">Open local workstation login</NuxtLink><p class="mt-5 text-sm text-slate-600">New laboratory? <NuxtLink to="/business-registration" class="font-semibold text-teal-700 underline">Register your business</NuxtLink></p></section></div></template>
