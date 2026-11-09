@@ -9,6 +9,9 @@ export default defineNuxtConfig({
     ],
   },
   devtools: { enabled: true },
+  dir: {
+    layouts: 'layouts'
+  },
   typescript: {
     strict: true,
     typeCheck: true
