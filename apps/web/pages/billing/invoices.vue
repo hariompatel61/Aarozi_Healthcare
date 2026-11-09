@@ -2,6 +2,13 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useToast } from '~/composables/useToast'
+import PageHeader from '~/components/ui/PageHeader.vue'
+import Card from '~/components/ui/Card.vue'
+import Badge, { type BadgeVariant } from '~/components/ui/Badge.vue'
+import Button from '~/components/ui/Button.vue'
+import Icon from '~/components/ui/Icon.vue'
+import Kbd from '~/components/ui/Kbd.vue'
+import Modal from '~/components/ui/Modal.vue'
 
 const route = useRoute()
 const api = useApi()
@@ -257,19 +264,19 @@ function downloadReceiptPdf(inv: InvoiceItem) {
           <title>${inv.invoice_no}_Receipt</title>
           <style>
             @page { size: 80mm auto; margin: 4mm; }
-            body { font-family: monospace; font-size: 11px; color: #000; margin: 0; padding: 10px; width: 72mm; }
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; font-size: 12px; color: #000; margin: 0; padding: 10px; width: 72mm; }
             .center { text-align: center; }
             .dashed { border-bottom: 1px dashed #000; padding-bottom: 6px; margin-bottom: 6px; }
-            .row { display: flex; justify-content: space-between; margin: 3px 0; }
+            .row { display: flex; justify-content: space-between; margin: 4px 0; }
             .bold { font-weight: bold; }
             @media print { body { -webkit-print-color-adjust: exact; } }
           </style>
         </head>
         <body>
           <div class="center dashed">
-            <h3 style="margin:0; font-size:14px;">AAROZI HEALTHCARE</h3>
-            <p style="margin:2px 0; font-size:10px;">Central Diagnostic Laboratory</p>
-            <p style="margin:2px 0; font-size:9px;">GSTIN: 07AAAAA0000A1Z5</p>
+            <h3 style="margin:0; font-size:15px;">AAROZI HEALTHCARE</h3>
+            <p style="margin:2px 0; font-size:12px;">Central Diagnostic Laboratory</p>
+            <p style="margin:2px 0; font-size:12px; color:#555;">GSTIN: 07AAAAA0000A1Z5</p>
           </div>
           <div class="dashed">
             <div class="row"><span class="bold">Invoice:</span><span>${inv.invoice_no}</span></div>
@@ -287,7 +294,7 @@ function downloadReceiptPdf(inv: InvoiceItem) {
             <div class="row bold"><span>Paid:</span><span>₹ ${inv.paid_amount.toFixed(2)}</span></div>
             <div class="row"><span>Balance Due:</span><span>₹ ${inv.balance_amount.toFixed(2)}</span></div>
           </div>
-          <div class="center" style="font-size:9px; margin-top:8px;">
+          <div class="center" style="font-size:12px; margin-top:8px;">
             Thank you for choosing Aarozi Healthcare.<br/>Computer generated tax receipt.
           </div>
           <script>
@@ -311,6 +318,16 @@ function printReceipt() {
   }
 }
 
+function getStatusBadgeVariant(status: string): BadgeVariant {
+  switch (status.toLowerCase()) {
+    case 'paid': return 'success'
+    case 'partial': return 'warning'
+    case 'issued': return 'info'
+    case 'cancelled': return 'danger'
+    default: return 'neutral'
+  }
+}
+
 onMounted(() => {
   loadInvoices()
 })
@@ -318,477 +335,511 @@ onMounted(() => {
 
 <template>
   <div class="space-y-4 max-w-7xl mx-auto text-left">
-    <!-- Top Action Bar -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
-      <div>
-        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Billing &amp; Payments</h1>
-        <p class="text-xs text-slate-500 mt-0.5">
-          Patient billing counter, POS receipt printing, multi-mode payment collection and daily settlement
-        </p>
+    <!-- Page Header with Cashier Actions & Shortcuts -->
+    <PageHeader
+      title="Billing &amp; Payments Ledger"
+      subtitle="Patient billing counter, POS receipt printing, multi-mode payment collection, and daily cashier settlement"
+    >
+      <template #actions>
+        <div class="flex items-center gap-2 flex-wrap">
+          <Button
+            variant="secondary"
+            size="sm"
+            :loading="loading"
+            @click="loadInvoices"
+          >
+            <template #icon-left>
+              <Icon name="refresh" size="sm" :class="loading ? 'animate-spin' : ''" />
+            </template>
+            <span>Refresh</span>
+          </Button>
+
+          <NuxtLink to="/patients/register">
+            <Button variant="secondary" size="sm">
+              <template #icon-left>
+                <Icon name="user" size="sm" />
+              </template>
+              <span>New Patient</span>
+            </Button>
+          </NuxtLink>
+
+          <NuxtLink to="/billing/referrals">
+            <Button variant="secondary" size="sm">
+              <template #icon-left>
+                <Icon name="briefcase" size="sm" />
+              </template>
+              <span>Doctor Referrals</span>
+            </Button>
+          </NuxtLink>
+
+          <Button
+            variant="primary"
+            size="sm"
+            @click="openCreateInvoiceModal"
+          >
+            <template #icon-left>
+              <Icon name="plus" size="sm" />
+            </template>
+            <span>Create Invoice</span>
+            <Kbd class="ml-1 hidden sm:inline-block">F3</Kbd>
+          </Button>
+        </div>
+      </template>
+    </PageHeader>
+
+    <!-- Financial KPI Metrics Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs flex items-center justify-between">
+        <div class="space-y-1">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Today's Collections</p>
+          <p class="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 tracking-tight">₹ {{ totalRevenueToday.toLocaleString('en-IN') }}</p>
+          <p class="text-xs text-emerald-700 dark:text-emerald-400 font-medium">100% Cash/UPI reconciled</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900">
+          <Icon name="credit-card" size="md" />
+        </div>
       </div>
 
-      <div class="flex items-center space-x-2">
-        <button
-          type="button"
-          class="btn-primary"
-          title="Create new diagnostic invoice (F3)"
-          @click="openCreateInvoiceModal"
-        >
-          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          <span>Create Invoice</span>
-          <kbd class="ml-1 px-1.5 py-0.2 text-[9px] font-mono text-teal-100 bg-teal-800/60 rounded">F3</kbd>
-        </button>
-      </div>
-    </div>
-
-    <!-- Financial KPI Metrics -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs">
-        <p class="text-[11px] font-medium text-slate-500">Today's Collections</p>
-        <p class="text-lg font-bold font-mono text-emerald-600 mt-0.5">₹ {{ totalRevenueToday.toLocaleString('en-IN') }}</p>
-        <p class="text-[10px] text-emerald-700 mt-0.5 font-medium flex items-center">
-          <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1" />
-          100% Cash/UPI reconcilable
-        </p>
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs flex items-center justify-between">
+        <div class="space-y-1">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Pending Receivables</p>
+          <p class="text-2xl font-bold font-mono text-amber-600 dark:text-amber-400 tracking-tight">₹ {{ totalPendingBalance.toLocaleString('en-IN') }}</p>
+          <p class="text-xs text-amber-700 dark:text-amber-400 font-medium">Partial balance due</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900">
+          <Icon name="alert-circle" size="md" />
+        </div>
       </div>
 
-      <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs">
-        <p class="text-[11px] font-medium text-slate-500">Pending Receivables</p>
-        <p class="text-lg font-bold font-mono text-amber-600 mt-0.5">₹ {{ totalPendingBalance.toLocaleString('en-IN') }}</p>
-        <p class="text-[10px] text-slate-400 mt-0.5">Partial balance due</p>
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs flex items-center justify-between">
+        <div class="space-y-1">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Invoices Issued</p>
+          <p class="text-2xl font-bold font-mono text-slate-900 dark:text-slate-100 tracking-tight">{{ invoices.length }}</p>
+          <p class="text-xs text-teal-700 dark:text-teal-400 font-medium">Auto-synced with orders</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 border border-teal-100 dark:border-teal-900">
+          <Icon name="file-text" size="md" />
+        </div>
       </div>
 
-      <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs">
-        <p class="text-[11px] font-medium text-slate-500">Invoices Issued</p>
-        <p class="text-lg font-bold font-mono text-slate-900 mt-0.5">{{ invoices.length }}</p>
-        <p class="text-[10px] text-blue-600 mt-0.5">Auto-synced with orders</p>
-      </div>
-
-      <div class="bg-white p-3.5 rounded-lg border border-slate-200 shadow-2xs">
-        <p class="text-[11px] font-medium text-slate-500">Settlement Status</p>
-        <p class="text-lg font-bold text-slate-800 mt-0.5 flex items-center">
-          <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1.5" />
-          Active Drawer
-        </p>
-        <p class="text-[10px] text-slate-400 mt-0.5">Shift open: 08:00 AM</p>
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs flex items-center justify-between">
+        <div class="space-y-1">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Cashier Drawer</p>
+          <div class="flex items-center gap-2 mt-0.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <p class="text-lg font-bold text-slate-900 dark:text-slate-100">Active Shift</p>
+          </div>
+          <p class="text-xs text-slate-500 font-mono">Counter: #01 (Main POS)</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900">
+          <Icon name="activity" size="md" />
+        </div>
       </div>
     </div>
 
     <!-- Filters and Search Toolbar -->
-    <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
+    <div class="bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
       <div class="flex items-center flex-1 min-w-[260px] max-w-lg">
-        <div class="relative flex-1">
+        <div class="relative w-full">
           <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 pointer-events-none">
-            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+            <Icon name="search" size="xs" />
           </span>
           <input
             v-model="searchQuery"
             type="search"
-            placeholder="Search by invoice, UHID, patient, doctor..."
-            class="input-faang w-full pl-9 pr-8 text-xs"
+            placeholder="Search by invoice, UHID, patient name, doctor..."
+            class="w-full pl-9 pr-8 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-teal-500"
           />
           <button
             v-if="searchQuery"
             type="button"
-            class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400 hover:text-slate-600 cursor-pointer"
+            class="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
             title="Clear search"
             @click="searchQuery = ''"
           >
-            <span class="text-sm leading-none">&times;</span>
+            <Icon name="x" size="xs" />
           </button>
         </div>
       </div>
 
-      <div class="flex items-center space-x-2">
+      <div class="flex items-center gap-2">
         <select
           v-model="statusFilter"
-          class="select-faang input-faang text-xs text-slate-700 cursor-pointer"
+          class="px-3 py-2 text-xs text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:border-teal-500 cursor-pointer"
         >
           <option value="All">All Invoices</option>
           <option value="paid">Fully Paid</option>
           <option value="partial">Partial Payment</option>
           <option value="issued">Unpaid / Issued</option>
         </select>
-        <button
-          type="button"
-          class="btn-ghost text-xs"
+
+        <Button
+          variant="secondary"
+          size="sm"
           title="Reset all filters"
           @click="resetFilters"
         >
           Reset
-        </button>
+        </Button>
       </div>
     </div>
 
     <!-- Invoices Table -->
-    <div class="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+    <Card no-padding>
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-slate-200 text-xs">
-          <thead class="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider">
+        <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+          <thead class="bg-slate-50/80 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 font-semibold uppercase tracking-wider text-[11px]">
             <tr>
-              <th class="px-4 py-2.5 text-left">Invoice No</th>
-              <th class="px-4 py-2.5 text-left">Patient (UHID)</th>
-              <th class="px-4 py-2.5 text-left">Prescribing Doctor</th>
-              <th class="px-4 py-2.5 text-left">Time</th>
-              <th class="px-4 py-2.5 text-right">Total Bill</th>
-              <th class="px-4 py-2.5 text-right">Amount Paid</th>
-              <th class="px-4 py-2.5 text-right">Balance Due</th>
-              <th class="px-4 py-2.5 text-center">Status</th>
-              <th class="px-4 py-2.5 text-center">Actions</th>
+              <th class="px-4 py-3 text-left">Invoice No</th>
+              <th class="px-4 py-3 text-left">Patient (UHID)</th>
+              <th class="px-4 py-3 text-left">Prescribing Doctor</th>
+              <th class="px-4 py-3 text-left">Issued Date</th>
+              <th class="px-4 py-3 text-right">Total Bill</th>
+              <th class="px-4 py-3 text-right">Amount Paid</th>
+              <th class="px-4 py-3 text-right">Balance Due</th>
+              <th class="px-4 py-3 text-center">Status</th>
+              <th class="px-4 py-3 text-center">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 bg-white">
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
             <tr v-if="loading">
               <td colspan="9" class="text-center py-8 text-slate-400 font-medium">
-                Loading clinical billing ledger from database...
+                <div class="flex items-center justify-center gap-2">
+                  <Icon name="refresh" size="sm" class="animate-spin text-teal-600" />
+                  <span>Loading clinical billing ledger from database...</span>
+                </div>
               </td>
             </tr>
+
             <tr v-else-if="filteredInvoices.length === 0">
               <td colspan="9" class="text-center py-8 text-slate-400 font-medium">
-                No invoices found
+                <Icon name="search" size="md" class="mx-auto text-slate-300 mb-1" />
+                <span>No invoices match the selected filter.</span>
               </td>
             </tr>
+
             <tr
               v-for="inv in filteredInvoices"
               v-else
               :key="inv.id"
-              class="hover:bg-blue-50/40 transition-colors"
+              class="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
             >
-              <td class="px-4 py-2.5 font-mono font-semibold text-blue-700">
+              <td class="px-4 py-3 font-mono font-bold text-teal-700 dark:text-teal-400 text-xs whitespace-nowrap">
                 {{ inv.invoice_no }}
               </td>
-              <td class="px-4 py-2.5">
+              <td class="px-4 py-3">
                 <NuxtLink
                   :to="'/patients?query=' + encodeURIComponent(inv.patient_uhid || inv.patient_id)"
-                  class="font-medium text-slate-900 hover:text-blue-700 hover:underline block"
-                  title="View Patient in Directory"
+                  class="font-semibold text-slate-900 dark:text-slate-100 hover:text-teal-700 dark:hover:text-teal-400 hover:underline block text-xs"
                 >
                   {{ inv.patient_name }}
                 </NuxtLink>
-                <NuxtLink
-                  :to="'/patients?query=' + encodeURIComponent(inv.patient_uhid || inv.patient_id)"
-                  class="text-[10px] text-blue-600 font-mono hover:underline"
-                  title="View Patient UHID"
-                >
+                <span class="text-xs text-slate-500 font-mono">
                   {{ inv.patient_uhid || inv.patient_id }}
-                </NuxtLink>
+                </span>
               </td>
-              <td class="px-4 py-2.5 text-slate-700">
+              <td class="px-4 py-3 text-slate-700 dark:text-slate-300">
                 <NuxtLink
                   v-if="inv.doctor_name && inv.doctor_name !== 'Direct Walk-in' && inv.doctor_name !== 'Self / Direct'"
                   :to="'/billing/referrals?search=' + encodeURIComponent(inv.doctor_name)"
-                  class="text-blue-700 font-medium hover:underline inline-flex items-center space-x-1"
-                  title="View Referring Doctor Details"
+                  class="text-teal-700 dark:text-teal-400 font-medium hover:underline inline-flex items-center gap-1"
                 >
+                  <Icon name="user" size="xs" />
                   <span>{{ inv.doctor_name }}</span>
                 </NuxtLink>
                 <span v-else class="text-slate-400 italic">Direct Walk-in</span>
               </td>
-              <td class="px-4 py-2.5 text-slate-500 font-mono">
+              <td class="px-4 py-3 text-slate-500 dark:text-slate-400 font-mono whitespace-nowrap">
                 {{ inv.created_at }}
               </td>
-              <td class="px-4 py-2.5 text-right font-mono font-semibold text-slate-900">
+              <td class="px-4 py-3 text-right font-mono font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
                 ₹ {{ inv.total_amount.toLocaleString('en-IN') }}
               </td>
-              <td class="px-4 py-2.5 text-right font-mono text-emerald-600 font-medium">
+              <td class="px-4 py-3 text-right font-mono text-emerald-600 dark:text-emerald-400 font-semibold whitespace-nowrap">
                 ₹ {{ inv.paid_amount.toLocaleString('en-IN') }}
               </td>
-              <td class="px-4 py-2.5 text-right font-mono" :class="inv.balance_amount > 0 ? 'text-amber-600 font-semibold' : 'text-slate-400'">
+              <td class="px-4 py-3 text-right font-mono whitespace-nowrap" :class="inv.balance_amount > 0 ? 'text-amber-600 dark:text-amber-400 font-bold' : 'text-slate-400'">
                 ₹ {{ inv.balance_amount.toLocaleString('en-IN') }}
               </td>
-              <td class="px-4 py-2.5 text-center">
-                <span
-                  :class="[
-                    'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border',
-                    inv.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : '',
-                    inv.status === 'partial' ? 'bg-amber-50 text-amber-700 border-amber-200' : '',
-                    inv.status === 'issued' ? 'bg-blue-50 text-blue-700 border-blue-200' : '',
-                    inv.status === 'cancelled' ? 'bg-red-50 text-red-700 border-red-200' : ''
-                  ]"
-                >
+              <td class="px-4 py-3 text-center">
+                <Badge :variant="getStatusBadgeVariant(inv.status)" size="sm" :dot="true">
                   {{ inv.status.toUpperCase() }}
-                </span>
+                </Badge>
               </td>
-              <td class="px-4 py-2.5 text-center space-x-1.5 whitespace-nowrap">
-                <button
-                  type="button"
-                  class="px-2 py-1 text-[11px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded cursor-pointer transition"
-                  title="View Thermal Receipt Slip"
-                  @click="showReceipt(inv)"
-                >
-                  Receipt
-                </button>
-                <button
-                  type="button"
-                  class="px-2 py-1 text-[11px] font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded cursor-pointer transition inline-flex items-center space-x-1"
-                  title="Download / Print PDF"
-                  @click="downloadReceiptPdf(inv)"
-                >
-                  <svg class="w-3 h-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                  <span>PDF</span>
-                </button>
-                <button
-                  v-if="inv.balance_amount > 0"
-                  type="button"
-                  class="px-2 py-1 text-[11px] font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded cursor-pointer transition shadow-2xs"
-                  @click="openPaymentModal(inv)"
-                >
-                  Pay Due
-                </button>
+              <td class="px-4 py-3 text-center whitespace-nowrap" @click.stop>
+                <div class="flex items-center justify-center gap-1.5">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    title="View Thermal Receipt Slip"
+                    @click="showReceipt(inv)"
+                  >
+                    <span>Receipt</span>
+                  </Button>
+
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    title="Download / Print PDF"
+                    @click="downloadReceiptPdf(inv)"
+                  >
+                    <template #icon-left>
+                      <Icon name="download" size="xs" />
+                    </template>
+                    <span>PDF</span>
+                  </Button>
+
+                  <Button
+                    v-if="inv.balance_amount > 0"
+                    variant="primary"
+                    size="sm"
+                    @click="openPaymentModal(inv)"
+                  >
+                    <span>Pay Due</span>
+                  </Button>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
+    </Card>
 
     <!-- Create Invoice Modal -->
-    <div
-      v-if="isCreateModalOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4"
+    <Modal
+      v-model="isCreateModalOpen"
+      title="New Diagnostic Invoice"
+      description="Bill direct walk-in or ordered pathology investigations"
+      size="lg"
     >
-      <div class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden text-left">
-        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+      <form class="space-y-4 text-xs" @submit.prevent="submitCreateInvoice">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <h3 class="text-sm font-bold text-slate-900">New Diagnostic Invoice</h3>
-            <p class="text-[11px] text-slate-500">Bill direct walk-in or order investigations</p>
-          </div>
-          <button
-            type="button"
-            class="text-slate-400 hover:text-slate-600 p-1 rounded"
-            @click="isCreateModalOpen = false"
-          >
-            &times;
-          </button>
-        </div>
-
-        <form class="p-5 space-y-4" @submit.prevent="submitCreateInvoice">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-            <div>
-              <label class="block font-medium text-slate-700 mb-1">Patient UHID</label>
-              <input
-                v-model="newInvoice.patient_uhid"
-                required
-                class="w-full px-2.5 py-1.5 border border-slate-300 rounded font-mono focus:ring-1 focus:ring-blue-500"
-                placeholder="e.g. PAT250005"
-              />
-            </div>
-            <div>
-              <label class="block font-medium text-slate-700 mb-1">Patient Name</label>
-              <input
-                v-model="newInvoice.patient_name"
-                required
-                class="w-full px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
-                placeholder="Full Name"
-              />
-            </div>
-            <div>
-              <label class="block font-medium text-slate-700 mb-1">Referral Doctor / Center</label>
-              <input
-                v-model="newInvoice.referral_doctor"
-                class="w-full px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500"
-                placeholder="Dr. S. K. Gupta / Self"
-              />
-            </div>
-            <div>
-              <label class="block font-medium text-slate-700 mb-1">Initial Payment Mode</label>
-              <select
-                v-model="newInvoice.payment_method"
-                class="w-full px-2.5 py-1.5 border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 bg-white"
-              >
-                <option value="Cash">Cash Counter</option>
-                <option value="UPI">UPI / QR Code</option>
-                <option value="Card">Debit / Credit Card</option>
-                <option value="Credit">TPA / Credit (Pay Later)</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Line Items Section -->
-          <div class="border-t border-slate-200 pt-3">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-semibold text-slate-800">Billed Investigations</span>
-              <button
-                type="button"
-                class="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                @click="addTestRow"
-              >
-                + Add Test
-              </button>
-            </div>
-
-            <div class="space-y-2 max-h-48 overflow-y-auto">
-              <div
-                v-for="(test, idx) in newInvoice.tests"
-                :key="idx"
-                class="flex items-center space-x-2 text-xs bg-slate-50 p-2 rounded border border-slate-200"
-              >
-                <input
-                  v-model="test.description"
-                  placeholder="Test Name"
-                  required
-                  class="flex-1 px-2 py-1 bg-white border border-slate-300 rounded"
-                />
-                <div class="flex items-center space-x-1">
-                  <span class="text-slate-400">₹</span>
-                  <input
-                    v-model.number="test.unit_price"
-                    type="number"
-                    min="0"
-                    placeholder="Rate"
-                    class="w-20 px-2 py-1 bg-white border border-slate-300 rounded font-mono text-right"
-                  />
-                </div>
-                <button
-                  type="button"
-                  class="text-red-500 hover:text-red-700 p-1"
-                  title="Remove Item"
-                  @click="removeTestRow(idx)"
-                >
-                  &times;
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Total Calculation Banner -->
-          <div class="bg-blue-50/70 p-3 rounded-lg border border-blue-100 flex items-center justify-between text-xs">
-            <div>
-              <p class="text-slate-600">Total Billed Amount</p>
-              <p class="text-base font-bold font-mono text-slate-900">₹ {{ newInvoiceTotal.toLocaleString('en-IN') }}</p>
-            </div>
-            <div class="flex items-center space-x-2">
-              <label class="font-medium text-slate-700">Initial Deposit:</label>
-              <div class="flex items-center">
-                <span class="text-slate-500 mr-1">₹</span>
-                <input
-                  v-model.number="newInvoice.initial_payment"
-                  type="number"
-                  min="0"
-                  :max="newInvoiceTotal"
-                  class="w-24 px-2 py-1 bg-white border border-slate-300 rounded font-mono font-bold text-right"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div class="flex justify-end space-x-2 pt-2">
-            <button
-              type="button"
-              class="px-3 py-1.5 border border-slate-300 text-slate-700 text-xs rounded hover:bg-slate-50"
-              @click="isCreateModalOpen = false"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              :disabled="createSubmitting"
-              class="px-4 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded shadow-xs"
-            >
-              {{ createSubmitting ? 'Issuing...' : 'Generate Invoice & Print' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Record Payment Modal -->
-    <div
-      v-if="isPaymentModalOpen && selectedInvoiceForPayment"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4"
-    >
-      <div class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden text-left">
-        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-          <h3 class="text-sm font-bold text-slate-900">Record Due Payment</h3>
-          <button type="button" class="text-slate-400 hover:text-slate-600" @click="isPaymentModalOpen = false">&times;</button>
-        </div>
-
-        <form class="p-5 space-y-3 text-xs" @submit.prevent="recordPayment">
-          <div>
-            <span class="text-slate-500">Invoice:</span>
-            <span class="font-mono font-bold text-slate-900 ml-1">{{ selectedInvoiceForPayment.invoice_no }}</span>
-          </div>
-          <div>
-            <span class="text-slate-500">Outstanding Due:</span>
-            <span class="font-mono font-bold text-amber-600 ml-1">₹ {{ selectedInvoiceForPayment.balance_amount }}</span>
-          </div>
-
-          <div>
-            <label class="block font-medium text-slate-700 mb-1">Paying Amount (₹)</label>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Patient UHID *</label>
             <input
-              v-model.number="paymentAmount"
-              type="number"
-              min="1"
-              :max="selectedInvoiceForPayment.balance_amount"
+              v-model="newInvoice.patient_uhid"
               required
-              class="w-full px-3 py-1.5 border border-slate-300 rounded font-mono font-bold text-base text-slate-900"
+              class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-mono focus:outline-none focus:border-teal-500"
+              placeholder="e.g. PAT250005"
             />
           </div>
-
           <div>
-            <label class="block font-medium text-slate-700 mb-1">Payment Method</label>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Patient Name *</label>
+            <input
+              v-model="newInvoice.patient_name"
+              required
+              class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-500"
+              placeholder="Full Name"
+            />
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Referral Doctor / Center</label>
+            <input
+              v-model="newInvoice.referral_doctor"
+              class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-500"
+              placeholder="Dr. S. K. Gupta / Direct"
+            />
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Initial Payment Mode</label>
             <select
-              v-model="paymentMethod"
-              class="w-full px-3 py-1.5 border border-slate-300 rounded bg-white text-slate-800"
+              v-model="newInvoice.payment_method"
+              class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-500 cursor-pointer"
             >
-              <option value="UPI / QR">UPI / BharatQR / PhonePe</option>
-              <option value="Cash">Cash at Counter</option>
-              <option value="Card">Debit / Credit Card (POS)</option>
+              <option value="Cash">Cash Counter</option>
+              <option value="UPI">UPI / QR Code</option>
+              <option value="Card">Debit / Credit Card</option>
+              <option value="Credit">TPA / Credit (Pay Later)</option>
             </select>
           </div>
-
-          <div>
-            <label class="block font-medium text-slate-700 mb-1">Transaction Ref / Cheque No</label>
-            <input
-              v-model="paymentReference"
-              placeholder="e.g. UPI Ref # or Bank Txn ID"
-              class="w-full px-3 py-1.5 border border-slate-300 rounded"
-            />
-          </div>
-
-          <div class="flex justify-end space-x-2 pt-3">
-            <button
-              type="button"
-              class="px-3 py-1.5 border border-slate-300 text-slate-700 text-xs rounded hover:bg-slate-50"
-              @click="isPaymentModalOpen = false"
-            >
-              Close
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded shadow-xs"
-            >
-              Confirm Payment
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Thermal Receipt Modal -->
-    <div
-      v-if="isReceiptModalOpen && activeReceiptInvoice"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4"
-    >
-      <div class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-sm overflow-hidden text-left">
-        <div class="p-4 bg-slate-100 flex items-center justify-between border-b border-slate-200">
-          <span class="text-xs font-bold text-slate-800">Thermal Receipt Slip (80mm)</span>
-          <button type="button" class="text-slate-400 hover:text-slate-600 text-sm" @click="isReceiptModalOpen = false">&times;</button>
         </div>
 
-        <!-- Printable Bill Content -->
-        <div class="p-6 font-mono text-xs text-slate-800 space-y-3 bg-white">
-          <div class="text-center border-b border-dashed border-slate-300 pb-3">
-            <h4 class="font-bold text-sm tracking-tight">AAROZI HEALTHCARE</h4>
-            <p class="text-[10px] text-slate-500">Central Diagnostic Laboratory &amp; Pathology</p>
-            <p class="text-[9px] text-slate-400">GSTIN: 07AAAAA0000A1Z5 &bull; Ph: +91 98765 43210</p>
+        <!-- Line Items Section -->
+        <div class="border-t border-slate-100 dark:border-slate-800 pt-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-800 dark:text-slate-200">Billed Investigations</span>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              @click="addTestRow"
+            >
+              <template #icon-left>
+                <Icon name="plus" size="xs" />
+              </template>
+              <span>Add Test</span>
+            </Button>
           </div>
 
-          <div class="text-[11px] space-y-0.5">
+          <div class="space-y-2 max-h-48 overflow-y-auto">
+            <div
+              v-for="(test, idx) in newInvoice.tests"
+              :key="idx"
+              class="flex items-center gap-2 p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
+            >
+              <input
+                v-model="test.description"
+                placeholder="Test Name"
+                required
+                class="flex-1 px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-500"
+              />
+              <div class="flex items-center gap-1">
+                <span class="text-slate-400 font-bold">₹</span>
+                <input
+                  v-model.number="test.unit_price"
+                  type="number"
+                  min="0"
+                  placeholder="Rate"
+                  class="w-24 px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md font-mono text-right text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-500"
+                />
+              </div>
+              <button
+                type="button"
+                class="text-red-500 hover:text-red-700 p-1 cursor-pointer"
+                title="Remove Item"
+                @click="removeTestRow(idx)"
+              >
+                <Icon name="trash" size="sm" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Calculation Banner -->
+        <div class="bg-teal-50/70 dark:bg-teal-950/40 p-3 rounded-lg border border-teal-100 dark:border-teal-900 flex items-center justify-between text-xs">
+          <div>
+            <p class="text-slate-600 dark:text-slate-400 font-medium">Total Billed Amount</p>
+            <p class="text-lg font-bold font-mono text-slate-900 dark:text-slate-100">₹ {{ newInvoiceTotal.toLocaleString('en-IN') }}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="font-medium text-slate-700 dark:text-slate-300">Initial Deposit:</label>
+            <div class="flex items-center gap-1">
+              <span class="text-slate-500 font-bold">₹</span>
+              <input
+                v-model.number="newInvoice.initial_payment"
+                type="number"
+                min="0"
+                :max="newInvoiceTotal"
+                class="w-28 px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md font-mono font-bold text-right text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            @click="isCreateModalOpen = false"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            size="sm"
+            :loading="createSubmitting"
+          >
+            <span>Generate Invoice &amp; Print</span>
+          </Button>
+        </div>
+      </form>
+    </Modal>
+
+    <!-- Record Payment Modal -->
+    <Modal
+      v-model="isPaymentModalOpen"
+      title="Record Outstanding Due Payment"
+      description="Collect cash, UPI or card payment against pending invoice balance"
+      size="md"
+    >
+      <form
+        v-if="selectedInvoiceForPayment"
+        class="space-y-4 text-xs"
+        @submit.prevent="recordPayment"
+      >
+        <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg space-y-1">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Invoice Number:</span>
+            <span class="font-mono font-bold text-slate-900 dark:text-slate-100">{{ selectedInvoiceForPayment.invoice_no }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Outstanding Due:</span>
+            <span class="font-mono font-bold text-amber-600 dark:text-amber-400">₹ {{ selectedInvoiceForPayment.balance_amount }}</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Paying Amount (₹) *</label>
+          <input
+            v-model.number="paymentAmount"
+            type="number"
+            min="1"
+            :max="selectedInvoiceForPayment.balance_amount"
+            required
+            class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg font-mono font-bold text-base text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 focus:outline-none focus:border-teal-500"
+          />
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Payment Method</label>
+          <select
+            v-model="paymentMethod"
+            class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:border-teal-500 cursor-pointer"
+          >
+            <option value="UPI / QR">UPI / BharatQR / PhonePe</option>
+            <option value="Cash">Cash at Counter</option>
+            <option value="Card">Debit / Credit Card (POS)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-700 dark:text-slate-300 mb-1">Transaction Ref / Cheque No</label>
+          <input
+            v-model="paymentReference"
+            placeholder="e.g. UPI Ref # or Bank Txn ID"
+            class="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-teal-500"
+          />
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            @click="isPaymentModalOpen = false"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            size="sm"
+          >
+            <span>Confirm Payment</span>
+          </Button>
+        </div>
+      </form>
+    </Modal>
+
+    <!-- Thermal Receipt Modal -->
+    <Modal
+      v-model="isReceiptModalOpen"
+      title="Thermal Receipt Slip (80mm)"
+      description="Standard cashier point-of-sale thermal slip"
+      size="sm"
+    >
+      <div v-if="activeReceiptInvoice" class="space-y-4">
+        <!-- Printable Bill Content -->
+        <div class="p-4 font-mono text-xs text-slate-800 dark:text-slate-200 space-y-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl">
+          <div class="text-center border-b border-dashed border-slate-300 dark:border-slate-700 pb-3">
+            <h4 class="font-bold text-sm tracking-tight text-slate-900 dark:text-slate-100">AAROZI HEALTHCARE</h4>
+            <p class="text-xs text-slate-500">Central Diagnostic Laboratory</p>
+            <p class="text-xs text-slate-400">GSTIN: 07AAAAA0000A1Z5 &bull; Ph: +91 98765 43210</p>
+          </div>
+
+          <div class="text-xs space-y-1">
             <div class="flex justify-between">
               <span class="text-slate-500">Receipt #:</span>
               <span class="font-bold">{{ activeReceiptInvoice.invoice_no }}</span>
@@ -807,69 +858,72 @@ onMounted(() => {
             </div>
           </div>
 
-          <div class="border-t border-b border-dashed border-slate-300 py-2 space-y-1 text-[11px]">
+          <div class="border-t border-b border-dashed border-slate-300 dark:border-slate-700 py-2 space-y-1 text-xs">
             <div class="flex justify-between font-bold">
               <span>Item Description</span>
               <span>Amt (₹)</span>
             </div>
-            <div class="flex justify-between text-slate-600">
+            <div class="flex justify-between text-slate-600 dark:text-slate-400">
               <span>Complete Blood Count (CBC)</span>
               <span>₹ 350.00</span>
             </div>
-            <div class="flex justify-between text-slate-600">
+            <div class="flex justify-between text-slate-600 dark:text-slate-400">
               <span>HbA1c Glycated Hemoglobin</span>
               <span>₹ 450.00</span>
             </div>
           </div>
 
-          <div class="space-y-1 text-[11px]">
+          <div class="space-y-1 text-xs">
             <div class="flex justify-between">
               <span>Subtotal:</span>
               <span>₹ {{ activeReceiptInvoice.total_amount }}</span>
             </div>
-            <div class="flex justify-between font-bold text-emerald-700">
+            <div class="flex justify-between font-bold text-emerald-600 dark:text-emerald-400">
               <span>Paid:</span>
               <span>₹ {{ activeReceiptInvoice.paid_amount }}</span>
             </div>
-            <div class="flex justify-between text-amber-700 font-bold">
+            <div class="flex justify-between text-amber-600 dark:text-amber-400 font-bold">
               <span>Balance Due:</span>
               <span>₹ {{ activeReceiptInvoice.balance_amount }}</span>
             </div>
           </div>
 
-          <div class="text-center text-[10px] text-slate-400 pt-2 border-t border-dashed border-slate-300">
+          <div class="text-center text-xs text-slate-400 pt-2 border-t border-dashed border-slate-300 dark:border-slate-700">
             Thank you for choosing Aarozi Healthcare.<br />
-            For digital reports visit portal with your UHID.
+            Computer generated clinical receipt.
           </div>
         </div>
 
-        <div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-end space-x-2">
-          <button
-            type="button"
-            class="px-3 py-1.5 border border-slate-300 rounded text-xs text-slate-700 hover:bg-slate-100 cursor-pointer"
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
             @click="isReceiptModalOpen = false"
           >
             Close
-          </button>
-          <button
-            v-if="activeReceiptInvoice"
-            type="button"
-            class="px-3 py-1.5 border border-blue-600 bg-white text-blue-700 hover:bg-blue-50 rounded text-xs font-semibold flex items-center space-x-1 cursor-pointer"
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
             @click="downloadReceiptPdf(activeReceiptInvoice)"
           >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <template #icon-left>
+              <Icon name="download" size="sm" />
+            </template>
             <span>Download PDF</span>
-          </button>
-          <button
-            type="button"
-            class="px-3.5 py-1.5 bg-sky-600 text-white rounded text-xs font-semibold hover:bg-sky-700 cursor-pointer flex items-center space-x-1"
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
             @click="printReceipt"
           >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            <template #icon-left>
+              <Icon name="printer" size="sm" />
+            </template>
             <span>Print Slip</span>
-          </button>
+          </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   </div>
 </template>
