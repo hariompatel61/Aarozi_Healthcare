@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ layout: 'public' as any })
+definePageMeta({ layout: 'public' as any as any })
 useSeoMeta({
   title: 'Aarozi Healthcare | Laboratory Information System',
   description: 'Explore Aarozi Healthcare laboratory information software for diagnostic lab operations, reporting, billing and local network workflows.',
