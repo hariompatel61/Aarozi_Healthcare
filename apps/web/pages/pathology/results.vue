@@ -2,25 +2,33 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from '~/composables/useToast'
+import PageHeader from '~/components/ui/PageHeader.vue'
+import Card from '~/components/ui/Card.vue'
+import Badge from '~/components/ui/Badge.vue'
+import Button from '~/components/ui/Button.vue'
+import Kbd from '~/components/ui/Kbd.vue'
+import Icon from '~/components/ui/Icon.vue'
 import Modal from '~/components/ui/Modal.vue'
+
+definePageMeta({
+  layout: 'default'
+})
 
 const route = useRoute()
 const router = useRouter()
 const { success, info, warning } = useToast()
-
 const api = useApi()
 
 // Patient Demographics & Workstation UI States
 const loading = ref(false)
-const empty = ref(false)
-const errorState = ref<string | null>(null)
-const permission_denied = ref(false)
-
+const isSaving = ref(false)
+const isValidating = ref(false)
 const autosaveStatus = ref('Draft synced')
+
 function triggerAutosave() {
   try {
     localStorage.setItem(`result_draft_${patient.value.sample_id}`, JSON.stringify(parameters.value))
-    autosaveStatus.value = 'Saved to localStorage'
+    autosaveStatus.value = 'Saved to local LAN cache'
   } catch (err) {
     console.warn('Autosave error:', err)
   }
@@ -31,25 +39,6 @@ function focusNextRow(idx: number) {
   if (nextInput) nextInput.focus()
 }
 
-// Clinical flag constants
-const CRITICAL_LOW = 'CRITICAL_LOW'
-const CRITICAL_HIGH = 'CRITICAL_HIGH'
-const reference_text = ref('Biological reference interval & clinical decision limits')
-
-const availableSamples = ref<any[]>([])
-const selectedSampleId = ref('')
-
-const patient = ref({
-  id: 'Loading...',
-  name: 'Loading Patient...',
-  age_sex: '- / -',
-  sample_id: (route.query.sample_id as string) || '',
-  collection_date: 'Today',
-  status: 'In Progress',
-  doctor: 'Referral Clinician',
-  mobile: '-',
-})
-
 // Machine / Cell Counter Integration State
 const isFetchingAnalyzer = ref(false)
 const analyzerSynced = ref(false)
@@ -58,6 +47,135 @@ const isEditingValues = ref(true)
 const isReportModalOpen = ref(false)
 const reportGeneratedAt = ref<string | null>(null)
 const isAddTestModalOpen = ref(false)
+
+// Worklist Triage & Search
+const searchWorklist = ref('')
+const worklistFilter = ref<'all' | 'panic' | 'synced' | 'pending'>('all')
+
+interface WorklistSample {
+  sample_id: string
+  patient_uhid: string
+  patient_name: string
+  age_sex: string
+  test_name: string
+  department: string
+  status: string
+  collected_at: string
+  mobile: string
+  has_panic?: boolean
+  flag?: string
+  doctor?: string
+}
+
+const defaultSamples: WorklistSample[] = [
+  {
+    sample_id: 'SMP-2026-0891',
+    patient_uhid: 'UHID-90812',
+    patient_name: 'Rajesh Kumar Verma',
+    age_sex: '48Y / M',
+    test_name: 'Glycated Hemoglobin (HbA1c HPLC)',
+    department: 'Biochemistry & Special Chemistry',
+    status: 'In Progress',
+    collected_at: '09:15 AM',
+    mobile: '9876543210',
+    has_panic: true,
+    flag: 'Critical',
+    doctor: 'Dr. Ramesh Chandra (MD Med)'
+  },
+  {
+    sample_id: 'SMP-2026-0892',
+    patient_uhid: 'UHID-90815',
+    patient_name: 'Priya Sharma',
+    age_sex: '34Y / F',
+    test_name: 'Complete Blood Count (CBC & ESR)',
+    department: 'Hematology',
+    status: 'Ready for Entry',
+    collected_at: '09:25 AM',
+    mobile: '9811223344',
+    has_panic: false,
+    flag: 'Normal',
+    doctor: 'Dr. Sunita Kapoor (MBBS)'
+  },
+  {
+    sample_id: 'SMP-2026-0893',
+    patient_uhid: 'UHID-90822',
+    patient_name: 'Anil Deshmukh',
+    age_sex: '62Y / M',
+    test_name: 'Kidney Function Test (KFT & Electrolytes)',
+    department: 'Biochemistry',
+    status: 'Analyzer Synced',
+    collected_at: '09:40 AM',
+    mobile: '9822334455',
+    has_panic: true,
+    flag: 'High [H]',
+    doctor: 'Dr. K. S. Murthy (Nephrologist)'
+  },
+  {
+    sample_id: 'SMP-2026-0894',
+    patient_uhid: 'UHID-90831',
+    patient_name: 'Sunita Mehra',
+    age_sex: '29Y / F',
+    test_name: 'Liver Function Test (LFT Complete)',
+    department: 'Biochemistry',
+    status: 'In Progress',
+    collected_at: '10:05 AM',
+    mobile: '9833445566',
+    has_panic: false,
+    flag: 'Normal',
+    doctor: 'Self / Walk-in'
+  },
+  {
+    sample_id: 'SMP-2026-0895',
+    patient_uhid: 'UHID-90840',
+    patient_name: 'Vikramaditya Rao',
+    age_sex: '55Y / M',
+    test_name: 'Lipid Profile Comprehensive',
+    department: 'Biochemistry',
+    status: 'Ready for Entry',
+    collected_at: '10:20 AM',
+    mobile: '9844556677',
+    has_panic: false,
+    flag: 'Normal',
+    doctor: 'Dr. A. K. Banerjee (Cardiologist)'
+  }
+]
+
+const availableSamples = ref<WorklistSample[]>(defaultSamples)
+const selectedSampleId = ref('SMP-2026-0891')
+
+const filteredSamples = computed(() => {
+  return availableSamples.value.filter(s => {
+    // Filter by worklist tab
+    if (worklistFilter.value === 'panic' && !s.has_panic) return false
+    if (worklistFilter.value === 'synced' && s.status !== 'Analyzer Synced') return false
+    if (worklistFilter.value === 'pending' && s.status === 'Authorized & Released') return false
+
+    // Search query
+    if (!searchWorklist.value) return true
+    const q = searchWorklist.value.toLowerCase()
+    return (
+      s.sample_id.toLowerCase().includes(q) ||
+      s.patient_uhid.toLowerCase().includes(q) ||
+      s.patient_name.toLowerCase().includes(q) ||
+      s.test_name.toLowerCase().includes(q)
+    )
+  })
+})
+
+const panicCount = computed(() => {
+  return availableSamples.value.filter(s => s.has_panic).length
+})
+
+const patient = ref({
+  id: 'UHID-90812',
+  name: 'Rajesh Kumar Verma',
+  age_sex: '48Y / M',
+  sample_id: (route.query.sample_id as string) || 'SMP-2026-0891',
+  collection_date: 'Today 09:15 AM',
+  status: 'In Progress',
+  doctor: 'Dr. Ramesh Chandra (MD Med)',
+  mobile: '9876543210',
+})
 
 interface AuditLogItem {
   id: string
@@ -115,33 +233,37 @@ async function loadSampleDetails() {
         selectedSampleId.value = match.sample_id
         applySample(match)
       }
+    } else {
+      applySample(defaultSamples[0])
     }
   } catch (err) {
-    console.warn('Could not load sample details:', err)
+    console.warn('Could not load sample details, using default offline samples:', err)
+    applySample(defaultSamples[0])
   } finally {
     loading.value = false
   }
 }
 
-function onSelectSampleChange() {
-  const match = availableSamples.value.find((s: any) => s.sample_id === selectedSampleId.value)
-  if (match) {
-    applySample(match)
-    router.replace({ query: { sample_id: match.sample_id } })
-  }
+function selectSample(s: WorklistSample) {
+  selectedSampleId.value = s.sample_id
+  applySample(s)
+  router.replace({ query: { sample_id: s.sample_id } })
 }
 
 function applySample(match: any) {
-  patient.value.id = match.patient_uhid || '-'
-  patient.value.name = match.patient_name || '-'
-  patient.value.age_sex = match.age_sex || '-'
-  patient.value.sample_id = match.sample_id || '-'
-  patient.value.collection_date = match.collected_at ? `Today ${match.collected_at}` : 'Today'
-  patient.value.status = match.status || 'Processing'
-  patient.value.mobile = match.mobile || '-'
+  patient.value.id = match.patient_uhid || match.id || 'UHID-90812'
+  patient.value.name = match.patient_name || match.name || 'Rajesh Kumar Verma'
+  patient.value.age_sex = match.age_sex || '48Y / M'
+  patient.value.sample_id = match.sample_id || 'SMP-2026-0891'
+  patient.value.collection_date = match.collected_at ? (match.collected_at.includes('Today') ? match.collected_at : `Today ${match.collected_at}`) : 'Today 09:15 AM'
+  patient.value.status = match.status || 'In Progress'
+  patient.value.doctor = match.doctor || 'Dr. Ramesh Chandra (MD Med)'
+  patient.value.mobile = match.mobile || '9876543210'
+  whatsappRecipientPhone.value = patient.value.mobile ? `+91 ${patient.value.mobile}` : '+91 9876543210'
+
   if (match.test_name) {
     testInfo.value.name = match.test_name
-    testInfo.value.department = match.department || 'Clinical Pathology'
+    testInfo.value.department = match.department || 'Biochemistry & Special Chemistry'
     loadTestParameters(match.test_name)
   }
 }
@@ -260,6 +382,13 @@ const clinicalComment = ref(
 const autoSuggestionText =
   'Indicates suboptimal glycemic control (ADA Goal < 7.0%). Suggest correlation with SMBG records and nephropathy screening.'
 
+function applyAutoSuggestion() {
+  if (!clinicalComment.value.includes(autoSuggestionText)) {
+    clinicalComment.value = clinicalComment.value ? `${clinicalComment.value} ${autoSuggestionText}` : autoSuggestionText
+    success('Suggestion Appended', 'Expert rule text added to pathologist commentary.')
+  }
+}
+
 // Reactive Formula Auto-Calculation Engine: eAG = (28.7 * HbA1c) - 46.7
 function updateCalculations() {
   const hba1cParam = parameters.value.find((p) => p.code === 'HBA1C')
@@ -269,7 +398,6 @@ function updateCalculations() {
 
   const hba1cVal = parseFloat(hba1cParam.value)
   if (!isNaN(hba1cVal) && hba1cVal > 0) {
-    // ADA / IFCC Formula
     const eagVal = Math.round(28.7 * hba1cVal - 46.7)
     if (eagParam) {
       eagParam.value = String(eagVal)
@@ -294,7 +422,6 @@ function updateCalculations() {
       }
     }
 
-    // Flag evaluation for HbA1c
     if (hba1cVal >= 10.0) {
       hba1cParam.flag = 'Critical'
       hba1cParam.observation = 'Severely Elevated - Immediate clinician alert required'
@@ -349,8 +476,7 @@ function fetchFromAnalyzer() {
     isFetchingAnalyzer.value = false
     analyzerSynced.value = true
     analyzerLastSyncTime.value = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
-    
-    // Auto-populate values based on active test
+
     const tLower = testInfo.value.name.toLowerCase()
     if (tLower.includes('cbc') || tLower.includes('blood count')) {
       const vals: Record<string, string> = {
@@ -398,99 +524,65 @@ function fetchFromAnalyzer() {
       }
       updateCalculations()
     }
-    
-    // Log audit
-    auditLogs.value.unshift({
-      id: `log-${Date.now()}`,
-      timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      user: 'Analyzer Interface Engine',
-      action: 'Machine Data Auto-Imported',
-      details: `Raw analyte data received via LAN/RS232 from ${testInfo.value.analyzer}. ${parameters.value.length} parameters populated.`
-    })
-    
-    success('Analyzer Data Auto-Fetched', `Values received from ${testInfo.value.analyzer}. Review & 1-Click Generate Report!`)
+    success('Analyzer Synced', `Fetched telemetry from ${testInfo.value.analyzer}`)
   }, 400)
 }
 
-function oneClickVerifyAndGenerateReport() {
-  patient.value.status = 'Report Certified & Released'
-  reportGeneratedAt.value = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
-  isReportModalOpen.value = true
-  
-  auditLogs.value.unshift({
-    id: `log-${Date.now()}`,
-    timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-    user: 'Hariom Patel (Lab Admin)',
-    action: 'Report Verified & Generated (1-Click)',
-    details: `All ${parameters.value.length} parameters verified against biological reference ranges. Official diagnostic report generated with digital stamp.`
-  })
+function handleSaveDraft() {
+  isSaving.value = true
+  setTimeout(() => {
+    isSaving.value = false
+    triggerAutosave()
+    success('Draft Saved', `Worksheet for ${patient.value.sample_id} preserved locally.`)
+  }, 250)
+}
 
-  success('Report Generated (1-Click)', `Sample ${patient.value.sample_id} certified & released. Ready to print or share!`)
+function handleValidateAndApprove() {
+  isValidating.value = true
+  setTimeout(() => {
+    isValidating.value = false
+    patient.value.status = 'Authorized & Released'
+    activeSubTab.value = 'validation'
+    success('Results Authorized', `Sample ${patient.value.sample_id} verified & signed. Release queued for print/delivery.`)
+  }, 350)
+}
+
+function oneClickVerifyAndGenerateReport() {
+  reportGeneratedAt.value = new Date().toLocaleString('en-IN', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  })
+  isReportModalOpen.value = true
 }
 
 function addTestToCurrentPatient(test: any) {
+  isAddTestModalOpen.value = false
   testInfo.value.name = test.name
   testInfo.value.sample = test.sample
   testInfo.value.department = test.dept
   testInfo.value.analyzer = test.analyzer
-  loadTestParameters(test.code)
-  
-  auditLogs.value.unshift({
-    id: `log-${Date.now()}`,
-    timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-    user: 'Hariom Patel (Lab Admin)',
-    action: 'Investigation Added',
-    details: `Added ${test.name} to patient ${patient.value.name} (${patient.value.id}).`
-  })
-  
-  isAddTestModalOpen.value = false
-  success('Investigation Added', `${test.name} loaded into the diagnostic workstation.`)
+  loadTestParameters(test.name)
+  success('Test Added', `Added ${test.name} to patient requisition docket.`)
 }
 
-function sendDirectWhatsApp() {
-  const cleanPhone = (patient.value.mobile || '9876543210').replace(/\D/g, '').slice(-10)
-  const fullPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone
-  const reportUrl = `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/reporting/templates?sample_id=${encodeURIComponent(patient.value.sample_id)}&uhid=${encodeURIComponent(patient.value.id)}`
-  
-  const textMsg = `*AAROZI DIAGNOSTICS & PATH LAB*
-──────────────────────────
-*Patient:* ${patient.value.name}
-*UHID:* ${patient.value.id}
-*Investigation:* ${testInfo.value.name}
-*Status:* ✅ Certified & Released
-*Sample ID:* ${patient.value.sample_id}
-
-Dear ${patient.value.name}, your verified diagnostic test report is ready.
-You can view and download your official digital report here:
-${reportUrl}
-
-For any assistance, call our laboratory desk: +91 98765 43210
-──────────────────────────
-*Aarozi Healthcare - Accurate & Caring Diagnostics*`
-
-  window.open(`https://wa.me/${fullPhone}?text=${encodeURIComponent(textMsg)}`, '_blank')
-  
-  whatsappSentTimestamp.value = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
-  patient.value.status = 'Dispatched via WhatsApp'
-  
-  auditLogs.value.unshift({
-    id: `log-${Date.now()}`,
-    timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-    user: 'Hariom Patel (Lab Admin)',
-    action: 'WhatsApp Report Sent',
-    details: `Official diagnostic report link transmitted to patient WhatsApp: +${fullPhone}`
-  })
-
-  success('WhatsApp Dispatched', `Chat opened for +${fullPhone}. Report link sent to patient!`)
-}
-
-function applyAutoSuggestion() {
-  clinicalComment.value = `${clinicalComment.value} ${autoSuggestionText}`
-  success('Suggestion Applied', 'Auto-generated clinical correlation comment appended.')
+function handleNextSample() {
+  const currentIdx = availableSamples.value.findIndex(s => s.sample_id === selectedSampleId.value)
+  if (currentIdx !== -1 && currentIdx < availableSamples.value.length - 1) {
+    const next = availableSamples.value[currentIdx + 1]
+    if (next) {
+      selectSample(next)
+      info('Next Specimen', `Loaded ${next.sample_id}`)
+    }
+  } else if (availableSamples.value.length > 0) {
+    const first = availableSamples.value[0]
+    if (first) {
+      selectSample(first)
+      info('First Specimen', `Looped to ${first.sample_id}`)
+    }
+  }
 }
 
 // -------------------------------------------------------------
-// TAB 2: Trend Visualizer & Historical Visits State
+// TAB 2: Trend History State
 // -------------------------------------------------------------
 const selectedTrendParameter = ref('HBA1C')
 
@@ -579,8 +671,7 @@ const trendChartPoints = computed(() => {
 
   const usableWidth = chartWidth - paddingX * 2
   const usableHeight = chartHeight - paddingY * 2
-
-  const stepX = usableWidth / (points.length - 1)
+  const stepX = usableWidth / Math.max(points.length - 1, 1)
 
   const mapped = points.map((p, i) => {
     const x = paddingX + i * stepX
@@ -589,7 +680,6 @@ const trendChartPoints = computed(() => {
     return { ...p, x, y }
   })
 
-  // Normal range band coordinates (e.g. 4.0 - 5.6 for HbA1c, 70 - 120 for eAG)
   const refLow = isHba1c ? 4.0 : 70
   const refHigh = isHba1c ? 5.6 : 120
   const bandTop = chartHeight - paddingY - ((refHigh - minVal) / range) * usableHeight
@@ -614,7 +704,7 @@ const trendChartPoints = computed(() => {
 const activeHoverPoint = ref<any>(null)
 
 // -------------------------------------------------------------
-// TAB 3: Attachments Dropzone & Uploads State
+// TAB 3: Attachments
 // -------------------------------------------------------------
 interface LabAttachment {
   id: string
@@ -752,59 +842,6 @@ const validationSteps = ref<AuditStep[]>([
   },
 ])
 
-const isSaving = ref(false)
-const isValidating = ref(false)
-
-function handleSaveDraft() {
-  isSaving.value = true
-  setTimeout(() => {
-    isSaving.value = false
-    success('Draft Saved', `Result draft stored for ${patient.value.sample_id}`)
-  }, 250)
-}
-
-function handleAdvanceValidationStep(stepIndex: number) {
-  const step = validationSteps.value[stepIndex]
-  if (step) {
-    step.status = 'Completed'
-    step.timestamp = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
-    step.checkpoints.forEach((c) => (c.checked = true))
-
-    const nextStep = validationSteps.value[stepIndex + 1]
-    if (nextStep) {
-      nextStep.status = 'In Review'
-    } else {
-      patient.value.status = 'Authorized & Released'
-      success('Report Released', `Sample ${patient.value.sample_id} authorized for distribution.`)
-    }
-  }
-}
-
-function handleValidateAndApprove() {
-  isValidating.value = true
-  setTimeout(() => {
-    isValidating.value = false
-    // Complete step 2 and step 3
-    const step2 = validationSteps.value[1]
-    if (step2) {
-      step2.status = 'Completed'
-      step2.timestamp = 'Just now'
-      step2.checkpoints.forEach((c) => (c.checked = true))
-    }
-
-    const step3 = validationSteps.value[2]
-    if (step3) {
-      step3.status = 'Completed'
-      step3.timestamp = 'Just now'
-      step3.checkpoints.forEach((c) => (c.checked = true))
-    }
-
-    patient.value.status = 'Authorized & Released'
-    activeSubTab.value = 'validation'
-    success('Results Authorized', `Sample ${patient.value.sample_id} verified & signed. Release queued for print/delivery.`)
-  }, 350)
-}
-
 function printVerifiedReport() {
   const printWindow = window.open('', '_blank')
   if (printWindow) {
@@ -816,9 +853,9 @@ function printVerifiedReport() {
           <style>
             @page { size: A4 portrait; margin: 15mm; }
             body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; color: #1e293b; padding: 20px; }
-            .header { border-bottom: 2px solid #1e40af; padding-bottom: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; }
+            .header { border-bottom: 2px solid #0d9488; padding-bottom: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; }
             table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-            th, td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; font-size: 11px; }
+            th, td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; font-size: 12px; }
             th { background: #f8fafc; font-weight: 600; text-align: left; }
             .badge-high { color: #dc2626; font-weight: bold; }
           </style>
@@ -826,12 +863,12 @@ function printVerifiedReport() {
         <body>
           <div class="header">
             <div>
-              <h2 style="margin:0; color:#1e40af;">AAROZI HEALTHCARE CENTRAL LAB</h2>
-              <p style="margin:2px 0; font-size:11px; color:#64748b;">NABL Accredited &bull; ISO 15189:2022 Certified</p>
+              <h2 style="margin:0; color:#0f766e;">AAROZI HEALTHCARE CENTRAL LAB</h2>
+              <p style="margin:2px 0; font-size:12px; color:#64748b;">NABL Accredited &bull; ISO 15189:2022 Certified</p>
             </div>
             <div style="text-align:right;">
               <span style="font-weight:bold; color:#059669;">FINAL VERIFIED REPORT</span>
-              <p style="margin:2px 0; font-size:11px;">Sample: ${patient.value.sample_id}</p>
+              <p style="margin:2px 0; font-size:12px;">Sample: ${patient.value.sample_id}</p>
             </div>
           </div>
           <table style="background:#f8fafc; border:1px solid #cbd5e1; margin-bottom:15px;">
@@ -863,7 +900,7 @@ function printVerifiedReport() {
                   <td><strong>${p.value}</strong></td>
                   <td>${p.unit}</td>
                   <td>${p.ref_range}</td>
-                  <td class="${p.flag.includes('High') ? 'badge-high' : ''}">${p.flag}</td>
+                  <td class="${p.flag.includes('High') || p.flag === 'Critical' ? 'badge-high' : ''}">${p.flag}</td>
                 </tr>
               `).join('')}
             </tbody>
@@ -889,16 +926,9 @@ function printVerifiedReport() {
   }
 }
 
-function handleNextSample() {
-  info('Loading Next Specimen', 'Navigating to next accessioned sample in worklist...')
-  router.push('/pathology/samples')
-}
-
-// -------------------------------------------------------------
-// WhatsApp Report Dispatch Workflow
-// -------------------------------------------------------------
+// WhatsApp Dispatch Workflow
 const whatsappModalOpen = ref(false)
-const whatsappRecipientPhone = ref('+91 98765 43210')
+const whatsappRecipientPhone = ref('+91 9876543210')
 const whatsappSentTimestamp = ref<string | null>(null)
 const isDispatchingWhatsApp = ref(false)
 
@@ -907,7 +937,7 @@ function openWhatsAppModal() {
 }
 
 const whatsappReportMessage = computed(() => {
-  return `🏥 *Aarozi Healthcare Central Diagnostic Lab*\n\nDear *${patient.value.name}*,\nYour verified diagnostic report for *${testInfo.value.name}* (Sample ID: *${patient.value.sample_id}*, UHID: *${patient.value.id}*) is ready.\n\n📄 *Official PDF Report:* https://aarozi.health/reports/verify/${patient.value.sample_id}-QR\n\n_Accredited by NABL & ISO 15189:2022._`
+  return `🏥 *Aarozi Healthcare Central Diagnostic Lab*\n\nDear *${patient.value.name}*,\nYour verified diagnostic report for *${testInfo.value.name}* (Sample ID: *${patient.value.sample_id}*, UHID: *${patient.value.id}*) is ready.\n\n📄 *Official PDF Report:* https://labs.aarozi.in/reports/verify/${patient.value.sample_id}-QR\n\n_Accredited by NABL & ISO 15189:2022._`
 })
 
 function sendViaWhatsAppWeb() {
@@ -939,7 +969,6 @@ function sendViaWhatsAppApi() {
   }, 350)
 }
 
-// Global Keyboard Shortcuts
 function handleKeydown(e: KeyboardEvent) {
   if (e.altKey && (e.key === 's' || e.key === 'S')) {
     e.preventDefault()
@@ -947,6 +976,8 @@ function handleKeydown(e: KeyboardEvent) {
   } else if (e.altKey && (e.key === 'd' || e.key === 'D')) {
     e.preventDefault()
     handleSaveDraft()
+  } else if (e.key === 'Escape') {
+    handleNextSample()
   }
 }
 
@@ -962,940 +993,746 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div
-    class="space-y-4 max-w-7xl mx-auto text-left"
-    @keydown.alt.s.prevent="handleValidateAndApprove"
-    @keydown.alt.d.prevent="handleSaveDraft"
-    @keydown.esc.prevent="handleNextSample"
-  >
-    <!-- Unified Diagnostic Workflow Navigation Banner -->
-    <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-lg p-3 text-white shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
-      <div class="flex items-center space-x-2">
-        <span class="px-2 py-0.5 rounded bg-blue-700/80 text-[10px] font-mono font-bold uppercase tracking-wider text-blue-100">
-          LIS Operations
-        </span>
-        <span class="font-bold text-sm">Pathology Laboratory Workstation</span>
-      </div>
-
-      <div class="flex items-center space-x-2 flex-wrap">
-        <NuxtLink
-          to="/pathology/results"
-          class="px-3 py-1.5 rounded-md font-bold text-xs bg-white text-blue-900 shadow-2xs flex items-center space-x-1.5 cursor-pointer"
-        >
-          <span>Result Entry</span>
-        </NuxtLink>
-
-        <NuxtLink
-          to="/pathology/samples"
-          class="px-3 py-1.5 rounded-md font-medium text-xs bg-white/10 hover:bg-white/20 text-white transition flex items-center space-x-1.5 cursor-pointer"
-        >
-          <span>Sample Tracking</span>
-        </NuxtLink>
-
-        <NuxtLink
-          to="/pathology/verification"
-          class="px-3 py-1.5 rounded-md font-medium text-xs bg-white/10 hover:bg-white/20 text-white transition flex items-center space-x-1.5 cursor-pointer"
-        >
-          <span>Verification</span>
-        </NuxtLink>
-      </div>
-    </div>
-
-    <!-- Active Specimen / Patient Selector & Quick Actions Toolbar -->
-    <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
-      <div class="flex items-center space-x-2 flex-1 min-w-[280px]">
-        <span class="font-bold text-slate-700 whitespace-nowrap">Active Patient:</span>
-        <select
-          v-model="selectedSampleId"
-          class="select-faang input-faang flex-1 text-xs font-semibold text-blue-700 cursor-pointer"
-          @change="onSelectSampleChange"
-        >
-          <option v-for="s in availableSamples" :key="s.sample_id" :value="s.sample_id">
-            {{ s.sample_id }} &bull; {{ s.patient_name }} ({{ s.patient_uhid }}) &bull; {{ s.test_name }} &bull; [{{ s.status }}]
-          </option>
-        </select>
-
-        <button
-          type="button"
-          class="btn-secondary text-xs"
-          title="Add another test to this patient"
-          @click="isAddTestModalOpen = true"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-          <span>Add Test</span>
-        </button>
-      </div>
-
-      <!-- Quick Operational Action Buttons -->
-      <div class="flex items-center space-x-2 flex-wrap">
-        <!-- 1. Fetch from Analyzer Button -->
-        <button
-          type="button"
-          :disabled="isFetchingAnalyzer"
-          class="btn-primary"
-          title="Query Cell Counter / Biochemistry Analyzer interface to populate test values"
-          @click="fetchFromAnalyzer"
-        >
-          <svg v-if="isFetchingAnalyzer" class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-          </svg>
-          <svg v-else class="w-3.5 h-3.5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
-          </svg>
-          <span>{{ isFetchingAnalyzer ? 'Querying...' : 'Fetch from Analyzer' }}</span>
-        </button>
-
-        <!-- 2. Edit Values Toggle -->
-        <button
-          type="button"
-          class="btn-secondary"
-          @click="toggleEditValues"
-        >
-          <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-          <span>{{ isEditingValues ? 'Values Unlocked' : 'Edit Values' }}</span>
-        </button>
-
-        <!-- 3. 1-Click Verify & Generate Report -->
-        <button
-          type="button"
-          class="btn-emerald"
-          title="Save results, verify and generate printable report"
-          @click="oneClickVerifyAndGenerateReport"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          <span>Verify &amp; Generate Report</span>
-        </button>
-
-        <!-- 4. WhatsApp Button -->
-        <button
-          type="button"
-          class="btn-secondary text-emerald-800 border-emerald-300 hover:bg-emerald-50"
-          title="Send report directly to patient on WhatsApp"
-          @click="sendDirectWhatsApp"
-        >
-          <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12.031 2C6.495 2 2 6.495 2 12.031c0 1.97.57 3.81 1.56 5.37L2.43 22l4.78-1.1c1.48.83 3.17 1.3 4.82 1.3 5.54 0 10.03-4.49 10.03-10.03S17.57 2 12.03 2z" />
-          </svg>
-          <span>WhatsApp</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Patient Header Card -->
-    <div class="bg-white rounded-lg border border-slate-200 shadow-2xs p-3 sm:p-4">
-      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 text-xs flex-1">
-          <div>
-            <span class="text-slate-400 block text-[11px]">Patient ID</span>
-            <span class="font-mono font-bold text-blue-700 text-sm">{{ patient.id }}</span>
-          </div>
-          <div>
-            <span class="text-slate-400 block text-[11px]">Name</span>
-            <span class="font-bold text-slate-900 text-sm">{{ patient.name }}</span>
-          </div>
-          <div>
-            <span class="text-slate-400 block text-[11px]">Age / Sex</span>
-            <span class="font-mono font-medium text-slate-700 text-sm">{{ patient.age_sex }}</span>
-          </div>
-          <div>
-            <span class="text-slate-400 block text-[11px]">Sample Accession</span>
-            <span class="font-mono font-semibold text-slate-800 text-sm">{{ patient.sample_id }}</span>
-          </div>
-          <div>
-            <span class="text-slate-400 block text-[11px]">Collection Date</span>
-            <span class="text-slate-700 font-medium text-xs">{{ patient.collection_date }}</span>
-          </div>
-          <div>
-            <span class="text-slate-400 block text-[11px]">Status</span>
-            <span
-              :class="[
-                'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border mt-0.5',
-                patient.status.includes('Approved') || patient.status.includes('Released') || patient.status.includes('WhatsApp')
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  : 'bg-amber-50 text-amber-700 border-amber-200'
-              ]"
-            >
-              <span
-                :class="[
-                  'w-1.5 h-1.5 rounded-full mr-1.5',
-                  patient.status.includes('Approved') || patient.status.includes('Released') || patient.status.includes('WhatsApp') ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'
-                ]"
-              />
-              {{ patient.status }}
-            </span>
-          </div>
-        </div>
-
-        <!-- WhatsApp Dispatch Action on Patient Card -->
-        <div class="flex items-center space-x-2 pt-2 lg:pt-0 lg:pl-4 border-t lg:border-t-0 lg:border-l border-slate-100 shrink-0">
-          <button
-            type="button"
-            class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-md shadow-xs transition cursor-pointer flex items-center space-x-1.5"
-            title="Dispatch verified diagnostic report via WhatsApp"
-            @click="openWhatsAppModal"
-          >
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12.031 2C6.495 2 2 6.495 2 12.031c0 1.97.57 3.81 1.56 5.37L2.43 22l4.78-1.1c1.48.83 3.17 1.3 4.82 1.3 5.54 0 10.03-4.49 10.03-10.03S17.57 2 12.03 2z" />
-            </svg>
-            <span>WhatsApp Report</span>
-          </button>
-          <span
-            v-if="whatsappSentTimestamp"
-            class="text-[10px] text-emerald-700 font-medium bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200"
-          >
-            Dispatched {{ whatsappSentTimestamp }}
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- 4 Essential Workstation Sub-Tabs Navigation -->
-    <div class="flex items-center space-x-1 border-b border-slate-200 text-xs font-semibold">
-      <button
-        type="button"
-        :class="[
-          'px-4 py-2.5 rounded-t-md transition-colors cursor-pointer flex items-center space-x-1.5',
-          activeSubTab === 'entry'
-            ? 'bg-white border-t-2 border-t-blue-600 border-x border-b-0 border-slate-200 text-blue-700 font-bold'
-            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-        ]"
-        @click="activeSubTab = 'entry'"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-        <span>1. Result Entry</span>
-      </button>
-
-      <button
-        type="button"
-        :class="[
-          'px-4 py-2.5 rounded-t-md transition-colors cursor-pointer flex items-center space-x-1.5',
-          activeSubTab === 'graph'
-            ? 'bg-white border-t-2 border-t-blue-600 border-x border-b-0 border-slate-200 text-blue-700 font-bold'
-            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-        ]"
-        @click="activeSubTab = 'graph'"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" /></svg>
-        <span>2. Graph / History</span>
-      </button>
-
-      <button
-        type="button"
-        :class="[
-          'px-4 py-2.5 rounded-t-md transition-colors cursor-pointer flex items-center space-x-1.5',
-          activeSubTab === 'attachments'
-            ? 'bg-white border-t-2 border-t-blue-600 border-x border-b-0 border-slate-200 text-blue-700 font-bold'
-            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-        ]"
-        @click="activeSubTab = 'attachments'"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
-        <span>3. Attachments</span>
-        <span class="ml-1 text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-100">{{ attachments.length }}</span>
-      </button>
-
-      <button
-        type="button"
-        :class="[
-          'px-4 py-2.5 rounded-t-md transition-colors cursor-pointer flex items-center space-x-1.5',
-          activeSubTab === 'validation'
-            ? 'bg-white border-t-2 border-t-blue-600 border-x border-b-0 border-slate-200 text-blue-700 font-bold'
-            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-        ]"
-        @click="activeSubTab = 'validation'"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-        <span>4. Validation &amp; Sign-off</span>
-      </button>
-    </div>
-
-    <!-- ======================================================== -->
-    <!-- TAB 1: RESULT ENTRY                                      -->
-    <!-- ======================================================== -->
-    <div v-if="activeSubTab === 'entry'" class="bg-white rounded-lg border border-slate-200 shadow-xs p-4 sm:p-5 space-y-5">
-      <!-- Test Title & Methodology Banner -->
-      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
-        <div class="flex items-center space-x-3">
-          <h2 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
-            Test: {{ testInfo.name }}
-          </h2>
-        </div>
-
-        <div class="flex items-center space-x-2 text-xs flex-wrap gap-1">
-          <span v-if="analyzerSynced" class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 font-mono text-[11px] flex items-center space-x-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-            <span>Auto-synced: {{ testInfo.analyzer || 'Analyzer' }} ({{ analyzerLastSyncTime }})</span>
-          </span>
-          <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-[11px]">
-            Method: {{ testInfo.method }}
-          </span>
-          <span class="px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200 font-mono text-[11px]">
-            Sample: {{ testInfo.sample }}
-          </span>
-          <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 font-mono text-[11px]">
-            {{ testInfo.department }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Parameters Entry Table -->
-      <div class="overflow-x-auto border border-slate-200 rounded-md">
-        <table class="min-w-full divide-y divide-slate-200 text-xs">
-          <thead class="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider">
-            <tr>
-              <th class="w-10 px-3 py-2.5 text-center">#</th>
-              <th class="px-4 py-2.5 text-left">Parameter</th>
-              <th class="px-4 py-2.5 text-left">Observed Value</th>
-              <th class="px-4 py-2.5 text-left">Unit</th>
-              <th class="px-4 py-2.5 text-left">Reference Range</th>
-              <th class="px-4 py-2.5 text-left">Auto-Flag</th>
-              <th class="px-4 py-2.5 text-left">Clinical Observation</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 bg-white">
-            <tr
-              v-for="(p, idx) in parameters"
-              :key="p.id"
-              :class="[
-                'hover:bg-slate-50 transition-colors',
-                p.flag === 'High [H]' ? 'bg-red-50/20' : (p.flag === 'Critical' ? 'bg-red-100/30' : '')
-              ]"
-            >
-              <td class="px-3 py-2.5 text-center font-mono text-slate-400">
-                {{ p.id }}
-              </td>
-              <td class="px-4 py-2.5 font-bold text-slate-800">
-                {{ p.name }}
-                <span v-if="p.is_calculated" class="ml-1 text-[10px] text-blue-600 font-normal font-sans">
-                  (Auto-Calculated)
-                </span>
-              </td>
-              <td class="px-4 py-2.5">
-                <input
-                  v-model="p.value"
-                  type="text"
-                  :tabindex="idx + 1"
-                  :readonly="p.is_calculated"
-                  class="w-28 px-2.5 py-1 text-xs font-mono font-bold rounded border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
-                  :class="[
-                    p.is_calculated ? 'bg-slate-50 text-slate-600 cursor-not-allowed' : 'text-slate-900',
-                    p.flag === 'High [H]' ? 'border-red-300 text-red-900 bg-red-50/40' : (p.flag === 'Critical' ? 'border-red-500 text-red-900 bg-red-100' : '')
-                  ]"
-                  @input="handleParameterChange(p)"
-                />
-              </td>
-              <td class="px-4 py-2.5 font-mono text-slate-600">
-                {{ p.unit }}
-              </td>
-              <td class="px-4 py-2.5 font-mono text-slate-600">
-                {{ p.ref_range }}
-              </td>
-              <td class="px-4 py-2.5">
-                <span
-                  v-if="p.flag === 'Critical'"
-                  class="inline-flex items-center px-2 py-0.5 rounded font-mono font-bold text-[11px] bg-red-600 text-white animate-pulse"
-                >
-                  CRITICAL
-                </span>
-                <span
-                  v-else-if="p.flag === 'High [H]'"
-                  class="inline-flex items-center px-2 py-0.5 rounded font-mono font-bold text-[11px] bg-red-100 text-red-800 border border-red-200"
-                >
-                  High [H]
-                </span>
-                <span
-                  v-else-if="p.flag === 'Low [L]'"
-                  class="inline-flex items-center px-2 py-0.5 rounded font-mono font-bold text-[11px] bg-blue-100 text-blue-800 border border-blue-200"
-                >
-                  Low [L]
-                </span>
-                <span
-                  v-else
-                  class="inline-flex items-center px-2 py-0.5 rounded font-mono text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200"
-                >
-                  Normal
-                </span>
-              </td>
-              <td class="px-4 py-2.5 text-slate-600 text-[11px]">
-                {{ p.observation }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Formula Engine Calculation Details Callout -->
-      <div class="rounded-lg bg-blue-50/70 border border-blue-200 p-3 text-xs flex items-center justify-between">
-        <div class="flex items-center space-x-2">
-          <span class="inline-block px-2 py-0.5 bg-blue-600 text-white rounded font-mono text-[10px] font-bold">CALC ENGINE</span>
-          <span class="text-blue-900 font-medium">
-            Active Regression Formula:
-            <code class="bg-white px-1.5 py-0.5 rounded border border-blue-200 text-blue-800 font-mono font-bold">eAG (mg/dL) = 28.7 &times; HbA1c &minus; 46.7</code>
-          </span>
-        </div>
-        <span class="text-blue-600 text-[11px]">Standards: ADA &bull; IFCC</span>
-      </div>
-
-      <!-- Clinical Comment Section -->
-      <div>
-        <label class="block font-semibold text-slate-800 text-xs mb-1">
-          Pathologist Clinical Interpretation &amp; Correlation
-        </label>
-        <textarea
-          v-model="clinicalComment"
-          rows="3"
-          class="w-full p-2.5 rounded border border-slate-300 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white font-sans"
-          placeholder="Enter clinical observations, pathologist comments or reflex test recommendations..."
-        />
-      </div>
-
-      <!-- Auto Suggestion Callout Banner -->
-      <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-        <div class="flex items-start space-x-2.5">
-          <div class="p-1 rounded-full bg-emerald-600 text-white shrink-0 mt-0.5">
-            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div>
-            <span class="font-bold text-emerald-900 block">Expert System Rule: Suboptimal Glycemia</span>
-            <p class="text-emerald-800 mt-0.5">
-              Result is elevated above target threshold (7.0%). Auto-suggestion:
-              <span class="italic font-medium">&ldquo;{{ autoSuggestionText }}&rdquo;</span>
-            </p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          class="px-3 py-1.5 bg-[#059669] hover:bg-emerald-700 text-white font-semibold rounded text-xs transition cursor-pointer shrink-0 shadow-2xs"
-          @click="applyAutoSuggestion"
-        >
-          Append to Comment
-        </button>
-      </div>
-
-      <!-- Workstation Footer Controls -->
-      <div class="pt-4 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
-        <button
-          type="button"
-          :disabled="isSaving"
-          class="inline-flex items-center space-x-1.5 px-4 py-2 border border-slate-300 rounded text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 transition cursor-pointer shadow-2xs"
-          @click="handleSaveDraft"
-        >
-          <svg class="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-          </svg>
-          <span>Save Draft (Alt+D)</span>
-        </button>
-
-        <div class="flex items-center space-x-2.5">
-          <button
-            type="button"
-            class="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold rounded shadow-xs transition cursor-pointer"
-            title="Dispatch report directly to patient WhatsApp"
-            @click="openWhatsAppModal"
-          >
-            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12.031 2C6.495 2 2 6.495 2 12.031c0 1.97.57 3.81 1.56 5.37L2.43 22l4.78-1.1c1.48.83 3.17 1.3 4.82 1.3 5.54 0 10.03-4.49 10.03-10.03S17.57 2 12.03 2z" />
-            </svg>
-            <span>WhatsApp Report</span>
-          </button>
-
-          <button
-            type="button"
-            :disabled="isValidating"
-            class="inline-flex items-center space-x-1.5 px-5 py-2 bg-[#059669] hover:bg-[#047857] text-white text-xs sm:text-sm font-bold rounded shadow-xs transition cursor-pointer disabled:opacity-50"
-            @click="handleValidateAndApprove"
-          >
-            <svg v-if="isValidating" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-            </svg>
-            <svg v-else class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>Validate &amp; Approve (Alt+S)</span>
-          </button>
-
-          <button
-            type="button"
-            class="inline-flex items-center space-x-1 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded shadow-xs transition cursor-pointer"
-            @click="handleNextSample"
-          >
-            <span>Next Sample</span>
-            <span>&rarr;</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Relational Clinical Audit Trail & History Log -->
-      <div class="mt-4 pt-4 border-t border-slate-200">
-        <div class="flex items-center justify-between mb-2.5">
-          <div class="flex items-center space-x-2">
-            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span class="font-bold text-xs text-slate-800">Relational Clinical Audit Trail & Event History</span>
-            <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-mono font-semibold">
-              ISO 15189 / NABL 112 Compliance
-            </span>
-          </div>
-          <span class="text-[11px] font-mono text-slate-500">{{ auditLogs.length }} Log Entries</span>
-        </div>
-
-        <div class="space-y-2 max-h-52 overflow-y-auto pr-1">
-          <div
-            v-for="log in auditLogs"
-            :key="log.id"
-            class="p-2.5 rounded border border-slate-200 bg-slate-50/70 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-white transition"
-          >
-            <div class="flex items-start space-x-2">
-              <span
-                class="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase shrink-0 mt-0.5"
-                :class="[
-                  log.action.includes('Verified') || log.action.includes('Generated')
-                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                    : log.action.includes('WhatsApp')
-                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-300'
-                    : log.action.includes('Auto-Imported')
-                    ? 'bg-indigo-100 text-indigo-800 border border-indigo-200'
-                    : 'bg-blue-100 text-blue-800 border border-blue-200'
-                ]"
-              >
-                {{ log.action }}
-              </span>
-              <div>
-                <p class="font-medium text-slate-800 text-[11px] leading-snug">{{ log.details }}</p>
-                <span class="text-[10px] text-slate-500">{{ log.user }}</span>
-              </div>
-            </div>
-            <span class="text-[10px] font-mono text-slate-400 shrink-0 self-end sm:self-center">{{ log.timestamp }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ======================================================== -->
-    <!-- TAB 2: GRAPH / MULTI-VISIT TREND VISUALIZER              -->
-    <!-- ======================================================== -->
-    <div v-else-if="activeSubTab === 'graph'" class="bg-white rounded-lg border border-slate-200 shadow-xs p-4 sm:p-5 space-y-5">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-        <div>
-          <h2 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center space-x-2">
-            <span>Longitudinal Parameter Trend Visualizer</span>
-            <span class="text-xs font-normal text-slate-500 font-mono">(Patient: {{ patient.name }})</span>
-          </h2>
-          <p class="text-xs text-slate-500 mt-0.5">
-            Compare historical lab results across previous encounters with normal range tolerance zones
-          </p>
-        </div>
-
-        <div class="flex items-center space-x-2 text-xs">
-          <label class="font-medium text-slate-600">Select Parameter:</label>
-          <select
-            v-model="selectedTrendParameter"
-            class="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer"
-          >
-            <option value="HBA1C">HbA1c (%)</option>
-            <option value="EAG">Estimated Avg Glucose (mg/dL)</option>
-            <option value="MPG">Mean Plasma Glucose (mg/dL)</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- KPI Summary Cards -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div class="bg-slate-50 p-3 rounded border border-slate-200">
-          <p class="text-[11px] font-medium text-slate-500">Current Value</p>
-          <p class="text-xl font-bold font-mono text-red-600 mt-0.5">
-            {{ selectedTrendParameter === 'HBA1C' ? '7.8%' : (selectedTrendParameter === 'EAG' ? '177 mg/dL' : '198 mg/dL') }}
-          </p>
-          <span class="text-[10px] text-red-700 font-semibold font-mono">Flag: High [H]</span>
-        </div>
-        <div class="bg-slate-50 p-3 rounded border border-slate-200">
-          <p class="text-[11px] font-medium text-slate-500">Normal Range</p>
-          <p class="text-xl font-bold font-mono text-emerald-700 mt-0.5">
-            {{ selectedTrendParameter === 'HBA1C' ? '4.0 - 5.6%' : (selectedTrendParameter === 'EAG' ? '70 - 120' : '90 - 140') }}
-          </p>
-          <span class="text-[10px] text-emerald-700 font-semibold">Green Tolerance Band</span>
-        </div>
-        <div class="bg-slate-50 p-3 rounded border border-slate-200">
-          <p class="text-[11px] font-medium text-slate-500">Delta vs Last Visit</p>
-          <p class="text-xl font-bold font-mono text-emerald-600 mt-0.5">-0.6%</p>
-          <span class="text-[10px] text-emerald-700 font-medium">Improving trend</span>
-        </div>
-        <div class="bg-slate-50 p-3 rounded border border-slate-200">
-          <p class="text-[11px] font-medium text-slate-500">Historical Encounters</p>
-          <p class="text-xl font-bold font-mono text-slate-900 mt-0.5">{{ historicalVisits.length }}</p>
-          <span class="text-[10px] text-slate-500 font-mono">Since May 2025</span>
-        </div>
-      </div>
-
-      <!-- Clean Responsive SVG Line Chart -->
-      <div class="border border-slate-200 rounded-lg p-4 bg-white relative">
-        <div class="flex items-center justify-between text-xs text-slate-500 mb-2 font-mono">
-          <span>Y-Axis: {{ selectedTrendParameter === 'HBA1C' ? 'HbA1c (% Whole Blood)' : 'Concentration (mg/dL)' }}</span>
-          <span class="flex items-center space-x-2">
-            <span class="inline-block w-3 h-3 bg-emerald-100 border border-emerald-300 rounded" />
-            <span class="text-[11px]">Normal Reference Zone</span>
-          </span>
-        </div>
-
-        <div class="w-full overflow-x-auto">
-          <svg :viewBox="`0 0 ${trendChartPoints.chartWidth} ${trendChartPoints.chartHeight}`" class="w-full h-56 select-none">
-            <!-- Grid Lines -->
-            <line x1="45" :y1="trendChartPoints.chartHeight - 25" :x2="trendChartPoints.chartWidth - 45" :y2="trendChartPoints.chartHeight - 25" stroke="#cbd5e1" stroke-width="1" />
-            <line x1="45" y1="25" :x2="trendChartPoints.chartWidth - 45" y2="25" stroke="#e2e8f0" stroke-dasharray="4" stroke-width="1" />
-            <line x1="45" :y1="trendChartPoints.chartHeight / 2" :x2="trendChartPoints.chartWidth - 45" :y2="trendChartPoints.chartHeight / 2" stroke="#e2e8f0" stroke-dasharray="4" stroke-width="1" />
-
-            <!-- Green Normal Reference Zone Shading -->
-            <rect
-              :x="trendChartPoints.paddingX"
-              :y="trendChartPoints.bandTop"
-              :width="trendChartPoints.chartWidth - trendChartPoints.paddingX * 2"
-              :height="trendChartPoints.bandHeight"
-              fill="#ecfdf5"
-              fill-opacity="0.8"
-              stroke="#10b981"
-              stroke-opacity="0.3"
-              stroke-dasharray="3 3"
-            />
-            <text :x="trendChartPoints.paddingX + 8" :y="trendChartPoints.bandTop + 14" font-size="9" font-family="monospace" fill="#047857" font-weight="bold">
-              Normal Target: {{ trendChartPoints.refLow }} - {{ trendChartPoints.refHigh }}
-            </text>
-
-            <!-- Line Connecting Points -->
-            <path
-              :d="trendChartPoints.pathString"
-              fill="none"
-              stroke="#1e40af"
-              stroke-width="3"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-
-            <!-- Data Point Markers -->
-            <g v-for="pt in trendChartPoints.points" :key="pt.index">
-              <!-- Glow halo -->
-              <circle :cx="pt.x" :cy="pt.y" r="7" fill="#1e40af" fill-opacity="0.15" />
-              <!-- Core circle -->
-              <circle
-                :cx="pt.x"
-                :cy="pt.y"
-                r="4.5"
-                :fill="pt.value > trendChartPoints.refHigh ? '#dc2626' : '#1e40af'"
-                stroke="#ffffff"
-                stroke-width="2"
-                class="cursor-pointer hover:r-6 transition-all"
-                @mouseenter="activeHoverPoint = pt"
-                @mouseleave="activeHoverPoint = null"
-              />
-              <!-- Value Label -->
-              <text :x="pt.x" :y="pt.y - 10" text-anchor="middle" font-size="10" font-family="monospace" font-weight="bold" :fill="pt.value > trendChartPoints.refHigh ? '#b91c1c' : '#1e40af'">
-                {{ pt.value }}{{ selectedTrendParameter === 'HBA1C' ? '%' : '' }}
-              </text>
-              <!-- Date Label below axis -->
-              <text :x="pt.x" :y="trendChartPoints.chartHeight - 8" text-anchor="middle" font-size="9" fill="#64748b" font-family="sans-serif">
-                {{ pt.date }}
-              </text>
-            </g>
-          </svg>
-        </div>
-      </div>
-
-      <!-- Historical Visits Audit Table -->
-      <div class="border border-slate-200 rounded-lg overflow-hidden">
-        <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between">
-          <h3 class="text-xs font-bold text-slate-800">Visit-by-Visit Diagnostic History</h3>
-          <span class="text-[11px] text-slate-500">NABL Accredited Reference Records</span>
-        </div>
-        <table class="min-w-full divide-y divide-slate-200 text-xs">
-          <thead class="bg-white text-slate-600 font-semibold">
-            <tr>
-              <th class="px-4 py-2.5 text-left">Visit Date</th>
-              <th class="px-4 py-2.5 text-left">Sample Accession</th>
-              <th class="px-4 py-2.5 text-right">HbA1c (%)</th>
-              <th class="px-4 py-2.5 text-right">eAG (mg/dL)</th>
-              <th class="px-4 py-2.5 text-center">Flag</th>
-              <th class="px-4 py-2.5 text-center">Variance / Delta</th>
-              <th class="px-4 py-2.5 text-left">Signed Pathologist</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 bg-white">
-            <tr v-for="v in historicalVisits" :key="v.sample_id" class="hover:bg-slate-50">
-              <td class="px-4 py-2.5 font-medium text-slate-800">{{ v.date }}</td>
-              <td class="px-4 py-2.5 font-mono text-blue-700 font-semibold">{{ v.sample_id }}</td>
-              <td class="px-4 py-2.5 text-right font-mono font-bold text-slate-900">{{ v.hba1c }}%</td>
-              <td class="px-4 py-2.5 text-right font-mono text-slate-700">{{ v.eag }}</td>
-              <td class="px-4 py-2.5 text-center">
-                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-red-100 text-red-800 border border-red-200">
-                  {{ v.flag }}
-                </span>
-              </td>
-              <td class="px-4 py-2.5 text-center font-mono text-xs">
-                <span :class="v.delta.startsWith('-') ? 'text-emerald-600 font-bold' : (v.delta.startsWith('+') ? 'text-red-600 font-bold' : 'text-slate-500')">
-                  {{ v.delta }}
-                </span>
-              </td>
-              <td class="px-4 py-2.5 text-slate-600 text-xs">{{ v.verified_by }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ======================================================== -->
-    <!-- TAB 3: ATTACHMENTS & SCANNED SLIPS                       -->
-    <!-- ======================================================== -->
-    <div v-else-if="activeSubTab === 'attachments'" class="bg-white rounded-lg border border-slate-200 shadow-xs p-4 sm:p-5 space-y-5">
-      <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
-        <div>
-          <h2 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
-            Sample Docket &amp; Instrument Attachments
-          </h2>
-          <p class="text-xs text-slate-500 mt-0.5">
-            Attach scanned doctor requisition slips, analyzer calibration traces, chromatograms, and bench sheets
-          </p>
-        </div>
-        <span class="text-xs font-mono bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded">
-          Total: {{ attachments.length }} file(s)
-        </span>
-      </div>
-
-      <!-- Drag & Drop Upload Dropzone -->
-      <div
-        class="border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer"
-        :class="[
-          isDragging ? 'border-blue-500 bg-blue-50/60' : 'border-slate-300 hover:border-blue-400 bg-slate-50/50'
-        ]"
-        @dragover.prevent="isDragging = true"
-        @dragleave.prevent="isDragging = false"
-        @drop.prevent="onFileDrop"
-      >
-        <div class="flex flex-col items-center justify-center space-y-2">
-          <div class="p-3 bg-blue-100 text-blue-700 rounded-full">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-          </div>
-          <div class="text-xs">
-            <label for="attachment-upload-input" class="font-bold text-blue-700 hover:underline cursor-pointer">
-              Click to browse files
-            </label>
-            <span class="text-slate-500"> or drag and drop files directly here</span>
-            <input
-              id="attachment-upload-input"
-              type="file"
-              multiple
-              accept="image/*,application/pdf"
-              class="hidden"
-              @change="onFileInputChange"
-            />
-          </div>
-          <p class="text-[11px] text-slate-400">Supported formats: PDF, PNG, JPG, DICOM (Max 25MB per file)</p>
-        </div>
-      </div>
-
-      <!-- Uploaded Files Grid -->
-      <div class="space-y-3">
-        <h3 class="text-xs font-bold text-slate-800">Attached Documents for Sample {{ patient.sample_id }}</h3>
-
-        <div v-if="attachments.length === 0" class="py-8 text-center text-slate-400 text-xs italic">
-          No files attached yet. Drop slips or analyzer chromatograms above.
-        </div>
-
-        <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div
-            v-for="att in attachments"
-            :key="att.id"
-            class="flex items-center justify-between p-3 rounded-lg border border-slate-200 bg-white hover:border-slate-300 shadow-2xs"
-          >
-            <div class="flex items-center space-x-3 overflow-hidden">
-              <div class="p-2 rounded bg-slate-100 text-slate-600 shrink-0">
-                <svg v-if="att.type.includes('pdf')" class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <svg v-else class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div class="truncate text-xs">
-                <p class="font-semibold text-slate-800 truncate" :title="att.name">{{ att.name }}</p>
-                <p class="text-[11px] text-slate-400 mt-0.5">{{ att.size }} &bull; {{ att.uploaded_at }} &bull; {{ att.uploader }}</p>
-              </div>
-            </div>
-
-            <div class="flex items-center space-x-1 shrink-0 ml-2">
-              <button
-                type="button"
-                class="p-1 text-slate-500 hover:text-blue-700 rounded transition cursor-pointer"
-                title="Preview Document"
-                @click="previewAttachment(att)"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-              </button>
-              <button
-                type="button"
-                class="p-1 text-slate-400 hover:text-red-600 rounded transition cursor-pointer"
-                title="Delete"
-                @click="removeAttachment(att.id)"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ======================================================== -->
-    <!-- TAB 4: VALIDATION & SIGN-OFF WORKFLOW                    -->
-    <!-- ======================================================== -->
-    <div v-else-if="activeSubTab === 'validation'" class="bg-white rounded-lg border border-slate-200 shadow-xs p-4 sm:p-5 space-y-6">
-      <div class="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div>
-          <h2 class="text-sm sm:text-base font-bold text-slate-900 tracking-tight flex items-center space-x-2">
-            <span>Multi-Tier Sign-off &amp; Audit Authorization</span>
-          </h2>
-          <p class="text-xs text-slate-500 mt-0.5">
-            Strict 3-tier chain of custody: Technician Verified &rarr; Pathologist Review &rarr; Authorized Release
-          </p>
-        </div>
-
-        <div class="flex items-center space-x-2">
-          <button
-            type="button"
-            class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded text-xs transition cursor-pointer flex items-center space-x-1 shadow-2xs"
-            @click="openWhatsAppModal"
-          >
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12.031 2C6.495 2 2 6.495 2 12.031c0 1.97.57 3.81 1.56 5.37L2.43 22l4.78-1.1c1.48.83 3.17 1.3 4.82 1.3 5.54 0 10.03-4.49 10.03-10.03S17.57 2 12.03 2z" />
-            </svg>
-            <span>Dispatch via WhatsApp</span>
-          </button>
-          <button
-            type="button"
-            class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded text-xs transition cursor-pointer flex items-center space-x-1"
-            @click="printVerifiedReport"
-          >
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-            <span>Print Verified Report</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- 3-Tier Step Timeline Cards -->
-      <div class="space-y-4">
-        <div
-          v-for="(st, idx) in validationSteps"
-          :key="st.step"
-          class="border rounded-lg p-4 transition-all"
-          :class="[
-            st.status === 'Completed'
-              ? 'border-emerald-200 bg-emerald-50/20'
-              : (st.status === 'In Review' ? 'border-blue-300 bg-blue-50/20 shadow-xs' : 'border-slate-200 bg-slate-50/40 opacity-70')
-          ]"
-        >
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-2 mb-3" :class="st.status === 'Completed' ? 'border-emerald-100' : 'border-slate-200'">
-            <div class="flex items-center space-x-3">
-              <span
-                class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs"
-                :class="[
-                  st.status === 'Completed'
-                    ? 'bg-emerald-600 text-white'
-                    : (st.status === 'In Review' ? 'bg-blue-600 text-white animate-pulse' : 'bg-slate-200 text-slate-600')
-                ]"
-              >
-                {{ st.status === 'Completed' ? '✓' : st.step }}
-              </span>
-              <div>
-                <h3 class="text-xs sm:text-sm font-bold text-slate-900">{{ st.title }}</h3>
-                <p class="text-[11px] text-slate-500">{{ st.role }} &bull; {{ st.user }}</p>
-              </div>
-            </div>
-
-            <div class="flex items-center space-x-2">
-              <span
-                class="px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase"
-                :class="[
-                  st.status === 'Completed'
-                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                    : (st.status === 'In Review' ? 'bg-blue-100 text-blue-800 border border-blue-200' : 'bg-slate-100 text-slate-600')
-                ]"
-              >
-                {{ st.status }}
-              </span>
-              <span class="text-[11px] font-mono text-slate-500">{{ st.timestamp }}</span>
-            </div>
-          </div>
-
-          <!-- Audit Checkpoints -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-            <div
-              v-for="(cp, cidx) in st.checkpoints"
-              :key="cidx"
-              class="flex items-center space-x-2 text-xs text-slate-700 bg-white p-2 rounded border border-slate-200"
-            >
-              <input
-                type="checkbox"
-                v-model="cp.checked"
-                class="h-3.5 w-3.5 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer"
-              />
-              <span :class="cp.checked ? 'font-medium text-slate-900' : 'text-slate-500'">{{ cp.label }}</span>
-            </div>
-          </div>
-
-          <!-- Notes & Action Button -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs pt-2">
-            <p class="text-slate-600 italic">
-              <strong>Audit Remark:</strong> {{ st.notes }}
-            </p>
-
-            <button
-              v-if="st.status === 'In Review'"
-              type="button"
-              class="px-3.5 py-1.5 bg-[#059669] hover:bg-emerald-700 text-white font-bold rounded text-xs transition cursor-pointer shrink-0 shadow-2xs"
-              @click="handleAdvanceValidationStep(idx)"
-            >
-              Confirm &amp; Sign Step {{ st.step }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Scanned Attachment Preview Modal -->
-    <Modal
-      v-model="previewAttachmentModalOpen"
-      :title="selectedPreviewAttachment?.name || 'Document Preview'"
-      description="Laboratory sample requisition & instrument trace docket"
+  <div class="space-y-4 max-w-7xl mx-auto text-left">
+    <!-- Medical Grade Workstation Page Header -->
+    <PageHeader
+      title="Pathology Laboratory Workstation"
+      subtitle="Real-time analyzer interface, two-pane triage worklist & clinical result entry"
+      icon="beaker"
     >
-      <div v-if="selectedPreviewAttachment" class="space-y-4 text-xs">
-        <div class="bg-slate-100 border border-slate-300 rounded p-6 text-center text-slate-600 flex flex-col items-center justify-center space-y-3">
-          <svg class="w-12 h-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          <div class="font-mono text-xs">
-            <p class="font-bold text-slate-800">{{ selectedPreviewAttachment.name }}</p>
-            <p class="text-slate-500 mt-1">Size: {{ selectedPreviewAttachment.size }} &bull; Format: {{ selectedPreviewAttachment.type }}</p>
-            <p class="text-emerald-700 mt-1 font-semibold">Integrity Verified &bull; SHA-256 Checksum Validated</p>
+      <template #badge>
+        <Badge v-if="panicCount > 0" variant="panic" dot>
+          {{ panicCount }} Panic Alert(s)
+        </Badge>
+        <Badge v-else variant="success" dot>
+          All Normal
+        </Badge>
+      </template>
+
+      <template #meta>
+        <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+          <span class="flex items-center gap-1.5 font-medium">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            Mindray BC-5000 & Erba Chem 5X Online
+          </span>
+          <span>&bull;</span>
+          <span class="font-mono text-slate-600 dark:text-slate-400">
+            LAN Host: 127.0.0.1:8000
+          </span>
+        </div>
+      </template>
+
+      <template #actions>
+        <div class="flex items-center gap-2">
+          <NuxtLink to="/pathology/samples">
+            <Button variant="secondary" size="sm" icon-left="barcode">
+              Sample Accessioning
+            </Button>
+          </NuxtLink>
+          <NuxtLink to="/pathology/verification">
+            <Button variant="secondary" size="sm" icon-left="shield-check">
+              Pathologist Verification
+            </Button>
+          </NuxtLink>
+        </div>
+      </template>
+    </PageHeader>
+
+    <!-- Two-Pane Workstation Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+      <!-- ======================================================== -->
+      <!-- LEFT PANE: Triage Worklist Queue (col-span-4)            -->
+      <!-- ======================================================== -->
+      <div class="lg:col-span-4 xl:col-span-4 space-y-3">
+        <Card no-padding>
+          <!-- Worklist Header & Filter Pills -->
+          <div class="p-3.5 border-b border-slate-100 dark:border-slate-800 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <Icon name="activity" size="sm" class="text-teal-600 dark:text-teal-400" />
+                <h3 class="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                  Accession Worklist
+                </h3>
+              </div>
+              <Badge variant="neutral" size="sm">
+                {{ filteredSamples.length }} / {{ availableSamples.length }}
+              </Badge>
+            </div>
+
+            <!-- Search Worklist Bar -->
+            <div class="relative">
+              <input
+                v-model="searchWorklist"
+                type="text"
+                placeholder="Scan barcode, UHID or patient name..."
+                class="w-full pl-8 pr-3 py-1.5 border rounded-lg text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 font-sans transition-colors"
+              />
+              <span class="absolute left-2.5 top-2 text-slate-400">
+                <Icon name="search" size="xs" />
+              </span>
+            </div>
+
+            <!-- Filter Badges -->
+            <div class="flex items-center gap-1.5 pt-1 overflow-x-auto text-xs">
+              <button
+                type="button"
+                class="px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer transition-colors"
+                :class="worklistFilter === 'all' ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'"
+                @click="worklistFilter = 'all'"
+              >
+                All ({{ availableSamples.length }})
+              </button>
+              <button
+                type="button"
+                class="px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1"
+                :class="worklistFilter === 'panic' ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 dark:bg-red-950/60 dark:text-red-300 hover:bg-red-100'"
+                @click="worklistFilter = 'panic'"
+              >
+                <Icon name="alert-triangle" size="xs" />
+                <span>Panic ({{ panicCount }})</span>
+              </button>
+              <button
+                type="button"
+                class="px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer transition-colors"
+                :class="worklistFilter === 'synced' ? 'bg-teal-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'"
+                @click="worklistFilter = 'synced'"
+              >
+                Synced
+              </button>
+            </div>
+          </div>
+
+          <!-- Worklist Items List -->
+          <div class="divide-y divide-slate-100 dark:divide-slate-800 max-h-[620px] overflow-y-auto">
+            <div
+              v-for="s in filteredSamples"
+              :key="s.sample_id"
+              class="p-3 cursor-pointer transition-colors text-left"
+              :class="[
+                selectedSampleId === s.sample_id
+                  ? 'bg-teal-50/80 dark:bg-teal-950/40 border-l-4 border-l-teal-600'
+                  : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'
+              ]"
+              @click="selectSample(s)"
+            >
+              <div class="flex items-start justify-between gap-2">
+                <div class="space-y-0.5 flex-1 min-w-0">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="font-mono font-bold text-xs text-slate-900 dark:text-slate-100">
+                      {{ s.sample_id }}
+                    </span>
+                    <Badge v-if="s.has_panic" variant="panic" size="sm">
+                      PANIC
+                    </Badge>
+                    <Badge v-else-if="s.status === 'Analyzer Synced'" variant="success" size="sm">
+                      Synced
+                    </Badge>
+                  </div>
+                  <p class="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">
+                    {{ s.patient_name }}
+                  </p>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
+                    {{ s.patient_uhid }} &bull; {{ s.age_sex }}
+                  </p>
+                </div>
+                <div class="text-right shrink-0">
+                  <span class="text-xs font-mono text-slate-400 block">
+                    {{ s.collected_at }}
+                  </span>
+                  <span class="inline-block mt-1 text-xs font-medium text-slate-600 dark:text-slate-400">
+                    {{ s.test_name.split(' ')[0] }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="filteredSamples.length === 0" class="p-6 text-center text-xs text-slate-400 italic">
+              No matching specimens in queue.
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- RIGHT PANE: Active Result Entry Bench (col-span-8)       -->
+      <!-- ======================================================== -->
+      <div class="lg:col-span-8 xl:col-span-8 space-y-4">
+        <!-- Active Patient Demographics Strip -->
+        <Card dense>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 flex-1">
+              <div>
+                <span class="text-slate-400 block text-xs">Patient UHID</span>
+                <span class="font-mono font-bold text-teal-700 dark:text-teal-400 text-xs">{{ patient.id }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-xs">Full Name</span>
+                <span class="font-bold text-slate-900 dark:text-slate-100 text-xs truncate block">{{ patient.name }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-xs">Age / Gender</span>
+                <span class="font-medium text-slate-700 dark:text-slate-300 text-xs">{{ patient.age_sex }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-xs">Specimen Accession</span>
+                <span class="font-mono font-bold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-1">
+                  <Icon name="barcode" size="xs" class="text-slate-400" />
+                  {{ patient.sample_id }}
+                </span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800 shrink-0">
+              <Button
+                variant="secondary"
+                size="sm"
+                icon-left="whatsapp"
+                class="text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:border-emerald-800 dark:hover:bg-emerald-950/40"
+                @click="openWhatsAppModal"
+              >
+                WhatsApp
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon-left="plus"
+                @click="isAddTestModalOpen = true"
+              >
+                Add Test
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        <!-- Bench Controls & Action Toolbar -->
+        <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-2xs flex flex-wrap items-center justify-between gap-2.5">
+          <div class="flex items-center gap-2 flex-wrap">
+            <Button
+              variant="primary"
+              size="sm"
+              icon-left="sparkles"
+              :loading="isFetchingAnalyzer"
+              @click="fetchFromAnalyzer"
+            >
+              <span>{{ isFetchingAnalyzer ? 'Querying Machine...' : 'Auto-Fetch Analyzer' }}</span>
+            </Button>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              :icon-left="isEditingValues ? 'check' : 'edit'"
+              @click="toggleEditValues"
+            >
+              <span>{{ isEditingValues ? 'Values Unlocked' : 'Edit Values' }}</span>
+            </Button>
+          </div>
+
+          <div class="flex items-center gap-2 flex-wrap">
+            <Button
+              variant="secondary"
+              size="sm"
+              icon-left="check"
+              :loading="isSaving"
+              @click="handleSaveDraft"
+            >
+              <span>Save Draft</span>
+              <Kbd class="ml-1">Alt+D</Kbd>
+            </Button>
+
+            <Button
+              variant="success"
+              size="sm"
+              icon-left="shield-check"
+              :loading="isValidating"
+              @click="handleValidateAndApprove"
+            >
+              <span>Validate &amp; Sign</span>
+              <Kbd class="ml-1">Alt+S</Kbd>
+            </Button>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              icon-left="printer"
+              @click="oneClickVerifyAndGenerateReport"
+            >
+              Report
+            </Button>
           </div>
         </div>
-      </div>
-      <template #footer="{ close }">
-        <button
-          type="button"
-          class="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer"
-          @click="close"
-        >
-          Close Preview
-        </button>
-      </template>
-    </Modal>
 
-    <!-- WhatsApp Report Dispatch Modal -->
+        <!-- 4 Essential Workstation Sub-Tabs -->
+        <div class="border-b border-slate-200 dark:border-slate-800 flex items-center gap-2 text-xs font-semibold">
+          <button
+            type="button"
+            class="px-4 py-2.5 border-b-2 font-bold cursor-pointer transition-colors flex items-center gap-2"
+            :class="activeSubTab === 'entry' ? 'border-b-teal-600 text-teal-700 dark:text-teal-400' : 'border-b-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'"
+            @click="activeSubTab = 'entry'"
+          >
+            <Icon name="edit" size="xs" />
+            <span>1. Result Entry</span>
+          </button>
+
+          <button
+            type="button"
+            class="px-4 py-2.5 border-b-2 font-bold cursor-pointer transition-colors flex items-center gap-2"
+            :class="activeSubTab === 'graph' ? 'border-b-teal-600 text-teal-700 dark:text-teal-400' : 'border-b-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'"
+            @click="activeSubTab = 'graph'"
+          >
+            <Icon name="activity" size="xs" />
+            <span>2. Trend History</span>
+          </button>
+
+          <button
+            type="button"
+            class="px-4 py-2.5 border-b-2 font-bold cursor-pointer transition-colors flex items-center gap-2"
+            :class="activeSubTab === 'attachments' ? 'border-b-teal-600 text-teal-700 dark:text-teal-400' : 'border-b-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'"
+            @click="activeSubTab = 'attachments'"
+          >
+            <Icon name="file-text" size="xs" />
+            <span>3. Attachments ({{ attachments.length }})</span>
+          </button>
+
+          <button
+            type="button"
+            class="px-4 py-2.5 border-b-2 font-bold cursor-pointer transition-colors flex items-center gap-2"
+            :class="activeSubTab === 'validation' ? 'border-b-teal-600 text-teal-700 dark:text-teal-400' : 'border-b-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'"
+            @click="activeSubTab = 'validation'"
+          >
+            <Icon name="shield-check" size="xs" />
+            <span>4. Sign-off &amp; Audit</span>
+          </button>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- SUB-TAB 1: RESULT ENTRY BENCH                            -->
+        <!-- ======================================================== -->
+        <div v-if="activeSubTab === 'entry'" class="space-y-4">
+          <Card>
+            <template #header>
+              <div class="flex items-center justify-between w-full flex-wrap gap-2">
+                <div>
+                  <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">
+                    {{ testInfo.name }}
+                  </h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Method: {{ testInfo.method }} &bull; Tube: {{ testInfo.sample }}
+                  </p>
+                </div>
+
+                <div class="flex items-center gap-2 flex-wrap">
+                  <Badge v-if="analyzerSynced" variant="success" dot>
+                    Synced: {{ testInfo.analyzer }} ({{ analyzerLastSyncTime }})
+                  </Badge>
+                  <Badge variant="neutral">
+                    {{ testInfo.department }}
+                  </Badge>
+                </div>
+              </div>
+            </template>
+
+            <!-- Test Parameters Entry Table -->
+            <div class="overflow-x-auto -mx-5 -mb-5 border-t border-slate-100 dark:border-slate-800">
+              <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                <thead class="bg-slate-50/70 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 font-semibold uppercase tracking-wider text-xs">
+                  <tr>
+                    <th class="w-10 px-4 py-3 text-center">#</th>
+                    <th class="px-4 py-3 text-left">Parameter</th>
+                    <th class="px-4 py-3 text-left">Observed Value</th>
+                    <th class="px-4 py-3 text-left">Unit</th>
+                    <th class="px-4 py-3 text-left">Reference Interval</th>
+                    <th class="px-4 py-3 text-left">Flag</th>
+                    <th class="px-4 py-3 text-left">Clinical Observation</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                  <tr
+                    v-for="(p, idx) in parameters"
+                    :key="p.id"
+                    :class="[
+                      'transition-colors',
+                      p.flag === 'Critical' ? 'bg-red-50/60 dark:bg-red-950/40' : (p.flag === 'High [H]' ? 'bg-amber-50/40 dark:bg-amber-950/20' : 'hover:bg-slate-50/60 dark:hover:bg-slate-800/40')
+                    ]"
+                  >
+                    <td class="px-4 py-2.5 text-center font-mono text-slate-400">
+                      {{ p.id }}
+                    </td>
+                    <td class="px-4 py-2.5 font-bold text-slate-900 dark:text-slate-100">
+                      {{ p.name }}
+                      <span v-if="p.is_calculated" class="ml-1 text-xs text-teal-600 dark:text-teal-400 font-normal">
+                        (Auto-Calc)
+                      </span>
+                    </td>
+                    <td class="px-4 py-2.5">
+                      <input
+                        v-model="p.value"
+                        type="text"
+                        :tabindex="idx + 1"
+                        :readonly="p.is_calculated || !isEditingValues"
+                        class="w-28 px-2.5 py-1 text-xs font-mono font-bold rounded-lg border focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
+                        :class="[
+                          p.is_calculated ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 cursor-not-allowed border-slate-200' :
+                          (p.flag === 'Critical' ? 'border-red-400 bg-red-50 dark:bg-red-950/60 text-red-900 dark:text-red-200' :
+                          (p.flag === 'High [H]' ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100'))
+                        ]"
+                        @input="handleParameterChange(p)"
+                        @keydown.enter.prevent="focusNextRow(idx)"
+                      />
+                    </td>
+                    <td class="px-4 py-2.5 font-mono text-slate-500 dark:text-slate-400">
+                      {{ p.unit }}
+                    </td>
+                    <td class="px-4 py-2.5 font-mono text-slate-600 dark:text-slate-400">
+                      {{ p.ref_range }}
+                    </td>
+                    <td class="px-4 py-2.5">
+                      <Badge v-if="p.flag === 'Critical'" variant="panic">
+                        CRITICAL
+                      </Badge>
+                      <Badge v-else-if="p.flag === 'High [H]'" variant="danger">
+                        High [H]
+                      </Badge>
+                      <Badge v-else-if="p.flag === 'Low [L]'" variant="info">
+                        Low [L]
+                      </Badge>
+                      <Badge v-else variant="success">
+                        Normal
+                      </Badge>
+                    </td>
+                    <td class="px-4 py-2.5 text-xs text-slate-600 dark:text-slate-400">
+                      {{ p.observation }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </Card>
+
+          <!-- ADA / IFCC Formula Callout -->
+          <div class="rounded-xl bg-teal-50/70 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800 p-3.5 text-xs flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 bg-teal-600 text-white rounded font-mono text-xs font-bold">
+                FORMULA ENGINE
+              </span>
+              <span class="text-teal-900 dark:text-teal-200 font-medium">
+                Active Regression:
+                <code class="bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-teal-200 dark:border-teal-800 font-mono font-bold text-teal-800 dark:text-teal-300">
+                  eAG (mg/dL) = 28.7 &times; HbA1c &minus; 46.7
+                </code>
+              </span>
+            </div>
+            <span class="text-teal-700 dark:text-teal-300 font-medium text-xs">
+              Standards: ADA &bull; IFCC
+            </span>
+          </div>
+
+          <!-- Pathologist Clinical Interpretation -->
+          <Card title="Pathologist Clinical Interpretation & Correlation">
+            <div class="space-y-3">
+              <textarea
+                v-model="clinicalComment"
+                rows="3"
+                class="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs focus:outline-none focus:ring-2 focus:ring-teal-500 font-sans"
+                placeholder="Enter clinical observations, pathologist reflex comments or dietary correlation..."
+              />
+
+              <!-- Expert Rule Suggestion Box -->
+              <div class="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div class="flex items-start gap-2.5">
+                  <div class="p-1 rounded-full bg-emerald-600 text-white shrink-0 mt-0.5">
+                    <Icon name="sparkles" size="xs" />
+                  </div>
+                  <div>
+                    <span class="font-bold text-emerald-900 dark:text-emerald-200 block">
+                      Expert Clinical Rule: Suboptimal Glycemia
+                    </span>
+                    <p class="text-emerald-800 dark:text-emerald-300 mt-0.5">
+                      Result exceeds target threshold (7.0%). Auto-suggestion:
+                      <span class="italic font-medium">&ldquo;{{ autoSuggestionText }}&rdquo;</span>
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  variant="success"
+                  size="sm"
+                  class="shrink-0"
+                  @click="applyAutoSuggestion"
+                >
+                  Append to Comment
+                </Button>
+              </div>
+            </div>
+          </Card>
+
+          <!-- Audit Trail & Event History -->
+          <Card title="Relational Clinical Audit Trail & Event History" subtitle="ISO 15189:2022 & NABL 112 Compliance Log">
+            <div class="space-y-2">
+              <div
+                v-for="log in auditLogs"
+                :key="log.id"
+                class="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 flex items-center justify-between text-xs"
+              >
+                <div class="space-y-0.5">
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-slate-800 dark:text-slate-200">{{ log.action }}</span>
+                    <span class="font-mono text-slate-400">&bull;</span>
+                    <span class="text-slate-500 dark:text-slate-400">{{ log.user }}</span>
+                  </div>
+                  <p class="text-slate-600 dark:text-slate-300">{{ log.details }}</p>
+                </div>
+                <span class="font-mono text-xs text-slate-400 shrink-0 ml-3">
+                  {{ log.timestamp }}
+                </span>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- SUB-TAB 2: TREND HISTORY & GRAPH                         -->
+        <!-- ======================================================== -->
+        <div v-else-if="activeSubTab === 'graph'" class="space-y-4">
+          <Card title="Multi-Visit Longitudinal Trajectory">
+            <template #header-right>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-slate-500">Track:</span>
+                <select
+                  v-model="selectedTrendParameter"
+                  class="px-2.5 py-1 rounded border text-xs font-semibold bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-teal-500"
+                >
+                  <option value="HBA1C">HbA1c (%)</option>
+                  <option value="EAG">eAG (mg/dL)</option>
+                  <option value="MPG">MPG (mg/dL)</option>
+                </select>
+              </div>
+            </template>
+
+            <!-- SVG Trend Chart -->
+            <div class="flex justify-center p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200/80 dark:border-slate-700">
+              <svg :viewBox="`0 0 ${trendChartPoints.chartWidth} ${trendChartPoints.chartHeight}`" class="w-full max-w-xl h-auto">
+                <!-- Grid Lines -->
+                <line x1="45" y1="25" :x2="trendChartPoints.chartWidth - 45" y2="25" stroke="#cbd5e1" stroke-dasharray="4" stroke-width="1" />
+                <line x1="45" :y1="trendChartPoints.chartHeight / 2" :x2="trendChartPoints.chartWidth - 45" :y2="trendChartPoints.chartHeight / 2" stroke="#cbd5e1" stroke-dasharray="4" stroke-width="1" />
+
+                <!-- Green Normal Reference Zone Shading -->
+                <rect
+                  :x="trendChartPoints.paddingX"
+                  :y="trendChartPoints.bandTop"
+                  :width="trendChartPoints.chartWidth - trendChartPoints.paddingX * 2"
+                  :height="trendChartPoints.bandHeight"
+                  fill="#10b981"
+                  fill-opacity="0.12"
+                  stroke="#10b981"
+                  stroke-opacity="0.4"
+                  stroke-dasharray="3 3"
+                />
+                <text :x="trendChartPoints.paddingX + 8" :y="trendChartPoints.bandTop + 14" font-size="10" font-family="monospace" fill="#047857" font-weight="bold">
+                  Normal Target: {{ trendChartPoints.refLow }} - {{ trendChartPoints.refHigh }}
+                </text>
+
+                <!-- Connecting Line -->
+                <path
+                  :d="trendChartPoints.pathString"
+                  fill="none"
+                  stroke="#0f766e"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+
+                <!-- Data Points -->
+                <g v-for="pt in trendChartPoints.points" :key="pt.index">
+                  <circle :cx="pt.x" :cy="pt.y" r="6" fill="#0f766e" fill-opacity="0.2" />
+                  <circle
+                    :cx="pt.x"
+                    :cy="pt.y"
+                    r="4.5"
+                    :fill="pt.value > trendChartPoints.refHigh ? '#dc2626' : '#0f766e'"
+                    stroke="#ffffff"
+                    stroke-width="2"
+                    class="cursor-pointer"
+                  />
+                  <text :x="pt.x" :y="pt.y - 10" text-anchor="middle" font-size="11" font-family="monospace" font-weight="bold" :fill="pt.value > trendChartPoints.refHigh ? '#b91c1c' : '#0f766e'">
+                    {{ pt.value }}{{ selectedTrendParameter === 'HBA1C' ? '%' : '' }}
+                  </text>
+                  <text :x="pt.x" :y="trendChartPoints.chartHeight - 6" text-anchor="middle" font-size="10" fill="#64748b" font-family="sans-serif">
+                    {{ pt.date }}
+                  </text>
+                </g>
+              </svg>
+            </div>
+
+            <!-- Historical Visits Table -->
+            <div class="mt-4 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+              <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+                <thead class="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 font-semibold">
+                  <tr>
+                    <th class="px-4 py-2.5 text-left">Visit Date</th>
+                    <th class="px-4 py-2.5 text-left">Accession #</th>
+                    <th class="px-4 py-2.5 text-right">HbA1c (%)</th>
+                    <th class="px-4 py-2.5 text-right">eAG (mg/dL)</th>
+                    <th class="px-4 py-2.5 text-center">Flag</th>
+                    <th class="px-4 py-2.5 text-center">Variance / Delta</th>
+                    <th class="px-4 py-2.5 text-left">Signed Pathologist</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                  <tr v-for="v in historicalVisits" :key="v.sample_id" class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                    <td class="px-4 py-2.5 font-medium text-slate-800 dark:text-slate-200">{{ v.date }}</td>
+                    <td class="px-4 py-2.5 font-mono text-teal-700 dark:text-teal-400 font-semibold">{{ v.sample_id }}</td>
+                    <td class="px-4 py-2.5 text-right font-mono font-bold text-slate-900 dark:text-slate-100">{{ v.hba1c }}%</td>
+                    <td class="px-4 py-2.5 text-right font-mono text-slate-700 dark:text-slate-300">{{ v.eag }}</td>
+                    <td class="px-4 py-2.5 text-center">
+                      <Badge variant="danger">{{ v.flag }}</Badge>
+                    </td>
+                    <td class="px-4 py-2.5 text-center font-mono text-xs">
+                      <span :class="v.delta.startsWith('-') ? 'text-emerald-600 font-bold' : (v.delta.startsWith('+') ? 'text-red-600 font-bold' : 'text-slate-500')">
+                        {{ v.delta }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-2.5 text-slate-600 dark:text-slate-400">{{ v.verified_by }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- SUB-TAB 3: ATTACHMENTS & CHROMATOGRAMS                   -->
+        <!-- ======================================================== -->
+        <div v-else-if="activeSubTab === 'attachments'" class="space-y-4">
+          <Card title="Specimen Attachments & Chromatograms" subtitle="Attach scanned requisition slips, instrument traces, and bench notes">
+            <!-- Drag & Drop Dropzone -->
+            <div
+              class="border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer"
+              :class="[
+                isDragging ? 'border-teal-500 bg-teal-50/60 dark:bg-teal-950/40' : 'border-slate-300 dark:border-slate-700 hover:border-teal-400 bg-slate-50/50 dark:bg-slate-800/40'
+              ]"
+              @dragover.prevent="isDragging = true"
+              @dragleave.prevent="isDragging = false"
+              @drop.prevent="onFileDrop"
+            >
+              <div class="flex flex-col items-center justify-center space-y-2">
+                <div class="p-3 bg-teal-100 dark:bg-teal-900/60 text-teal-700 dark:text-teal-300 rounded-full">
+                  <Icon name="download" size="md" />
+                </div>
+                <div class="text-xs">
+                  <label for="attachment-upload-input" class="font-bold text-teal-700 dark:text-teal-400 hover:underline cursor-pointer">
+                    Click to browse files
+                  </label>
+                  <span class="text-slate-500 dark:text-slate-400"> or drag and drop files directly here</span>
+                  <input
+                    id="attachment-upload-input"
+                    type="file"
+                    multiple
+                    accept="image/*,application/pdf"
+                    class="hidden"
+                    @change="onFileInputChange"
+                  />
+                </div>
+                <p class="text-xs text-slate-400">Supported formats: PDF, PNG, JPG (Max 25MB)</p>
+              </div>
+            </div>
+
+            <!-- Uploaded Files Grid -->
+            <div class="mt-4 space-y-3">
+              <h4 class="text-xs font-bold text-slate-800 dark:text-slate-200">
+                Attached Documents for Sample {{ patient.sample_id }}
+              </h4>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div
+                  v-for="att in attachments"
+                  :key="att.id"
+                  class="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
+                >
+                  <div class="flex items-center gap-3 overflow-hidden">
+                    <div class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 shrink-0">
+                      <Icon :name="att.type.includes('pdf') ? 'file-text' : 'eye'" size="sm" />
+                    </div>
+                    <div class="truncate text-xs">
+                      <p class="font-semibold text-slate-800 dark:text-slate-200 truncate">{{ att.name }}</p>
+                      <p class="text-xs text-slate-400 mt-0.5">{{ att.size }} &bull; {{ att.uploaded_at }}</p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-1 shrink-0 ml-2">
+                    <button
+                      type="button"
+                      class="p-1 text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
+                      title="Delete attachment"
+                      @click="removeAttachment(att.id)"
+                    >
+                      <Icon name="trash" size="xs" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- SUB-TAB 4: VALIDATION & SIGN-OFF WORKFLOW                -->
+        <!-- ======================================================== -->
+        <div v-else-if="activeSubTab === 'validation'" class="space-y-4">
+          <Card title="Multi-Tier Sign-off & Audit Authorization" subtitle="Strict 3-tier chain of custody: Technician -> Pathologist -> Authorized Release">
+            <template #header-right>
+              <Button variant="secondary" size="sm" icon-left="printer" @click="printVerifiedReport">
+                Print Report
+              </Button>
+            </template>
+
+            <div class="space-y-3">
+              <div
+                v-for="st in validationSteps"
+                :key="st.step"
+                class="border rounded-xl p-4 transition-all"
+                :class="[
+                  st.status === 'Completed'
+                    ? 'border-emerald-200 bg-emerald-50/20 dark:border-emerald-800 dark:bg-emerald-950/20'
+                    : (st.status === 'In Review' ? 'border-teal-300 bg-teal-50/20 dark:border-teal-800 dark:bg-teal-950/20' : 'border-slate-200 dark:border-slate-800 bg-slate-50/40 opacity-70')
+                ]"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                      <span class="w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs" :class="st.status === 'Completed' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'">
+                        {{ st.step }}
+                      </span>
+                      <h4 class="font-bold text-slate-900 dark:text-slate-100 text-xs">
+                        {{ st.title }}
+                      </h4>
+                      <Badge :variant="st.status === 'Completed' ? 'success' : (st.status === 'In Review' ? 'info' : 'neutral')">
+                        {{ st.status }}
+                      </Badge>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-slate-300">{{ st.role }}: <strong>{{ st.user }}</strong></p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 italic">{{ st.notes }}</p>
+                  </div>
+                  <span class="font-mono text-xs text-slate-400">{{ st.timestamp }}</span>
+                </div>
+
+                <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div v-for="cp in st.checkpoints" :key="cp.label" class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                    <Icon :name="cp.checked ? 'check' : 'x'" size="xs" :class="cp.checked ? 'text-emerald-600' : 'text-slate-400'" />
+                    <span>{{ cp.label }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODALS                                                   -->
+    <!-- ======================================================== -->
+
+    <!-- WhatsApp Dispatch Modal -->
     <Modal
       v-model="whatsappModalOpen"
       title="WhatsApp Diagnostic Report Dispatch"
@@ -1903,33 +1740,33 @@ onUnmounted(() => {
       max-width="md"
     >
       <div class="space-y-4 text-xs">
-        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 flex items-center justify-between">
+        <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between">
           <div>
-            <span class="text-slate-400 text-[10px] block">Patient Name &amp; ID</span>
-            <span class="font-bold text-slate-800">{{ patient.name }} ({{ patient.id }})</span>
+            <span class="text-slate-400 text-xs block">Patient</span>
+            <span class="font-bold text-slate-800 dark:text-slate-200">{{ patient.name }} ({{ patient.id }})</span>
           </div>
           <div class="text-right">
-            <span class="text-slate-400 text-[10px] block">Accession #</span>
-            <span class="font-mono font-bold text-blue-700">{{ patient.sample_id }}</span>
+            <span class="text-slate-400 text-xs block">Accession #</span>
+            <span class="font-mono font-bold text-teal-700 dark:text-teal-400">{{ patient.sample_id }}</span>
           </div>
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
             Recipient WhatsApp Number <span class="text-red-500">*</span>
           </label>
           <input
             v-model="whatsappRecipientPhone"
             type="tel"
-            placeholder="+91 98765 43210"
-            class="w-full px-3 py-1.5 border border-slate-300 rounded text-xs font-mono font-semibold focus:ring-1 focus:ring-emerald-500"
+            placeholder="+91 9876543210"
+            class="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono font-semibold bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-teal-500"
           />
-          <p class="text-[10px] text-slate-400 mt-1">International format with country code (+91 for India)</p>
+          <p class="text-xs text-slate-400 mt-1">International format with country code (+91 for India)</p>
         </div>
 
         <div>
-          <label class="block font-semibold text-slate-700 mb-1">Message Preview</label>
-          <div class="p-3 bg-emerald-50/70 border border-emerald-200 rounded-lg text-emerald-950 font-sans whitespace-pre-line text-[11px] leading-relaxed shadow-2xs">
+          <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Message Preview</label>
+          <div class="p-3 bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl text-emerald-950 dark:text-emerald-200 font-sans whitespace-pre-line text-xs leading-relaxed">
             {{ whatsappReportMessage }}
           </div>
         </div>
@@ -1937,37 +1774,17 @@ onUnmounted(() => {
 
       <template #footer="{ close }">
         <div class="flex items-center justify-between w-full">
-          <button
-            type="button"
-            class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-medium cursor-pointer"
-            @click="close"
-          >
+          <Button variant="secondary" size="sm" @click="close">
             Cancel
-          </button>
+          </Button>
 
-          <div class="flex items-center space-x-2">
-            <button
-              type="button"
-              class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded text-xs font-semibold cursor-pointer flex items-center space-x-1"
-              title="Open chat in WhatsApp Web browser tab"
-              @click="sendViaWhatsAppWeb"
-            >
-              <span>WhatsApp Web</span>
-              <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-            </button>
-
-            <button
-              type="button"
-              :disabled="isDispatchingWhatsApp"
-              class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold cursor-pointer shadow-xs transition flex items-center space-x-1.5 disabled:opacity-50"
-              @click="sendViaWhatsAppApi"
-            >
-              <svg v-if="isDispatchingWhatsApp" class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-              </svg>
-              <span>Instant Dispatch API</span>
-            </button>
+          <div class="flex items-center gap-2">
+            <Button variant="secondary" size="sm" icon-left="external-link" @click="sendViaWhatsAppWeb">
+              WhatsApp Web
+            </Button>
+            <Button variant="success" size="sm" icon-left="whatsapp" :loading="isDispatchingWhatsApp" @click="sendViaWhatsAppApi">
+              Instant Dispatch API
+            </Button>
           </div>
         </div>
       </template>
@@ -1981,40 +1798,36 @@ onUnmounted(() => {
       max-width="lg"
     >
       <div class="space-y-3 text-xs">
-        <p class="text-slate-600">
-          Adding test to: <strong class="text-slate-900">{{ patient.name }} ({{ patient.id }})</strong>
+        <p class="text-slate-600 dark:text-slate-400">
+          Adding test to: <strong class="text-slate-900 dark:text-slate-100">{{ patient.name }} ({{ patient.id }})</strong>
         </p>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto p-1">
           <div
             v-for="t in availableCatalogTests"
             :key="t.code"
-            class="p-3 rounded-lg border border-slate-200 hover:border-blue-500 hover:bg-blue-50/40 cursor-pointer transition flex flex-col justify-between space-y-2 group bg-white shadow-2xs"
+            class="p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-teal-500 hover:bg-teal-50/40 cursor-pointer transition flex flex-col justify-between space-y-2 group bg-white dark:bg-slate-900 shadow-2xs"
             @click="addTestToCurrentPatient(t)"
           >
             <div>
               <div class="flex items-center justify-between">
-                <span class="font-bold text-slate-900 group-hover:text-blue-700 text-xs">{{ t.name }}</span>
-                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 uppercase">{{ t.code }}</span>
+                <span class="font-bold text-slate-900 dark:text-slate-100 group-hover:text-teal-700 text-xs">{{ t.name }}</span>
+                <span class="text-xs font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 uppercase">{{ t.code }}</span>
               </div>
-              <p class="text-[11px] text-slate-500 mt-1">Sample: {{ t.sample }} &bull; {{ t.dept }}</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Sample: {{ t.sample }} &bull; {{ t.dept }}</p>
             </div>
-            <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-[10px]">
+            <div class="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800 text-xs">
               <span class="text-slate-400 font-mono">{{ t.analyzer }}</span>
-              <span class="text-blue-600 font-semibold group-hover:underline">+ Add &rarr;</span>
+              <span class="text-teal-600 font-semibold group-hover:underline">+ Add &rarr;</span>
             </div>
           </div>
         </div>
       </div>
 
       <template #footer="{ close }">
-        <button
-          type="button"
-          class="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer"
-          @click="close"
-        >
+        <Button variant="secondary" size="sm" @click="close">
           Cancel
-        </button>
+        </Button>
       </template>
     </Modal>
 
@@ -2027,48 +1840,48 @@ onUnmounted(() => {
     >
       <div class="space-y-4 text-xs font-sans">
         <!-- Lab Header Banner -->
-        <div class="p-4 rounded-lg bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white flex items-center justify-between shadow-2xs">
+        <div class="p-4 rounded-xl bg-teal-900 text-white flex items-center justify-between shadow-2xs">
           <div>
             <h3 class="text-base font-bold tracking-tight">AAROZI HEALTHCARE CENTRAL LAB</h3>
-            <p class="text-[11px] text-blue-200 mt-0.5">NABL Accredited &bull; ISO 15189:2022 Certified Medical Laboratory</p>
-            <p class="text-[10px] text-slate-300 font-mono mt-1">NABH / ICMR Ref: NABL-MC-5421 &bull; 24x7 Emergency Services</p>
+            <p class="text-xs text-teal-200 mt-0.5">NABL Accredited &bull; ISO 15189:2022 Certified Medical Laboratory</p>
+            <p class="text-xs text-teal-300 font-mono mt-1">NABH / ICMR Ref: NABL-MC-5421 &bull; 24x7 Emergency Services</p>
           </div>
           <div class="text-right">
-            <span class="inline-block px-2.5 py-1 rounded bg-emerald-500 text-white font-mono font-bold text-[11px] uppercase tracking-wider">
+            <span class="inline-block px-2.5 py-1 rounded bg-emerald-500 text-white font-mono font-bold text-xs uppercase tracking-wider">
               Verified &amp; Certified
             </span>
-            <p class="text-[11px] text-blue-200 font-mono mt-1">Generated: {{ reportGeneratedAt }}</p>
+            <p class="text-xs text-teal-200 font-mono mt-1">Generated: {{ reportGeneratedAt }}</p>
           </div>
         </div>
 
         <!-- Patient Demographics Banner -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
           <div>
-            <span class="text-slate-400 text-[10px] block">Patient Name</span>
-            <span class="font-bold text-slate-900">{{ patient.name }}</span>
+            <span class="text-slate-400 text-xs block">Patient Name</span>
+            <span class="font-bold text-slate-900 dark:text-slate-100">{{ patient.name }}</span>
           </div>
           <div>
-            <span class="text-slate-400 text-[10px] block">UHID / Age / Sex</span>
-            <span class="font-mono font-medium text-slate-800">{{ patient.id }} &bull; {{ patient.age_sex }}</span>
+            <span class="text-slate-400 text-xs block">UHID / Age / Sex</span>
+            <span class="font-mono font-medium text-slate-800 dark:text-slate-200">{{ patient.id }} &bull; {{ patient.age_sex }}</span>
           </div>
           <div>
-            <span class="text-slate-400 text-[10px] block">Sample Accession</span>
-            <span class="font-mono font-semibold text-blue-700">{{ patient.sample_id }}</span>
+            <span class="text-slate-400 text-xs block">Sample Accession</span>
+            <span class="font-mono font-semibold text-teal-700 dark:text-teal-400">{{ patient.sample_id }}</span>
           </div>
           <div>
-            <span class="text-slate-400 text-[10px] block">Referred By</span>
-            <span class="font-medium text-slate-800">{{ patient.doctor }}</span>
+            <span class="text-slate-400 text-xs block">Referred By</span>
+            <span class="font-medium text-slate-800 dark:text-slate-200">{{ patient.doctor }}</span>
           </div>
         </div>
 
         <!-- Verified Parameters Table -->
-        <div class="border border-slate-200 rounded-lg overflow-hidden">
-          <div class="bg-slate-100 px-3 py-2 font-bold text-slate-800 flex items-center justify-between text-xs">
+        <div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+          <div class="bg-slate-100 dark:bg-slate-800 px-3 py-2 font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between text-xs">
             <span>Investigation: {{ testInfo.name }}</span>
-            <span class="text-slate-500 font-normal font-mono text-[11px]">Method: {{ testInfo.method }}</span>
+            <span class="text-slate-500 font-normal font-mono text-xs">Method: {{ testInfo.method }}</span>
           </div>
-          <table class="min-w-full divide-y divide-slate-200 text-xs">
-            <thead class="bg-slate-50 text-slate-600 font-semibold uppercase text-[11px]">
+          <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-xs">
+            <thead class="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 font-semibold uppercase text-xs">
               <tr>
                 <th class="px-3 py-2 text-left">Parameter</th>
                 <th class="px-3 py-2 text-left">Observed Value</th>
@@ -2077,24 +1890,18 @@ onUnmounted(() => {
                 <th class="px-3 py-2 text-left">Status</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 bg-white">
-              <tr v-for="p in parameters" :key="p.id" class="hover:bg-slate-50">
-                <td class="px-3 py-2 font-medium text-slate-900">{{ p.name }}</td>
-                <td class="px-3 py-2 font-bold font-mono" :class="p.flag.includes('High') || p.flag === 'Critical' ? 'text-red-600' : 'text-slate-900'">
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+              <tr v-for="p in parameters" :key="p.id" class="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                <td class="px-3 py-2 font-medium text-slate-900 dark:text-slate-100">{{ p.name }}</td>
+                <td class="px-3 py-2 font-bold font-mono" :class="p.flag.includes('High') || p.flag === 'Critical' ? 'text-red-600' : 'text-slate-900 dark:text-slate-100'">
                   {{ p.value }}
                 </td>
                 <td class="px-3 py-2 font-mono text-slate-500">{{ p.unit }}</td>
-                <td class="px-3 py-2 font-mono text-slate-600">{{ p.ref_range }}</td>
+                <td class="px-3 py-2 font-mono text-slate-600 dark:text-slate-400">{{ p.ref_range }}</td>
                 <td class="px-3 py-2">
-                  <span
-                    class="px-2 py-0.5 rounded text-[10px] font-bold font-mono uppercase"
-                    :class="[
-                      p.flag.includes('High') ? 'bg-red-100 text-red-800 border border-red-200' :
-                      (p.flag === 'Critical' ? 'bg-red-600 text-white' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')
-                    ]"
-                  >
+                  <Badge :variant="p.flag === 'Critical' ? 'panic' : (p.flag.includes('High') ? 'danger' : 'success')">
                     {{ p.flag }}
-                  </span>
+                  </Badge>
                 </td>
               </tr>
             </tbody>
@@ -2102,65 +1909,41 @@ onUnmounted(() => {
         </div>
 
         <!-- Pathologist Comment & Signatures -->
-        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
-          <span class="font-bold text-slate-700 block mb-1">Pathologist Clinical Interpretation:</span>
-          <p class="text-slate-600 italic">{{ clinicalComment }}</p>
+        <div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+          <span class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Pathologist Clinical Interpretation:</span>
+          <p class="text-slate-600 dark:text-slate-400 italic">{{ clinicalComment }}</p>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 pt-3 border-t border-slate-200 text-xs">
-          <div class="text-slate-600">
-            <p class="font-semibold text-slate-800">Pooja Verma, MSc (MLT)</p>
-            <p class="text-[11px] text-slate-500">Senior Medical Laboratory Technologist</p>
-            <p class="text-[10px] text-emerald-600 font-mono mt-0.5">Digitally Signed &bull; Lab Workstation #03</p>
+        <div class="grid grid-cols-2 gap-4 pt-3 border-t border-slate-200 dark:border-slate-700 text-xs">
+          <div class="text-slate-600 dark:text-slate-400">
+            <p class="font-semibold text-slate-800 dark:text-slate-200">Pooja Verma, MSc (MLT)</p>
+            <p class="text-xs text-slate-500">Senior Medical Laboratory Technologist</p>
+            <p class="text-xs text-emerald-600 font-mono mt-0.5">Digitally Signed &bull; Lab Workstation #03</p>
           </div>
-          <div class="text-right text-slate-600">
-            <p class="font-bold text-slate-900">Dr. Neena Gupta, MD (Pathology)</p>
-            <p class="text-[11px] text-slate-500">Consultant Pathologist &bull; Reg. #65412</p>
-            <p class="text-[10px] text-emerald-600 font-mono mt-0.5">Digitally Certified &bull; NABL Signatory</p>
+          <div class="text-right text-slate-600 dark:text-slate-400">
+            <p class="font-bold text-slate-900 dark:text-slate-100">Dr. Neena Gupta, MD (Pathology)</p>
+            <p class="text-xs text-slate-500">Consultant Pathologist &bull; Reg. #65412</p>
+            <p class="text-xs text-emerald-600 font-mono mt-0.5">Digitally Certified &bull; NABL Signatory</p>
           </div>
         </div>
       </div>
 
       <template #footer="{ close }">
         <div class="flex items-center justify-between w-full">
-          <button
-            type="button"
-            class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-semibold cursor-pointer"
-            @click="close"
-          >
+          <Button variant="secondary" size="sm" @click="close">
             Close
-          </button>
+          </Button>
 
-          <div class="flex items-center space-x-2">
-            <button
-              type="button"
-              class="px-3 py-1.5 border border-slate-300 hover:bg-slate-50 text-slate-700 rounded text-xs font-semibold cursor-pointer flex items-center space-x-1"
-              @click="close(); isEditingValues = true"
-            >
-              <span>✏️ Edit Values</span>
-            </button>
-
-            <button
-              type="button"
-              class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold cursor-pointer flex items-center space-x-1.5 shadow-xs"
-              @click="sendDirectWhatsApp"
-            >
-              <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12.031 2C6.495 2 2 6.495 2 12.031c0 1.97.57 3.81 1.56 5.37L2.43 22l4.78-1.1c1.48.83 3.17 1.3 4.82 1.3 5.54 0 10.03-4.49 10.03-10.03S17.57 2 12.03 2z" />
-              </svg>
-              <span>Send WhatsApp</span>
-            </button>
-
-            <button
-              type="button"
-              class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-bold cursor-pointer flex items-center space-x-1.5 shadow-xs"
-              @click="printVerifiedReport"
-            >
-              <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-              </svg>
-              <span>🖨️ Print / Download PDF</span>
-            </button>
+          <div class="flex items-center gap-2">
+            <Button variant="secondary" size="sm" icon-left="edit" @click="close(); isEditingValues = true">
+              Edit Values
+            </Button>
+            <Button variant="success" size="sm" icon-left="whatsapp" @click="sendViaWhatsAppWeb">
+              WhatsApp
+            </Button>
+            <Button variant="primary" size="sm" icon-left="printer" @click="printVerifiedReport">
+              Print PDF
+            </Button>
           </div>
         </div>
       </template>
