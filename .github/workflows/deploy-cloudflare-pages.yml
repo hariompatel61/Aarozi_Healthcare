@@ -1,0 +1,51 @@
+name: Deploy Labs Website to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - labs-website-public-pages
+    paths:
+      - "apps/web/**"
+      - ".github/workflows/deploy-cloudflare-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: labs-cloudflare-pages-production
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install dependencies
+        run: npm install --include=optional
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Generate static website
+        run: npm run generate
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy .output/public --project-name=aarozi-labs --branch=labs-website-public-pages
+          workingDirectory: apps/web

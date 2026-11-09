@@ -9,7 +9,7 @@
     "preview": "nuxt preview",
     "lint": "eslint .",
     "test": "vitest",
-    "typecheck": "vue-tsc --noEmit"
+    "typecheck": "nuxt prepare && vue-tsc --noEmit"
   },
   "dependencies": {
     "@pinia/nuxt": ">=0.9",
@@ -30,5 +30,8 @@
     "typescript": ">=5.4",
     "vitest": ">=2.1",
     "vue-tsc": ">=2.2"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "4.64.5"
   }
 }
