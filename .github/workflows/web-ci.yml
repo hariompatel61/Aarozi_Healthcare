@@ -1,0 +1,39 @@
+name: Labs Website CI
+
+on:
+  push:
+    branches: [labs-website-public-pages]
+    paths:
+      - "apps/web/**"
+      - ".github/workflows/web-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/web/**"
+      - ".github/workflows/web-ci.yml"
+
+jobs:
+  web-checks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install web dependencies
+        run: npm ci
+
+      - name: Type-check Nuxt application
+        run: npm run typecheck
+
+      - name: Build Nuxt application
+        run: npm run build
