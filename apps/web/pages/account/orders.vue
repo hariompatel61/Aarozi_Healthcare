@@ -86,3 +86,4 @@ function downloadInvoice(invoiceNo: string) {
     </div>
   </div>
 </template>
+

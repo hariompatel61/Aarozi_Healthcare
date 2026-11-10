@@ -314,7 +314,7 @@ const resourceItems = [
       <div class="pt-6 border-t border-slate-200 dark:border-slate-800 flex flex-col space-y-3">
         <NuxtLink to="/login" class="w-full" @click="isMobileOpen = false">
           <Button variant="secondary" size="md" class="w-full justify-center">
-            Login (Staff & Customer)
+            Login
           </Button>
         </NuxtLink>
         <NuxtLink to="/pricing" class="w-full" @click="isMobileOpen = false">

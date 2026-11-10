@@ -296,3 +296,4 @@ const filteredTemplates = computed(() => {
     <CtaBanner />
   </div>
 </template>
+

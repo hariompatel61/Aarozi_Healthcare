@@ -114,10 +114,10 @@ import Icon from '~/components/ui/Icon.vue'
 
       <!-- Col 5: Customer Portal & Contact -->
       <div class="space-y-3">
-        <h4 class="text-xs font-bold uppercase tracking-wider text-white">Customer Portal</h4>
+        <h4 class="text-xs font-bold uppercase tracking-wider text-white">Account & Access</h4>
         <ul class="space-y-2 text-xs">
-          <li><NuxtLink to="/login" class="hover:text-teal-400 transition-colors">Customer & Staff Login</NuxtLink></li>
-          <li><NuxtLink to="/signup" class="hover:text-teal-400 transition-colors">Register Laboratory Account</NuxtLink></li>
+          <li><NuxtLink to="/login" class="hover:text-teal-400 transition-colors">Sign In</NuxtLink></li>
+          <li><NuxtLink to="/signup" class="hover:text-teal-400 transition-colors">Create Account</NuxtLink></li>
           <li><NuxtLink to="/account" class="hover:text-teal-400 transition-colors">My Lab Account</NuxtLink></li>
           <li><NuxtLink to="/account/licences" class="hover:text-teal-400 transition-colors">Manage Software Licences</NuxtLink></li>
           <li><NuxtLink to="/account/orders" class="hover:text-teal-400 transition-colors">Invoices & Receipts</NuxtLink></li>

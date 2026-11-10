@@ -58,3 +58,4 @@ definePageMeta({
     <CtaBanner />
   </div>
 </template>
+
