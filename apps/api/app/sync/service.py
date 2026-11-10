@@ -375,7 +375,7 @@ def resolve_sync_conflict(
         conflict.resolution_notes = (conflict.resolution_notes or "") + f" | Resolution note: {notes}"
         
     if resolution_action == "merged" and merged_payload:
-        conflict.resolution_notes += f" | Merged payload applied."
+        conflict.resolution_notes += " | Merged payload applied."
         
     db.commit()
     db.refresh(conflict)

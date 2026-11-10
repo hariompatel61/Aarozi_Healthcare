@@ -3,7 +3,8 @@ Covers test catalog, orders, sample accessioning, worklists, result entry, verif
 """
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
+import json
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query, status, File, UploadFile, Response
 from pydantic import BaseModel, Field
@@ -11,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models.core import Department, Tenant
-from app.models.pathology import Test, Order, OrderItem, Sample, Result
+from app.models.pathology import Test, Order, OrderItem, Sample, Result, ResultValue
 from app.models.blood_bank import BloodUnit
 from app.models.patient import Patient
 from app.models.reporting import Report

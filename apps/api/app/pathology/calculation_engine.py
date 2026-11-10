@@ -187,7 +187,7 @@ def compute_derived_results(
 
     order_item = result.order_item
     order = order_item.order
-    patient = order.patient if hasattr(order, "patient") and order.patient else db.query(OrderItem).filter(OrderItem.id == order_item.id).first()
+    _patient = order.patient if hasattr(order, "patient") and order.patient else db.query(OrderItem).filter(OrderItem.id == order_item.id).first()
 
     # Collect existing values as variables dict
     existing_vars: dict[str, Decimal] = {}

@@ -146,7 +146,7 @@ def generate_qr_svg(
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {view_size:.1f} {view_size:.1f}" '
         f'width="{size_mm}mm" height="{size_mm}mm">\n'
         f'  <g fill="black">\n    ' + "\n    ".join(rects) + "\n  </g>\n"
-        f'</svg>'
+        '</svg>'
     )
     return svg
 

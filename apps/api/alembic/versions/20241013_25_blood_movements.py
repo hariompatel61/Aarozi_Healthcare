@@ -1,9 +1,9 @@
-\"\"\"Add blood_movements table for traceability
+"""Add blood_movements table for traceability
 
 Revision ID: 20241013_25
 Revises: 20241013_24
 Create Date: 2024-10-13 23:30:00.000000
-\"\"\"
+"""
 from typing import Sequence, Union
 
 from alembic import op

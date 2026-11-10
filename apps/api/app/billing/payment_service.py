@@ -342,9 +342,3 @@ def list_payments(
     payments = db.execute(stmt).scalars().all()
     return list(payments), total_count
 
-
-    db.commit()
-    db.refresh(payment)
-    return payment
-
-    return f"{prefix}-{today_str}-{count_today + 1:04d}"

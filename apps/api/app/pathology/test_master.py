@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import re
 from typing import Any
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, joinedload
@@ -932,7 +933,6 @@ def delete_test_parameter(
 ) -> dict[str, Any]:
     """Delete or deactivate a reportable parameter from an investigation."""
     verify_tenant_boundary(tenant_context.tenant_id, tenant_context)
-    tenant_id = tenant_context.tenant_id
 
     param = db.execute(select(TestParameter).where(TestParameter.id == parameter_id)).scalar_one_or_none()
     if not param:

@@ -287,7 +287,6 @@ def test_integration(
 
     elif cat == "google_drive":
         folder_id = config.get("folder_id")
-        creds = config.get("credentials_json")
         if not folder_id:
             return {
                 "success": False,

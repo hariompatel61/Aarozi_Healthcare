@@ -91,8 +91,8 @@ def detect_patient_duplicates(
     for idx, row in enumerate(candidate_records):
         mobile = row.get("mobile", "")
         clean_mobile = "".join(c for c in str(mobile) if c.isdigit()) if mobile else ""
-        first_name = row.get("first_name", "").strip()
-        last_name = row.get("last_name", "").strip()
+        _first_name = row.get("first_name", "").strip()
+        _last_name = row.get("last_name", "").strip()
         legacy_id = str(row.get("legacy_id", "")).strip()
 
         is_duplicate = False
