@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from '~/composables/useToast'
+import { useAuth } from '~/composables/useAuth'
 import Button from '~/components/ui/Button.vue'
 import Input from '~/components/ui/Input.vue'
 
@@ -11,6 +12,7 @@ definePageMeta({
 
 const router = useRouter()
 const { success, error } = useToast()
+const { login } = useAuth()
 
 const form = ref({
   fullName: '',
@@ -27,36 +29,9 @@ async function handleSignup() {
   loading.value = true
 
   try {
-    // Register account and prepare session
-    const authCookie = useCookie('auth_token', { path: '/' })
-    const userCookie = useCookie('aarozi_user', { path: '/' })
-
-    const token = 'authenticated_session_token'
-    authCookie.value = token
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('token', token)
-      localStorage.setItem('access_token', token)
-    }
-
-    const userData = {
-      username: form.value.email,
-      name: form.value.fullName,
-      lab_name: form.value.labName || 'Diagnostic Centre',
-      role: 'ADMIN',
-      loginTime: new Date().toISOString(),
-    }
-    userCookie.value = JSON.stringify(userData)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('aarozi_user', JSON.stringify(userData))
-    }
-
-    const customerCookie = useCookie('aarozi_customer_token', { path: '/' })
-    const customerEmailCookie = useCookie('aarozi_customer_email', { path: '/' })
-    customerCookie.value = token
-    customerEmailCookie.value = form.value.email.toLowerCase().trim()
-
+    const result = await login(form.value.email, form.value.password)
     success('Account Created', `Welcome to Aarozi Healthcare, ${form.value.fullName}!`)
-    await navigateTo('/account')
+    await router.push(result.redirectPath || '/account')
   } catch (err: any) {
     error('Signup Failed', err.message || 'Could not complete registration.')
   } finally {

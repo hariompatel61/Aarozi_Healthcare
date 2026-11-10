@@ -6,7 +6,6 @@ import PageHeader from '~/components/ui/PageHeader.vue'
 import Card from '~/components/ui/Card.vue'
 import Button from '~/components/ui/Button.vue'
 import Badge from '~/components/ui/Badge.vue'
-import Kbd from '~/components/ui/Kbd.vue'
 import Icon from '~/components/ui/Icon.vue'
 import Modal from '~/components/ui/Modal.vue'
 
@@ -606,16 +605,7 @@ onUnmounted(() => {
       title="Patient Registration & Billing"
       subtitle="Fast front desk patient intake, test selection, and billing settlement."
       icon="users"
-      badge="Terminal #01"
-      badge-variant="info"
     >
-      <template #meta>
-        <span class="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 font-medium">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Local LAN Cashier Ready</span>
-        </span>
-      </template>
-
       <template #actions>
         <Button
           variant="secondary"

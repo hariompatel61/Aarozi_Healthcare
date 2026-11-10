@@ -30,18 +30,12 @@ const api = useApi()
 // Staff user state
 const staffUser = ref<{ username?: string; station?: string; branch?: string }>({})
 
-function handleLogout() {
-  const authCookie = useCookie('auth_token', { path: '/' })
-  const userCookie = useCookie('aarozi_user', { path: '/' })
-  authCookie.value = null
-  userCookie.value = null
+import { useAuth } from '~/composables/useAuth'
 
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem('token')
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('aarozi_user')
-  }
-  router.push('/login')
+const { logout } = useAuth()
+
+function handleLogout() {
+  logout()
 }
 
 function onBranchChange(event: Event) {

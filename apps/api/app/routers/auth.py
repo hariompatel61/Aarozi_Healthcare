@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from typing import Any
 from fastapi import APIRouter, Depends, Header, Request, status, HTTPException
 from pydantic import BaseModel, Field
@@ -18,10 +19,39 @@ from app.security.tenant_guard import TenantContext, get_tenant_context
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+# Rate-limiting memory store: client_ip -> list of timestamp floats
+_FAILED_ATTEMPTS: dict[str, list[float]] = {}
+MAX_ATTEMPTS_PER_WINDOW = 5
+RATE_LIMIT_WINDOW_SECONDS = 60.0
+
+
+def _check_rate_limit(client_id: str) -> None:
+    now = time.time()
+    attempts = _FAILED_ATTEMPTS.get(client_id, [])
+    # keep only attempts within the window
+    valid_attempts = [t for t in attempts if now - t < RATE_LIMIT_WINDOW_SECONDS]
+    _FAILED_ATTEMPTS[client_id] = valid_attempts
+    if len(valid_attempts) >= MAX_ATTEMPTS_PER_WINDOW:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many failed login attempts. Please wait 60 seconds before trying again.",
+        )
+
+
+def _record_failed_attempt(client_id: str) -> None:
+    now = time.time()
+    attempts = _FAILED_ATTEMPTS.setdefault(client_id, [])
+    attempts.append(now)
+
+
+def _clear_failed_attempts(client_id: str) -> None:
+    _FAILED_ATTEMPTS.pop(client_id, None)
+
 
 class LoginRequest(BaseModel):
-    tenant_id_or_code: str = Field(..., description="Tenant ID or unique code (e.g. ACME)")
-    username: str = Field(..., description="Username or email")
+    tenant_id_or_code: str | None = Field(default=None, description="Optional Tenant ID or unique code")
+    username: str | None = Field(default=None, description="Username or email")
+    email: str | None = Field(default=None, description="Email address")
     password: str = Field(..., description="User password")
 
 
@@ -52,25 +82,37 @@ def login(
     request: Request,
     db: Session = Depends(get_db),
 ) -> LoginResponse:
-    """Authenticate user and create secure local session."""
+    """Authenticate user with rate-limiting and create secure session."""
     user_agent = request.headers.get("user-agent")
-    ip_address = request.client.host if request.client else None
+    ip_address = request.client.host if request.client else "127.0.0.1"
+
+    login_identifier = (payload.email or payload.username or "").strip().lower()
+    rate_limit_key = f"{ip_address}:{login_identifier}"
+    _check_rate_limit(rate_limit_key)
+
+    if not login_identifier or not payload.password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email/username and password are required.",
+        )
 
     auth_result = authenticate_user(
         db,
         tenant_id_or_code=payload.tenant_id_or_code,
-        username=payload.username,
+        username=login_identifier,
         password=payload.password,
         user_agent=user_agent,
         ip_address=ip_address,
     )
 
     if not auth_result:
+        _record_failed_attempt(rate_limit_key)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid tenant, username, or password",
+            detail="Invalid email or password",
         )
 
+    _clear_failed_attempts(rate_limit_key)
     user, session_rec = auth_result
 
     return LoginResponse(

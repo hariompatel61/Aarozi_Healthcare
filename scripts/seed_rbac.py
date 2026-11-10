@@ -81,8 +81,10 @@ def run_seed():
                 if p_item and not session.query(RolePermission).filter_by(role_id=r.id, permission_id=p_item.id).first():
                     session.add(RolePermission(role_id=r.id, permission_id=p_item.id, allow=True))
 
-        valid_pw_hash = hash_password("admin123")
+        valid_pw_hash = hash_password("Admin@12345")
         users = [
+            ("superadmin@aarozi.in", "superadmin@aarozi.in", "Super Administrator", "Tenant Administrator", ["*"]),
+            ("admin@aarozi.com", "admin@aarozi.com", "Super Administrator", "Tenant Administrator", ["*"]),
             ("admin", "admin@aarozi.local", "Super Admin", "Tenant Administrator", ["*"]),
             ("dr.sarah", "sarah@aarozi.local", "Dr. Sarah", "Pathologist", [branch.id]),
             ("john.phleb", "john@aarozi.local", "John Doe", "Phlebotomist", [branch.id]),
@@ -91,7 +93,7 @@ def run_seed():
         for uname, umail, fname, rname, scopes in users:
             u = session.query(User).filter_by(tenant_id=tenant.id, username=uname).first()
             if not u:
-                u = User(id=str(uuid.uuid4()), tenant_id=tenant.id, username=uname, email=umail, hashed_password=valid_pw_hash, full_name=fname, is_active=True, is_superuser=(uname=="admin"))
+                u = User(id=str(uuid.uuid4()), tenant_id=tenant.id, username=uname, email=umail, hashed_password=valid_pw_hash, full_name=fname, is_active=True, is_superuser=("admin" in uname or "super" in uname))
                 session.add(u)
                 session.flush()
             else:

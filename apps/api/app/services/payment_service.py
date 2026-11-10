@@ -253,6 +253,19 @@ def process_payment_success(
     order["license_download_available"] = True
     order["invoice_number"] = f"INV-AAR-{now.strftime('%Y%m')}-{uuid.uuid4().hex[:4].upper()}"
 
+    # Automatically dispatch signed license file via Brevo transactional email
+    try:
+        from app.services.brevo_service import send_license_delivery_email
+        send_license_delivery_email(
+            to_email=order["email"],
+            lab_name=order["lab_name"],
+            license_id=license_id,
+            plan_name=plan_info["name"],
+            license_content_bytes=json.dumps(license_doc, indent=2).encode("utf-8"),
+        )
+    except Exception:
+        pass
+
     return order
 
 

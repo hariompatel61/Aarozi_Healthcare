@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from '~/composables/useToast'
+import { useAuth } from '~/composables/useAuth'
 import Button from '~/components/ui/Button.vue'
 import Input from '~/components/ui/Input.vue'
 import Icon from '~/components/ui/Icon.vue'
@@ -13,7 +14,7 @@ definePageMeta({
 const route = useRoute()
 const router = useRouter()
 const { success, error } = useToast()
-const api = useApi()
+const { login } = useAuth()
 
 const email = ref('')
 const password = ref('')
@@ -25,72 +26,12 @@ async function handleLogin() {
   if (!userEmail || !password.value) return
   loading.value = true
 
-  const authCookie = useCookie('auth_token', { path: '/' })
-  const userCookie = useCookie('aarozi_user', { path: '/' })
-
   try {
-    let authToken = 'authenticated_session_token'
-    let role = 'ADMIN'
-    let fullName = userEmail.split('@')[0] || 'User'
+    const result = await login(userEmail, password.value)
+    success('Login Successful', `Welcome back to Aarozi Healthcare`)
 
-    try {
-      const res: any = await api.post('/auth/login', {
-        username: userEmail,
-        email: userEmail,
-        password: password.value,
-      })
-      if (res && (res.access_token || res.token)) {
-        authToken = res.access_token || res.token
-      }
-      if (res && res.user) {
-        role = res.user.role || role
-        fullName = res.user.full_name || res.user.name || fullName
-      }
-    } catch {
-      // Offline fallback: determine role automatically
-      if (userEmail.includes('super') || userEmail.includes('admin@aarozi')) {
-        role = 'SUPER_ADMIN'
-      } else if (userEmail.includes('dr.') || userEmail.includes('pathologist')) {
-        role = 'PATHOLOGIST'
-      } else {
-        role = 'ADMIN'
-      }
-    }
-
-    authCookie.value = authToken
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('token', authToken)
-      localStorage.setItem('access_token', authToken)
-    }
-
-    const userData = {
-      username: userEmail,
-      email: userEmail,
-      name: fullName,
-      role,
-      loginTime: new Date().toISOString(),
-    }
-    userCookie.value = JSON.stringify(userData)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('aarozi_user', JSON.stringify(userData))
-    }
-
-    const customerCookie = useCookie('aarozi_customer_token', { path: '/' })
-    const customerEmailCookie = useCookie('aarozi_customer_email', { path: '/' })
-    customerCookie.value = authToken
-    customerEmailCookie.value = userEmail
-
-    success('Login Successful', `Welcome back, ${fullName}`)
-
-    let redirectPath = route.query.redirect as string
-    if (!redirectPath) {
-      if (userEmail.toLowerCase().includes('super') || role === 'SUPER_ADMIN') {
-        redirectPath = '/admin/platform'
-      } else {
-        redirectPath = '/account'
-      }
-    }
-    await navigateTo(redirectPath)
+    const redirectPath = (route.query.redirect as string) || result.redirectPath
+    await router.push(redirectPath)
   } catch (err: any) {
     error('Login Failed', err.message || 'Invalid email or password. Please try again.')
   } finally {

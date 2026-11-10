@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nuxtjs",
+  "buildCommand": "pnpm --filter aarozi-healthcare-web build",
+  "outputDirectory": "apps/web/.output/public",
+  "installCommand": "pnpm install",
+  "cleanUrls": true,
+  "trailingSlash": false
+}

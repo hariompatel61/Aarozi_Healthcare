@@ -94,7 +94,22 @@ export function useCustomerAuth() {
   function logout() {
     customerToken.value = null
     customerEmail.value = null
-    navigateTo('/login')
+    const authCookie = useCookie('auth_token', { path: '/' })
+    const userCookie = useCookie('aarozi_user', { path: '/' })
+    authCookie.value = null
+    userCookie.value = null
+
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token')
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('aarozi_user')
+      localStorage.removeItem('aarozi_customer_token')
+      localStorage.removeItem('aarozi_customer_email')
+      sessionStorage.clear()
+      window.location.href = '/login?logged_out=1'
+    } else {
+      navigateTo('/login?logged_out=1')
+    }
   }
 
   function downloadLicenseFile(licenseId: string) {

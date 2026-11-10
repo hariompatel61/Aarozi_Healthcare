@@ -205,7 +205,7 @@ function dispatchWhatsApp(r: ReportDispatchItem) {
   const cleanPhone = (r.mobile || '').replace(/\D/g, '')
   const reportUrl = `https://labs.aarozi.in/reports/verify/${r.report_no}-QR`
   const text = encodeURIComponent(
-    `🏥 *Aarozi Healthcare Central Lab*\n\nDear *${r.patient_name}*,\nYour verified diagnostic report *${r.report_no}* (${r.test_names}) is now ready.\n\n📄 *Download Digital PDF:* ${reportUrl}\n\n_Accredited by NABL & ISO 15189:2022._`
+    `🏥 *Aarozi Healthcare Central Lab*\n\nDear *${r.patient_name}*,\nYour verified diagnostic report *${r.report_no}* (${r.investigations}) is now ready.\n\n📄 *Download Digital PDF:* ${reportUrl}\n\n_Accredited by NABL & ISO 15189:2022._`
   )
   if (cleanPhone && typeof window !== 'undefined') {
     window.open(`https://wa.me/91${cleanPhone.slice(-10)}?text=${text}`, '_blank')

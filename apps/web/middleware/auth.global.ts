@@ -25,15 +25,31 @@ export default defineNuxtRouteMiddleware((to) => {
     to.meta.layout === 'marketing'
 
   const authCookie = useCookie('auth_token', { path: '/' })
+  const customerCookie = useCookie('aarozi_customer_token', { path: '/' })
+
+  if (to.query.logged_out || to.query.force) {
+    authCookie.value = null
+    customerCookie.value = null
+    if (import.meta.client) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('aarozi_user')
+      localStorage.removeItem('aarozi_customer_token')
+      localStorage.removeItem('aarozi_customer_email')
+    }
+  }
+
   if (to.query.auth) {
     authCookie.value = String(to.query.auth)
   }
 
-  const token = authCookie.value || (import.meta.client ? localStorage.getItem('token') : null)
+  const token = (!to.query.logged_out && !to.query.force)
+    ? (authCookie.value || customerCookie.value || (import.meta.client ? localStorage.getItem('token') : null))
+    : null
 
   if (isPublicRoute) {
     // If already logged in and visiting login or signup, redirect to customer account
-    if ((to.path === '/login' || to.path === '/signup') && token && !to.query.force) {
+    if ((to.path === '/login' || to.path === '/signup') && token && !to.query.force && !to.query.logged_out) {
       return navigateTo('/account')
     }
     return

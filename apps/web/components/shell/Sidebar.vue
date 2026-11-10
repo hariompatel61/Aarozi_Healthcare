@@ -39,18 +39,12 @@ onMounted(() => {
   }
 })
 
-function handleLogout() {
-  const authCookie = useCookie('auth_token', { path: '/' })
-  const userCookie = useCookie('aarozi_user', { path: '/' })
-  authCookie.value = null
-  userCookie.value = null
+import { useAuth } from '~/composables/useAuth'
 
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem('token')
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('aarozi_user')
-  }
-  router.push('/login')
+const { logout } = useAuth()
+
+function handleLogout() {
+  logout()
 }
 
 interface NavItem {
@@ -104,6 +98,7 @@ const navSections: NavSection[] = [
       { name: 'NABL & QC Desk', to: '/quality', icon: 'shield' },
       { name: 'WhatsApp & Cloud Sync', to: '/admin/integrations', icon: 'share' },
       { name: 'Automated Backups', to: '/admin/sync', icon: 'database' },
+      { name: 'Super Admin Console', to: '/admin/platform', icon: 'shield' },
       { name: 'Settings Hub', to: '/admin/users', icon: 'settings' },
     ],
   },
