@@ -102,7 +102,8 @@ const navSections: NavSection[] = [
     title: 'Quality & Governance',
     items: [
       { name: 'NABL & QC Desk', to: '/quality', icon: 'shield' },
-      { name: 'Platform & CMS Admin', to: '/admin/platform', icon: 'database' },
+      { name: 'WhatsApp & Cloud Sync', to: '/admin/integrations', icon: 'share' },
+      { name: 'Automated Backups', to: '/admin/sync', icon: 'database' },
       { name: 'Settings Hub', to: '/admin/users', icon: 'settings' },
     ],
   },
