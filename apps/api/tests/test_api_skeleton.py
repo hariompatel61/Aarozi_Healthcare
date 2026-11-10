@@ -290,6 +290,10 @@ class TestRouterRegistration:
         for route in app.routes:
             if hasattr(route, "path"):
                 paths.add(route.path)
+            elif hasattr(route, "router") and hasattr(route.router, "routes"):
+                for sub in route.router.routes:
+                    if hasattr(sub, "path"):
+                        paths.add(sub.path)
             elif hasattr(route, "routes"):
                 for sub in route.routes:
                     if hasattr(sub, "path"):
@@ -298,6 +302,10 @@ class TestRouterRegistration:
                 for sub in route.app.routes:
                     if hasattr(sub, "path"):
                         paths.add(sub.path)
+        try:
+            paths.update(app.openapi().get("paths", {}).keys())
+        except Exception:
+            pass
         return paths
 
     def test_health_route_registered(self) -> None:
