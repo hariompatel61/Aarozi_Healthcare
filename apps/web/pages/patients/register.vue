@@ -41,11 +41,11 @@ const form = reactive({
   last_name: '',
   full_name: '',
   mobile: '',
-  age: 32,
+  age: '' as any,
   gender: 'Male',
   sex: 'Male',
   primary_id_type: 'National ID / Aadhaar',
-  city: 'Noida',
+  city: '',
   address: '',
   patient_type: 'Walk-in',
 })
@@ -104,10 +104,11 @@ function resetToNewPatient() {
   patientUhid.value = `PAT25000${Math.floor(10 + Math.random() * 90)}`
   form.mobile = ''
   form.full_name = ''
-  form.age = 30
+  form.age = '' as any
   form.gender = 'Male'
-  form.city = 'Noida'
+  form.city = ''
   form.address = ''
+  selectedPartnerId.value = 'ref-00'
   isExistingPatient.value = false
   showSearchDropdown.value = false
   searchSuggestions.value = []
@@ -176,7 +177,7 @@ const partners = ref<ReferralPartnerOption[]>([
   { id: 'ref-00', name: 'Direct Walk-in / Self', specialty: 'None', partner_type: 'self', commission_pct: 0 },
 ])
 
-const selectedPartnerId = ref('ref-01')
+const selectedPartnerId = ref('ref-00')
 
 const defaultPartner: ReferralPartnerOption = { id: 'ref-00', name: 'Direct Walk-in / Self', specialty: 'None', partner_type: 'self', commission_pct: 0 }
 const selectedPartner = computed<ReferralPartnerOption>(() => {
@@ -332,7 +333,7 @@ const testSearchQuery = ref('')
 const selectedCategory = ref('All')
 const categories = ['All', 'Popular', 'Hematology', 'Biochemistry', 'Hormones', 'Serology', 'Urine']
 
-const selectedTestCodes = ref<string[]>(['CBC', 'LFT'])
+const selectedTestCodes = ref<string[]>([])
 
 const selectedTests = computed(() => {
   return testCatalog.value.filter((t) => selectedTestCodes.value.includes(t.code))
@@ -395,7 +396,7 @@ const referralCommissionAmount = computed(() => {
 // -------------------------------------------------------------
 // 5. PAYMENT TENDER (SPLIT TENDER)
 // -------------------------------------------------------------
-const tenderCash = ref<number>(900)
+const tenderCash = ref<number>(0)
 const tenderUpi = ref<number>(0)
 const tenderCard = ref<number>(0)
 
@@ -551,12 +552,12 @@ function printReceiptWindow() {
 
 function resetPosCounter() {
   resetToNewPatient()
-  selectedTestCodes.value = ['CBC']
+  selectedTestCodes.value = []
   discountValue.value = 0
-  tenderCash.value = 400
+  tenderCash.value = 0
   tenderUpi.value = 0
   tenderCard.value = 0
-  info('Counter Reset', 'Ready for next patient intake.')
+  info('Form Cleared', 'Ready for new patient intake.')
   nextTick(() => {
     mobileInputRef.value?.focus()
   })
@@ -602,8 +603,8 @@ onUnmounted(() => {
   <div class="space-y-4 max-w-7xl mx-auto text-left text-slate-900 dark:text-slate-100 pb-12">
     <!-- Top Action Header -->
     <PageHeader
-      title="Patient Intake & Quick Billing POS"
-      subtitle="Under-1-minute front desk intake: mobile lookup, investigation picker, and split cashier tender."
+      title="Patient Registration & Billing"
+      subtitle="Fast front desk patient intake, test selection, and billing settlement."
       icon="users"
       badge="Terminal #01"
       badge-variant="info"
@@ -613,12 +614,6 @@ onUnmounted(() => {
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <span>Local LAN Cashier Ready</span>
         </span>
-        <span class="text-slate-300 dark:text-slate-700">•</span>
-        <span class="text-xs text-slate-700 dark:text-slate-300 font-semibold">Shortcuts:</span>
-        <Kbd size="xs">F2</Kbd>
-        <span class="text-xs text-slate-600 dark:text-slate-300 font-medium">Save & Print</span>
-        <Kbd size="xs">F3</Kbd>
-        <span class="text-xs text-slate-600 dark:text-slate-300 font-medium">Search Tests</span>
       </template>
 
       <template #actions>
@@ -628,7 +623,7 @@ onUnmounted(() => {
           icon-left="refresh"
           @click="resetPosCounter"
         >
-          Clear POS [Esc]
+          Clear Form
         </Button>
         <Button
           variant="primary"
@@ -637,7 +632,7 @@ onUnmounted(() => {
           :loading="isSubmitting"
           @click="handleSaveAndPrintInvoice"
         >
-          Save & Print [F2]
+          Save & Print
         </Button>
       </template>
     </PageHeader>
@@ -708,7 +703,6 @@ onUnmounted(() => {
                     <Icon name="refresh" size="xs" class="animate-spin" />
                   </span>
                 </div>
-                <p class="text-xs text-slate-600 dark:text-slate-300 font-medium mt-1">Type 3+ digits to auto-suggest returning patients</p>
               </div>
 
               <!-- Full Name Input -->
@@ -717,14 +711,13 @@ onUnmounted(() => {
                   <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
                     Full Patient Name <span class="text-red-500">*</span>
                   </label>
-                  <span class="text-xs text-slate-600 dark:text-slate-300 font-medium">Auto-suggests repeat records</span>
                 </div>
 
                 <div class="relative">
                   <input
                     v-model="form.full_name"
                     type="text"
-                    placeholder="e.g. Aarav Sharma (or search repeat name)"
+                    placeholder="e.g. Aarav Sharma"
                     class="w-full px-3 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-[#3b93ee] focus:border-[#2576d2] transition-colors"
                     :class="isExistingPatient ? 'border-[#2576d2] bg-[#f0f7fe] dark:bg-[#1d273d]' : ''"
                     @input="triggerPatientSearch(form.full_name, 'name')"
@@ -734,7 +727,6 @@ onUnmounted(() => {
                     <Icon name="refresh" size="xs" class="animate-spin" />
                   </span>
                 </div>
-                <p class="text-xs text-slate-600 dark:text-slate-300 font-medium mt-1">Press Enter or click suggestion to auto-fill</p>
               </div>
 
               <!-- Repeat Patient Dropdown Popover -->
@@ -793,7 +785,7 @@ onUnmounted(() => {
                 </div>
 
                 <div class="bg-slate-50 dark:bg-slate-800/60 px-3.5 py-2 text-xs text-slate-500 flex items-center justify-between">
-                  <span>Press Escape to dismiss</span>
+                  <span>Click outside or select to dismiss</span>
                   <button
                     type="button"
                     class="text-[#2576d2] dark:text-[#90ccf9] font-bold hover:underline cursor-pointer"
@@ -814,6 +806,7 @@ onUnmounted(() => {
                   type="number"
                   min="0"
                   max="125"
+                  placeholder="e.g. 28"
                   class="w-full px-3 py-2 border rounded-lg text-xs font-mono bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-[#3b93ee] focus:border-[#2576d2]"
                 />
               </div>
@@ -835,7 +828,7 @@ onUnmounted(() => {
                 <input
                   v-model="form.city"
                   type="text"
-                  placeholder="e.g. Noida / Delhi"
+                  placeholder="e.g. City / Locality"
                   class="w-full px-3 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-[#3b93ee] focus:border-[#2576d2]"
                 />
               </div>
@@ -859,7 +852,7 @@ onUnmounted(() => {
           <div class="p-4 space-y-2">
             <div class="flex items-center justify-between">
               <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                Prescribing Clinician or Referral Source *
+                Prescribing Referral Source *
               </label>
               <span v-if="selectedPartner.commission_pct > 0" class="text-xs font-semibold text-[#b73612] dark:text-[#fdb99b] bg-[#fff7f2] dark:bg-[#772614]/30 px-2 py-0.5 rounded border border-[#fed8c4] dark:border-[#932c13]">
                 {{ selectedPartner.commission_pct }}% Referral Commission
@@ -896,7 +889,7 @@ onUnmounted(() => {
                 ref="testSearchInputRef"
                 v-model="testSearchQuery"
                 type="text"
-                placeholder="Search test name or code (e.g., CBC, LFT, Lipid, HbA1c)... [F3]"
+                placeholder="Search test name or code (e.g., CBC, LFT, Lipid, HbA1c)..."
                 class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#3b93ee] focus:border-[#2576d2] focus:bg-white dark:focus:bg-slate-800 transition"
               />
             </div>
@@ -982,7 +975,7 @@ onUnmounted(() => {
           <div class="p-4 space-y-3.5 text-xs">
             <!-- Selected Tests Itemized List -->
             <div v-if="selectedTests.length === 0" class="py-8 text-center text-slate-400 italic">
-              No tests added yet. Select investigations on the left.
+              No tests added yet.
             </div>
 
             <div v-else class="space-y-2 max-h-48 overflow-y-auto pr-1">
@@ -1012,7 +1005,7 @@ onUnmounted(() => {
             <!-- Pricing Breakdown -->
             <div class="border-t border-slate-200 dark:border-slate-700 pt-3 space-y-2.5">
               <div class="flex items-center justify-between text-slate-700 dark:text-slate-200">
-                <span class="font-semibold text-slate-700 dark:text-slate-300">Gross Investigation Total:</span>
+                <span class="font-semibold text-slate-700 dark:text-slate-300">Gross Total:</span>
                 <span class="font-mono font-bold text-slate-900 dark:text-white">₹{{ grossAmount.toLocaleString('en-IN') }}</span>
               </div>
 
@@ -1159,7 +1152,6 @@ onUnmounted(() => {
                 @click="handleSaveAndPrintInvoice"
               >
                 <span>Save &amp; Print Invoice</span>
-                <Kbd size="xs" class="ml-2 text-white bg-[#1c5fae] border-[#2576d2]">F2</Kbd>
               </Button>
 
               <Button
@@ -1170,7 +1162,7 @@ onUnmounted(() => {
                 :disabled="selectedTests.length === 0"
                 @click="handleSaveAndPrintBarcodes"
               >
-                <span>Generate Specimen Barcodes (50×25mm)</span>
+                <span>Generate Barcodes</span>
               </Button>
             </div>
           </div>
@@ -1210,7 +1202,7 @@ onUnmounted(() => {
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Specialty / Discipline</label>
+            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Specialty</label>
             <input
               v-model="newDoctor.specialty"
               type="text"
@@ -1249,7 +1241,7 @@ onUnmounted(() => {
     >
       <div class="space-y-3 text-xs bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 font-mono">
         <div class="text-center border-b border-dashed border-slate-300 dark:border-slate-700 pb-2.5">
-          <h3 class="font-bold text-slate-900 dark:text-white text-sm">AAROZI HEALTHCARE CENTRAL LAB</h3>
+          <h3 class="font-bold text-slate-900 dark:text-white text-sm">AAROZI HEALTHCARE</h3>
           <p class="text-xs text-slate-500">ISO 15189:2022 • GSTIN: 09AAACA1234D1Z5</p>
           <p class="text-xs font-bold text-[#2576d2] dark:text-[#90ccf9] mt-1">{{ generatedInvoiceNo }}</p>
         </div>
@@ -1293,7 +1285,7 @@ onUnmounted(() => {
             Close
           </Button>
           <Button variant="success" size="sm" icon-left="printer" @click="printReceiptWindow">
-            Print Official Receipt
+            Print Receipt
           </Button>
         </div>
       </template>

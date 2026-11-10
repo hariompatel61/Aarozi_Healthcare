@@ -245,12 +245,11 @@ onUnmounted(() => {
 
     <!-- Right Controls: Quick Action, Branch Dropdown, Alerts, Theme, User Profile -->
     <div class="flex items-center space-x-2 sm:space-x-2.5">
-      <!-- Quick Action: Register Patient [F2] -->
+      <!-- Quick Action: Register Patient -->
       <NuxtLink to="/patients/register" class="hidden sm:inline-block">
         <Button variant="primary" size="sm">
           <template #icon-left><Icon name="plus" size="xs" /></template>
           <span>Register</span>
-          <Kbd size="xs" class="bg-[#1c5fae] text-[#bee1fb] border-[#2576d2]">F2</Kbd>
         </Button>
       </NuxtLink>
 

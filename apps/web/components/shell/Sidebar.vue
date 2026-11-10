@@ -71,7 +71,7 @@ const navSections: NavSection[] = [
     title: 'Core Workflow',
     items: [
       { name: 'Dashboard', to: '/dashboard', icon: 'activity' },
-      { name: 'Registration & POS', to: '/patients/register', icon: 'user', shortcut: 'F2' },
+      { name: 'Registration & POS', to: '/patients/register', icon: 'user' },
       { name: 'Patient Directory', to: '/patients', icon: 'users' },
       { name: 'Home Collection', to: '/operations/home-collection', icon: 'map-pin' },
     ],
@@ -216,11 +216,6 @@ function isCurrentRoute(path: string): boolean {
                 {{ item.name }}
               </span>
             </div>
-
-            <!-- Keyboard shortcut hint -->
-            <Kbd v-if="!collapsed && item.shortcut" size="xs">
-              {{ item.shortcut }}
-            </Kbd>
           </NuxtLink>
         </div>
       </nav>

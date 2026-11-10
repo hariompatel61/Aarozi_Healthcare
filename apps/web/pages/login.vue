@@ -15,13 +15,14 @@ const router = useRouter()
 const { success, error } = useToast()
 const api = useApi()
 
-const username = ref('hariom.patel')
-const password = ref('password123')
+const email = ref('')
+const password = ref('')
 const rememberMe = ref(true)
 const loading = ref(false)
 
 async function handleLogin() {
-  if (!username.value.trim() || !password.value) return
+  const userEmail = email.value.trim()
+  if (!userEmail || !password.value) return
   loading.value = true
 
   const authCookie = useCookie('auth_token', { path: '/' })
@@ -30,11 +31,12 @@ async function handleLogin() {
   try {
     let authToken = 'authenticated_session_token'
     let role = 'ADMIN'
-    let fullName = username.value
+    let fullName = userEmail.split('@')[0] || 'User'
 
     try {
       const res: any = await api.post('/auth/login', {
-        username: username.value.trim(),
+        username: userEmail,
+        email: userEmail,
         password: password.value,
       })
       if (res && (res.access_token || res.token)) {
@@ -45,13 +47,11 @@ async function handleLogin() {
         fullName = res.user.full_name || res.user.name || fullName
       }
     } catch {
-      // Offline fallback: determine role automatically from username or default
-      if (username.value.includes('dr.') || username.value.includes('pathologist')) {
+      // Offline fallback: determine role automatically
+      if (userEmail.includes('super') || userEmail.includes('admin@aarozi')) {
+        role = 'SUPER_ADMIN'
+      } else if (userEmail.includes('dr.') || userEmail.includes('pathologist')) {
         role = 'PATHOLOGIST'
-      } else if (username.value.includes('reception')) {
-        role = 'RECEPTIONIST'
-      } else if (username.value.includes('tech') || username.value.includes('analyzer')) {
-        role = 'TECHNICIAN'
       } else {
         role = 'ADMIN'
       }
@@ -64,7 +64,8 @@ async function handleLogin() {
     }
 
     const userData = {
-      username: username.value.trim(),
+      username: userEmail,
+      email: userEmail,
       name: fullName,
       role,
       loginTime: new Date().toISOString(),
@@ -77,13 +78,13 @@ async function handleLogin() {
     const customerCookie = useCookie('aarozi_customer_token', { path: '/' })
     const customerEmailCookie = useCookie('aarozi_customer_email', { path: '/' })
     customerCookie.value = authToken
-    customerEmailCookie.value = username.value.trim()
+    customerEmailCookie.value = userEmail
 
     success('Login Successful', `Welcome back, ${fullName}`)
 
     let redirectPath = route.query.redirect as string
     if (!redirectPath) {
-      if (username.value.toLowerCase().includes('super') || role === 'SUPER_ADMIN') {
+      if (userEmail.toLowerCase().includes('super') || role === 'SUPER_ADMIN') {
         redirectPath = '/admin/platform'
       } else {
         redirectPath = '/account'
@@ -91,7 +92,7 @@ async function handleLogin() {
     }
     await navigateTo(redirectPath)
   } catch (err: any) {
-    error('Login Failed', err.message || 'Invalid username or password. Please try again.')
+    error('Login Failed', err.message || 'Invalid email or password. Please try again.')
   } finally {
     loading.value = false
   }
@@ -103,17 +104,18 @@ async function handleLogin() {
     <!-- Header -->
     <div class="space-y-1.5 text-center sm:text-left">
       <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Sign In</h1>
-      <p class="text-xs text-slate-600 dark:text-slate-300 font-medium">Enter your credentials to access your account</p>
+      <p class="text-xs text-slate-600 dark:text-slate-300 font-medium">Enter your email and password to access your account</p>
     </div>
 
     <!-- Login Form -->
     <form class="space-y-4" @submit.prevent="handleLogin">
       <Input
-        v-model="username"
-        label="Username or Email"
-        placeholder="Enter your username or email"
+        v-model="email"
+        label="Email Address"
+        type="email"
+        placeholder="e.g. doctor@example.com"
         required
-        prefix-icon="user"
+        prefix-icon="mail"
       />
 
       <div class="space-y-1">

@@ -51,16 +51,16 @@ const { isDark, toggleTheme } = useTheme()
     </main>
 
     <!-- Simple Professional Footer -->
-    <footer class="w-full max-w-5xl py-4 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 z-10 border-t border-[#ede9f7] dark:border-[#23273e] gap-2 shrink-0">
+    <footer class="w-full max-w-5xl py-4 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-600 dark:text-slate-400 z-10 border-t border-[#ede9f7] dark:border-[#23273e] gap-2 shrink-0">
       <div>
         <span>&copy; 2026 Aarozi Healthcare. All rights reserved.</span>
       </div>
       <div class="flex items-center space-x-4">
-        <NuxtLink to="/privacy" class="hover:underline">Privacy Policy</NuxtLink>
+        <NuxtLink to="/privacy" class="hover:text-[#2576d2] dark:hover:text-[#90ccf9] transition-colors">Privacy Policy</NuxtLink>
         <span>&bull;</span>
-        <NuxtLink to="/terms" class="hover:underline">Terms of Service</NuxtLink>
+        <NuxtLink to="/terms" class="hover:text-[#2576d2] dark:hover:text-[#90ccf9] transition-colors">Terms of Service</NuxtLink>
         <span>&bull;</span>
-        <NuxtLink to="/support" class="hover:underline">Support</NuxtLink>
+        <NuxtLink to="/support" class="hover:text-[#2576d2] dark:hover:text-[#90ccf9] transition-colors">Support</NuxtLink>
       </div>
     </footer>
 

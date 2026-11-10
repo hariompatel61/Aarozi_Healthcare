@@ -32,9 +32,9 @@ export default defineNuxtRouteMiddleware((to) => {
   const token = authCookie.value || (import.meta.client ? localStorage.getItem('token') : null)
 
   if (isPublicRoute) {
-    // If already logged in and visiting login or signup, redirect to dashboard
+    // If already logged in and visiting login or signup, redirect to customer account
     if ((to.path === '/login' || to.path === '/signup') && token && !to.query.force) {
-      return navigateTo('/dashboard')
+      return navigateTo('/account')
     }
     return
   }
