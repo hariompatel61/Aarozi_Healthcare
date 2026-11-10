@@ -2,6 +2,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { useToast } from '~/composables/useToast'
 import * as XLSX from 'xlsx'
+import PageHeader from '~/components/ui/PageHeader.vue'
+import Card from '~/components/ui/Card.vue'
+import Badge from '~/components/ui/Badge.vue'
+import Button from '~/components/ui/Button.vue'
+import Icon from '~/components/ui/Icon.vue'
+import Kbd from '~/components/ui/Kbd.vue'
 
 const api = useApi()
 const { success, warning, error: toastError } = useToast()
@@ -832,100 +838,86 @@ function downloadTemplate() {
 <template>
   <div class="space-y-4">
     <!-- Top Action & Architecture Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-      <div>
-        <div class="flex items-center space-x-2">
-          <h1 class="text-lg font-bold text-slate-900 tracking-tight">Master Pathology Test Catalog</h1>
-          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-50 text-sky-700 border border-sky-200">
-            3-Layer Architecture (Offline-First)
-          </span>
+    <PageHeader
+      title="Master Pathology Test Catalog"
+      description="Laboratory investigations, clinical parameters, sex-specific reference intervals, and tenant rate structures."
+    >
+      <template #actions>
+        <div class="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="md"
+            title="Download Excel test catalog template"
+            @click="downloadTemplate"
+          >
+            <Icon name="download" class="w-4 h-4" />
+            <span class="hidden sm:inline">Template</span>
+          </Button>
+
+          <Button
+            variant="secondary"
+            size="md"
+            title="Import investigations from Excel / CSV"
+            @click="isImportModalOpen = true; importStep = 'upload'"
+          >
+            <Icon name="file-text" class="w-4 h-4" />
+            <span class="hidden sm:inline">Mass Import</span>
+          </Button>
+
+          <Button
+            variant="primary"
+            size="md"
+            title="Define custom laboratory test or panel"
+            @click="openCreateModal"
+          >
+            <Icon name="plus" class="w-4 h-4" />
+            <span>Add Investigation</span>
+          </Button>
         </div>
-        <p class="text-xs text-slate-500 mt-0.5">
-          Laboratory investigations, clinical parameters, sex-specific reference intervals, and tenant rate structures.
-        </p>
-      </div>
-
-      <div class="flex items-center space-x-2">
-        <button
-          type="button"
-          class="btn-secondary"
-          @click="downloadTemplate"
-        >
-          <svg class="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg>
-          <span>Template</span>
-        </button>
-
-        <button
-          type="button"
-          class="btn-emerald"
-          @click="isImportModalOpen = true; importStep = 'upload'"
-        >
-          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-          </svg>
-          <span>Mass Import</span>
-        </button>
-
-        <button
-          type="button"
-          class="btn-primary"
-          @click="openCreateModal"
-        >
-          <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          <span>Add Investigation</span>
-        </button>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <!-- 5 Live Catalog Stats Cards -->
-    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
-      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
-        <div class="text-[11px] font-medium text-slate-500">Total Investigations</div>
-        <div class="text-xl font-bold text-slate-900 mt-0.5">{{ tests.length }}</div>
-        <div class="text-[10px] text-slate-400 mt-0.5 flex items-center space-x-1">
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+      <Card class="p-3.5 bg-white">
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Tests</div>
+        <div class="text-xl font-bold font-mono text-slate-900 mt-1">{{ tests.length }}</div>
+        <div class="text-xs text-emerald-700 mt-1 font-medium flex items-center gap-1">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
           <span>{{ tests.length - inactiveCount }} Active in Catalog</span>
         </div>
-      </div>
+      </Card>
 
-      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
-        <div class="text-[11px] font-medium text-slate-500">Multi-Param Panels</div>
-        <div class="text-xl font-bold text-sky-700 mt-0.5">{{ totalMultiParamCount }}</div>
-        <div class="text-[10px] text-sky-600 mt-0.5">CBC, LFT, KFT, Lipid, Urine...</div>
-      </div>
+      <Card class="p-3.5 bg-white">
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Multi-Param Panels</div>
+        <div class="text-xl font-bold font-mono text-teal-700 mt-1">{{ totalMultiParamCount }}</div>
+        <div class="text-xs text-teal-700 mt-1 font-medium truncate">CBC, LFT, KFT, Lipid...</div>
+      </Card>
 
-      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
-        <div class="text-[11px] font-medium text-slate-500">Customized Defaults</div>
-        <div class="text-xl font-bold text-amber-700 mt-0.5">{{ customizedCount }}</div>
-        <div class="text-[10px] text-amber-600 mt-0.5">Lab Overrides Active</div>
-      </div>
+      <Card class="p-3.5 bg-white">
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Customized Defaults</div>
+        <div class="text-xl font-bold font-mono text-amber-700 mt-1">{{ customizedCount }}</div>
+        <div class="text-xs text-amber-700 mt-1 font-medium">Lab Overrides Active</div>
+      </Card>
 
-      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
-        <div class="text-[11px] font-medium text-slate-500">Tenant Custom Tests</div>
-        <div class="text-xl font-bold text-purple-700 mt-0.5">{{ tenantCustomCount }}</div>
-        <div class="text-[10px] text-purple-600 mt-0.5">Lab-Created Assays</div>
-      </div>
+      <Card class="p-3.5 bg-white">
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tenant Custom</div>
+        <div class="text-xl font-bold font-mono text-purple-700 mt-1">{{ tenantCustomCount }}</div>
+        <div class="text-xs text-purple-700 mt-1 font-medium">Lab-Created Assays</div>
+      </Card>
 
-      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs col-span-2 sm:col-span-1">
-        <div class="text-[11px] font-medium text-slate-500">Offline Sync State</div>
-        <div v-if="pendingSyncCount > 0" class="text-xl font-bold text-amber-600 mt-0.5 flex items-center space-x-1">
-          <svg class="h-4 w-4 animate-spin text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+      <Card class="p-3.5 bg-white col-span-2 lg:col-span-1">
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Offline Sync</div>
+        <div v-if="pendingSyncCount > 0" class="text-xl font-bold font-mono text-amber-600 mt-1 flex items-center gap-1.5">
+          <Icon name="refresh" class="w-4 h-4 animate-spin text-amber-600" />
           <span>{{ pendingSyncCount }} Pending</span>
         </div>
-        <div v-else class="text-xl font-bold text-emerald-600 mt-0.5 flex items-center space-x-1">
-          <svg class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-          </svg>
+        <div v-else class="text-xl font-bold font-mono text-emerald-600 mt-1 flex items-center gap-1.5">
+          <Icon name="shield-check" class="w-4 h-4 text-emerald-600" />
           <span>Synced</span>
         </div>
-        <div class="text-[10px] text-slate-400 mt-0.5">Local SQLite Source of Truth</div>
-      </div>
+        <div class="text-xs text-slate-400 mt-1 font-medium">Local SQLite Truth</div>
+      </Card>
     </div>
 
     <!-- Filters, Search & Bulk Toolbar -->
@@ -1054,7 +1046,7 @@ function downloadTemplate() {
           </button>
           <button
             type="button"
-            class="px-2 py-1 text-slate-500 hover:text-slate-700 underline text-[11px]"
+            class="px-2 py-1 text-slate-500 hover:text-slate-700 underline text-xs"
             @click="selectedTestIds = []"
           >
             Clear Selection
@@ -1138,12 +1130,12 @@ function downloadTemplate() {
                   <span>{{ t.name }}</span>
                   <span
                     v-if="(t.parameters?.length || t.parameters_count || 0) > 1"
-                    class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-sky-100 text-sky-800"
+                    class="inline-flex items-center px-1.5 py-0.2 rounded text-xs font-bold bg-sky-100 text-sky-800"
                   >
                     {{ t.parameters?.length || t.parameters_count }} params
                   </span>
                 </div>
-                <div v-if="t.parameters_summary" class="text-[11px] text-slate-500 mt-0.5 line-clamp-1">
+                <div v-if="t.parameters_summary" class="text-xs text-slate-500 mt-0.5 line-clamp-1">
                   {{ t.parameters_summary }}
                 </div>
               </td>
@@ -1152,7 +1144,7 @@ function downloadTemplate() {
               <td class="px-3 py-2.5 whitespace-nowrap">
                 <span
                   :class="[
-                    'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border',
+                    'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border',
                     t.badge === 'System Default' ? 'bg-slate-50 text-slate-700 border-slate-300' :
                     (t.badge === 'Customized Default' ? 'bg-amber-50 text-amber-800 border-amber-300' :
                     'bg-purple-50 text-purple-800 border-purple-300')
@@ -1165,7 +1157,7 @@ function downloadTemplate() {
               <!-- Specimen / Container -->
               <td class="px-3 py-2.5 whitespace-nowrap">
                 <div class="text-slate-800 font-medium">{{ t.specimen }}</div>
-                <div class="text-[10px] text-slate-500 flex items-center mt-0.5">
+                <div class="text-xs text-slate-500 flex items-center mt-0.5">
                   <span
                     :class="[
                       'w-2 h-2 rounded-full mr-1 shrink-0',
@@ -1186,7 +1178,7 @@ function downloadTemplate() {
 
               <!-- Price -->
               <td class="px-4 py-2.5 text-right font-mono font-bold whitespace-nowrap">
-                <span v-if="t.is_overridden && t.default_price && t.default_price !== t.price" class="text-[11px] text-slate-400 line-through mr-1.5 font-normal">
+                <span v-if="t.is_overridden && t.default_price && t.default_price !== t.price" class="text-xs text-slate-400 line-through mr-1.5 font-normal">
                   ₹{{ t.default_price }}
                 </span>
                 <span :class="t.is_overridden ? 'text-amber-800 font-extrabold' : 'text-slate-900'">
@@ -1199,7 +1191,7 @@ function downloadTemplate() {
                 <button
                   type="button"
                   :class="[
-                    'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border cursor-pointer transition',
+                    'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border cursor-pointer transition',
                     t.is_active ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' :
                     'bg-slate-100 text-slate-500 border-slate-300 hover:bg-slate-200'
                   ]"
@@ -1236,7 +1228,7 @@ function downloadTemplate() {
                 <div class="flex items-center justify-center space-x-1.5">
                   <button
                     type="button"
-                    class="px-2 py-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 rounded text-[11px] font-semibold transition cursor-pointer"
+                    class="px-2 py-1 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 rounded text-xs font-semibold transition cursor-pointer"
                     @click="openDetailDrawer(t)"
                   >
                     Customize &amp; Parameters
@@ -1245,7 +1237,7 @@ function downloadTemplate() {
                   <button
                     v-if="t.is_overridden"
                     type="button"
-                    class="px-1.5 py-1 text-slate-400 hover:text-red-600 text-[11px] transition"
+                    class="px-1.5 py-1 text-slate-400 hover:text-red-600 text-xs transition"
                     title="Reset to official system defaults"
                     @click="activeTest = t; resetCurrentTestOverride()"
                   >
@@ -1280,7 +1272,7 @@ function downloadTemplate() {
               <span class="font-mono font-bold text-sky-800 text-sm">{{ activeTest.code }}</span>
               <span
                 :class="[
-                  'px-2 py-0.5 rounded-full text-[10px] font-semibold border',
+                  'px-2 py-0.5 rounded-full text-xs font-semibold border',
                   activeTest.badge === 'System Default' ? 'bg-slate-100 text-slate-700 border-slate-300' :
                   (activeTest.badge === 'Customized Default' ? 'bg-amber-50 text-amber-800 border-amber-300' :
                   'bg-purple-50 text-purple-800 border-purple-300')
@@ -1317,7 +1309,7 @@ function downloadTemplate() {
                   min="0"
                   class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg font-mono font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-sky-500"
                 />
-                <span v-if="activeTest.default_price" class="text-[10px] text-slate-400 mt-0.5 block">
+                <span v-if="activeTest.default_price" class="text-xs text-slate-400 mt-0.5 block">
                   Default: ₹{{ activeTest.default_price }}
                 </span>
               </div>
@@ -1330,7 +1322,7 @@ function downloadTemplate() {
                   min="1"
                   class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg font-mono text-slate-900 focus:outline-none focus:ring-1 focus:ring-sky-500"
                 />
-                <span v-if="activeTest.default_tat_hours" class="text-[10px] text-slate-400 mt-0.5 block">
+                <span v-if="activeTest.default_tat_hours" class="text-xs text-slate-400 mt-0.5 block">
                   Default: {{ activeTest.default_tat_hours }} hrs
                 </span>
               </div>
@@ -1375,7 +1367,7 @@ function downloadTemplate() {
                 <h3 class="font-bold text-slate-900 text-xs uppercase tracking-wider">
                   Reportable Parameters ({{ activeTest.parameters ? activeTest.parameters.length : 0 }})
                 </h3>
-                <p class="text-[11px] text-slate-500">Configure parameters, test units, and clinical reference intervals.</p>
+                <p class="text-xs text-slate-500">Configure parameters, test units, and clinical reference intervals.</p>
               </div>
 
               <button
@@ -1403,7 +1395,7 @@ function downloadTemplate() {
                 <!-- Parameter Header & Controls -->
                 <div class="flex items-center justify-between gap-2">
                   <div class="flex items-center space-x-2 flex-1">
-                    <span class="w-5 h-5 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-[10px] font-bold">
+                    <span class="w-5 h-5 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold">
                       {{ pIdx + 1 }}
                     </span>
                     <input
@@ -1431,7 +1423,7 @@ function downloadTemplate() {
                 <!-- Parameter Meta: Unit & Result Type -->
                 <div class="grid grid-cols-3 gap-2">
                   <div>
-                    <label class="block text-[10px] text-slate-500 mb-0.5">Unit of Measure</label>
+                    <label class="block text-xs text-slate-500 mb-0.5">Unit of Measure</label>
                     <input
                       v-model="param.unit"
                       placeholder="e.g. g/dL, mg/dL, /cumm"
@@ -1439,7 +1431,7 @@ function downloadTemplate() {
                     />
                   </div>
                   <div>
-                    <label class="block text-[10px] text-slate-500 mb-0.5">Result Type</label>
+                    <label class="block text-xs text-slate-500 mb-0.5">Result Type</label>
                     <select
                       v-model="param.result_type"
                       class="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-xs text-slate-800"
@@ -1458,25 +1450,25 @@ function downloadTemplate() {
                         v-model="param.is_active"
                         class="rounded border-slate-300 text-sky-600 focus:ring-sky-500"
                       />
-                      <span class="text-[11px] text-slate-700 font-medium">Active on Reports</span>
+                      <span class="text-xs text-slate-700 font-medium">Active on Reports</span>
                     </label>
                   </div>
                 </div>
 
                 <!-- Reference Ranges Table / Cards -->
                 <div class="bg-slate-50/70 p-2.5 rounded-lg border border-slate-100 space-y-2">
-                  <div class="flex items-center justify-between text-[11px] font-semibold text-slate-700">
+                  <div class="flex items-center justify-between text-xs font-semibold text-slate-700">
                     <span>Clinical Reference Ranges</span>
                     <button
                       type="button"
-                      class="text-sky-600 hover:text-sky-700 font-semibold cursor-pointer text-[10px] flex items-center space-x-0.5"
+                      class="text-sky-600 hover:text-sky-700 font-semibold cursor-pointer text-xs flex items-center space-x-0.5"
                       @click="addReferenceRangeToParam(param)"
                     >
                       <span>+ Add Interval</span>
                     </button>
                   </div>
 
-                  <div v-if="!param.reference_ranges || param.reference_ranges.length === 0" class="text-[10px] text-slate-400">
+                  <div v-if="!param.reference_ranges || param.reference_ranges.length === 0" class="text-xs text-slate-400">
                     No range configured. Click "+ Add Interval" to configure baseline normal ranges.
                   </div>
 
@@ -1484,11 +1476,11 @@ function downloadTemplate() {
                     <div
                       v-for="(refR, rIdx) in param.reference_ranges"
                       :key="rIdx"
-                      class="flex items-center space-x-2 text-[11px]"
+                      class="flex items-center space-x-2 text-xs"
                     >
                       <select
                         v-model="refR.sex"
-                        class="w-20 px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[11px] capitalize"
+                        class="w-20 px-1.5 py-0.5 bg-white border border-slate-200 rounded text-xs capitalize"
                       >
                         <option value="all">All / Both</option>
                         <option value="male">Male</option>
@@ -1500,7 +1492,7 @@ function downloadTemplate() {
                         type="number"
                         step="any"
                         placeholder="Min Low"
-                        class="w-16 px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[11px] font-mono text-center"
+                        class="w-16 px-1.5 py-0.5 bg-white border border-slate-200 rounded text-xs font-mono text-center"
                       />
                       <span class="text-slate-400">-</span>
                       <input
@@ -1508,13 +1500,13 @@ function downloadTemplate() {
                         type="number"
                         step="any"
                         placeholder="Max High"
-                        class="w-16 px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[11px] font-mono text-center"
+                        class="w-16 px-1.5 py-0.5 bg-white border border-slate-200 rounded text-xs font-mono text-center"
                       />
 
                       <input
                         v-model="refR.text_range"
                         placeholder="Text interval (e.g. 13.0 - 17.5)"
-                        class="flex-1 px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[11px]"
+                        class="flex-1 px-1.5 py-0.5 bg-white border border-slate-200 rounded text-xs"
                       />
 
                       <button
@@ -1576,7 +1568,7 @@ function downloadTemplate() {
         <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
           <div>
             <h3 class="text-sm font-bold text-slate-900">Mass Importer — Pathology Test Master</h3>
-            <p class="text-[11px] text-slate-500 mt-0.5">
+            <p class="text-xs text-slate-500 mt-0.5">
               Supports .xlsx, .csv single-sheet (India Test Master) and two-sheet template formats. Works completely offline.
             </p>
           </div>
@@ -1600,7 +1592,7 @@ function downloadTemplate() {
                   @click="importMode = 'upsert'"
                 >
                   <div class="font-bold">Upsert (Recommended)</div>
-                  <div class="text-[10px] text-slate-500 mt-0.5">Create new investigations and update existing rates/TAT</div>
+                  <div class="text-xs text-slate-500 mt-0.5">Create new investigations and update existing rates/TAT</div>
                 </button>
 
                 <button
@@ -1612,7 +1604,7 @@ function downloadTemplate() {
                   @click="importMode = 'insert_only'"
                 >
                   <div class="font-bold">Insert Only</div>
-                  <div class="text-[10px] text-slate-500 mt-0.5">Add new records; skip existing without altering customizations</div>
+                  <div class="text-xs text-slate-500 mt-0.5">Add new records; skip existing without altering customizations</div>
                 </button>
 
                 <button
@@ -1624,7 +1616,7 @@ function downloadTemplate() {
                   @click="importMode = 'update_existing'"
                 >
                   <div class="font-bold">Update Existing</div>
-                  <div class="text-[10px] text-slate-500 mt-0.5">Only modify rates/TAT for already existing investigations</div>
+                  <div class="text-xs text-slate-500 mt-0.5">Only modify rates/TAT for already existing investigations</div>
                 </button>
               </div>
             </div>
@@ -1645,7 +1637,7 @@ function downloadTemplate() {
                 <div class="mt-2 text-xs font-semibold text-slate-700">
                   Click to select or drag &amp; drop your Excel or CSV catalog file
                 </div>
-                <div class="text-[11px] text-slate-400 mt-1">
+                <div class="text-xs text-slate-400 mt-1">
                   Supports india_pathology_test_master_single_sheet.xlsx (1,400+ investigations)
                 </div>
               </label>
@@ -1657,19 +1649,19 @@ function downloadTemplate() {
             <div class="grid grid-cols-4 gap-2">
               <div class="bg-emerald-50 border border-emerald-200 p-2.5 rounded text-center">
                 <div class="text-lg font-bold text-emerald-700">{{ importPreview.new_count }}</div>
-                <div class="text-[10px] text-emerald-800 font-medium">New Investigations</div>
+                <div class="text-xs text-emerald-800 font-medium">New Investigations</div>
               </div>
               <div class="bg-blue-50 border border-blue-200 p-2.5 rounded text-center">
                 <div class="text-lg font-bold text-blue-700">{{ importPreview.updated_count }}</div>
-                <div class="text-[10px] text-blue-800 font-medium">Updated / Overridden</div>
+                <div class="text-xs text-blue-800 font-medium">Updated / Overridden</div>
               </div>
               <div class="bg-slate-100 border border-slate-200 p-2.5 rounded text-center">
                 <div class="text-lg font-bold text-slate-700">{{ importPreview.skipped_count }}</div>
-                <div class="text-[10px] text-slate-600 font-medium">Skipped Records</div>
+                <div class="text-xs text-slate-600 font-medium">Skipped Records</div>
               </div>
               <div class="bg-amber-50 border border-amber-200 p-2.5 rounded text-center">
                 <div class="text-lg font-bold text-amber-700">{{ importPreview.invalid_count }}</div>
-                <div class="text-[10px] text-amber-800 font-medium">Needs Review</div>
+                <div class="text-xs text-amber-800 font-medium">Needs Review</div>
               </div>
             </div>
 
@@ -1698,7 +1690,7 @@ function downloadTemplate() {
             </div>
 
             <div class="border border-slate-200 rounded max-h-56 overflow-y-auto">
-              <table class="min-w-full divide-y divide-slate-200 text-[11px]">
+              <table class="min-w-full divide-y divide-slate-200 text-xs">
                 <thead class="bg-slate-50 text-slate-600 font-semibold sticky top-0">
                   <tr>
                     <th class="px-3 py-1.5 text-left">Code</th>
@@ -1727,7 +1719,7 @@ function downloadTemplate() {
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
             </svg>
             <div class="font-bold text-slate-800 text-sm">Persisting Investigations Locally...</div>
-            <div class="text-[11px] text-slate-500">Writing records to local database and queueing cloud sync.</div>
+            <div class="text-xs text-slate-500">Writing records to local database and queueing cloud sync.</div>
           </div>
         </div>
 
@@ -1848,7 +1840,7 @@ function downloadTemplate() {
         <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
           <div>
             <h3 class="text-sm font-bold text-slate-900">Add Custom Investigation (Layer B)</h3>
-            <p class="text-[11px] text-slate-500 mt-0.5">Define custom test code, rates, and reportable clinical parameters.</p>
+            <p class="text-xs text-slate-500 mt-0.5">Define custom test code, rates, and reportable clinical parameters.</p>
           </div>
           <button type="button" class="text-slate-400 hover:text-slate-600 text-lg font-bold" @click="isCreateModalOpen = false">&times;</button>
         </div>
@@ -1930,7 +1922,7 @@ function downloadTemplate() {
                 <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider">
                   2. Reportable Parameters ({{ newTest.parameters.length }})
                 </h4>
-                <p class="text-[11px] text-slate-500">Every investigation must support 1 or more reportable parameters.</p>
+                <p class="text-xs text-slate-500">Every investigation must support 1 or more reportable parameters.</p>
               </div>
 
               <button
@@ -1952,7 +1944,7 @@ function downloadTemplate() {
                 class="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2.5"
               >
                 <div class="flex items-center justify-between gap-2">
-                  <span class="w-5 h-5 rounded-full bg-sky-100 text-sky-800 flex items-center justify-center text-[10px] font-bold">
+                  <span class="w-5 h-5 rounded-full bg-sky-100 text-sky-800 flex items-center justify-center text-xs font-bold">
                     {{ pIdx + 1 }}
                   </span>
                   <input
@@ -1979,7 +1971,7 @@ function downloadTemplate() {
 
                 <div class="grid grid-cols-3 gap-2">
                   <div>
-                    <label class="block text-[10px] text-slate-500 mb-0.5">Unit of Measure</label>
+                    <label class="block text-xs text-slate-500 mb-0.5">Unit of Measure</label>
                     <input
                       v-model="param.unit"
                       placeholder="e.g. µg/dL, mg/dL"
@@ -1987,7 +1979,7 @@ function downloadTemplate() {
                     />
                   </div>
                   <div>
-                    <label class="block text-[10px] text-slate-500 mb-0.5">Result Type</label>
+                    <label class="block text-xs text-slate-500 mb-0.5">Result Type</label>
                     <select v-model="param.result_type" class="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xs">
                       <option value="numeric">Numeric Value</option>
                       <option value="text">Descriptive Text</option>
@@ -1997,7 +1989,7 @@ function downloadTemplate() {
                     </select>
                   </div>
                   <div>
-                    <label class="block text-[10px] text-slate-500 mb-0.5">Reference Interval</label>
+                    <label class="block text-xs text-slate-500 mb-0.5">Reference Interval</label>
                     <div v-for="(refR, rIdx) in (param.reference_ranges || [])" :key="rIdx">
                       <input
                         v-model="refR.text_range"
