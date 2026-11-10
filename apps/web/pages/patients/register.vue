@@ -609,16 +609,16 @@ onUnmounted(() => {
       badge-variant="info"
     >
       <template #meta>
-        <span class="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+        <span class="inline-flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300 font-medium">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <span>Local LAN Cashier Ready</span>
         </span>
         <span class="text-slate-300 dark:text-slate-700">•</span>
-        <span class="text-xs text-slate-500">Shortcuts:</span>
+        <span class="text-xs text-slate-700 dark:text-slate-300 font-semibold">Shortcuts:</span>
         <Kbd size="xs">F2</Kbd>
-        <span class="text-xs text-slate-400">Save & Print</span>
+        <span class="text-xs text-slate-600 dark:text-slate-300 font-medium">Save & Print</span>
         <Kbd size="xs">F3</Kbd>
-        <span class="text-xs text-slate-400">Search Tests</span>
+        <span class="text-xs text-slate-600 dark:text-slate-300 font-medium">Search Tests</span>
       </template>
 
       <template #actions>
@@ -659,7 +659,7 @@ onUnmounted(() => {
                 New Patient
               </Badge>
               <div class="flex items-center gap-1 font-mono text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                <span class="text-slate-400">UHID:</span>
+                <span class="text-slate-600 dark:text-slate-400 font-bold">UHID:</span>
                 <span class="font-bold text-teal-700 dark:text-teal-400">{{ patientUhid }}</span>
               </div>
             </div>
@@ -708,7 +708,7 @@ onUnmounted(() => {
                     <Icon name="refresh" size="xs" class="animate-spin" />
                   </span>
                 </div>
-                <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Type 3+ digits to auto-suggest returning patients</p>
+                <p class="text-xs text-slate-600 dark:text-slate-300 font-medium mt-1">Type 3+ digits to auto-suggest returning patients</p>
               </div>
 
               <!-- Full Name Input -->
@@ -717,7 +717,7 @@ onUnmounted(() => {
                   <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
                     Full Patient Name <span class="text-red-500">*</span>
                   </label>
-                  <span class="text-xs text-slate-400 dark:text-slate-500">Auto-suggests repeat records</span>
+                  <span class="text-xs text-slate-600 dark:text-slate-300 font-medium">Auto-suggests repeat records</span>
                 </div>
 
                 <div class="relative">
@@ -734,7 +734,7 @@ onUnmounted(() => {
                     <Icon name="refresh" size="xs" class="animate-spin" />
                   </span>
                 </div>
-                <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">Press Enter or click suggestion to auto-fill</p>
+                <p class="text-xs text-slate-600 dark:text-slate-300 font-medium mt-1">Press Enter or click suggestion to auto-fill</p>
               </div>
 
               <!-- Repeat Patient Dropdown Popover -->
@@ -1011,15 +1011,15 @@ onUnmounted(() => {
 
             <!-- Pricing Breakdown -->
             <div class="border-t border-slate-200 dark:border-slate-700 pt-3 space-y-2.5">
-              <div class="flex items-center justify-between text-slate-600 dark:text-slate-400">
-                <span class="font-medium">Gross Investigation Total:</span>
-                <span class="font-mono font-bold text-slate-800 dark:text-slate-200">₹{{ grossAmount.toLocaleString('en-IN') }}</span>
+              <div class="flex items-center justify-between text-slate-700 dark:text-slate-200">
+                <span class="font-semibold text-slate-700 dark:text-slate-300">Gross Investigation Total:</span>
+                <span class="font-mono font-bold text-slate-900 dark:text-white">₹{{ grossAmount.toLocaleString('en-IN') }}</span>
               </div>
 
               <!-- Discount Engine (% or Flat) -->
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-1.5 shrink-0">
-                  <span class="font-medium text-slate-600 dark:text-slate-400">Discount:</span>
+                  <span class="font-semibold text-slate-700 dark:text-slate-300">Discount:</span>
                   <div class="inline-flex rounded-md border border-slate-300 dark:border-slate-700 overflow-hidden text-xs">
                     <button
                       type="button"
@@ -1050,7 +1050,7 @@ onUnmounted(() => {
                     type="number"
                     min="0"
                     placeholder="0"
-                    class="w-20 px-2 py-1 border rounded text-right font-mono font-bold text-xs bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700"
+                    class="w-20 px-2 py-1 border rounded text-right font-mono font-bold text-xs bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100"
                   />
                   <span v-if="calculatedDiscount > 0" class="text-red-600 dark:text-red-400 font-mono font-bold text-xs">
                     (-₹{{ calculatedDiscount }})
@@ -1061,7 +1061,7 @@ onUnmounted(() => {
               <!-- Net Payable Total Display -->
               <div class="flex items-center justify-between border-t border-slate-200 dark:border-slate-700 pt-3">
                 <span class="text-sm font-bold text-slate-900 dark:text-white">Net Bill Payable:</span>
-                <span class="text-xl font-extrabold font-mono text-teal-700 dark:text-teal-400">
+                <span class="text-xl font-extrabold font-mono text-teal-600 dark:text-teal-300">
                   ₹{{ netPayable.toLocaleString('en-IN') }}
                 </span>
               </div>

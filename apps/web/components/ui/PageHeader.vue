@@ -47,11 +47,11 @@ withDefaults(defineProps<Props>(), {
           <slot name="title-extra" />
         </div>
 
-        <p v-if="subtitle" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-2xl">
+        <p v-if="subtitle" class="text-xs text-slate-600 dark:text-slate-300 font-medium mt-0.5 max-w-2xl">
           {{ subtitle }}
         </p>
 
-        <div v-if="$slots.meta" class="flex items-center gap-2 mt-2 flex-wrap text-xs text-slate-500">
+        <div v-if="$slots.meta" class="flex items-center gap-2 mt-2 flex-wrap text-xs text-slate-600 dark:text-slate-300">
           <slot name="meta" />
         </div>
       </div>

@@ -170,7 +170,7 @@ function isCurrentRoute(path: string): boolean {
           <!-- Section Heading (Only when expanded) -->
           <div
             v-if="!collapsed"
-            class="px-2.5 pb-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider"
+            class="px-2.5 pb-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
           >
             {{ sec.title }}
           </div>
@@ -219,7 +219,7 @@ function isCurrentRoute(path: string): boolean {
             <div class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
               {{ staffUser.username || 'Staff User' }}
             </div>
-            <div class="text-[10px] text-slate-400 truncate">
+            <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">
               {{ staffUser.station || 'Front-Office' }}
             </div>
           </div>

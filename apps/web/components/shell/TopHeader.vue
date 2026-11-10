@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBranch } from '~/composables/useBranch'
 import { useToast } from '~/composables/useToast'
+import { useTheme } from '~/composables/useTheme'
 import Modal from '~/components/ui/Modal.vue'
 import Button from '~/components/ui/Button.vue'
 import Badge from '~/components/ui/Badge.vue'
@@ -23,25 +24,11 @@ const emit = defineEmits<{
 const router = useRouter()
 const { branches, selectedBranch, switchBranch, currentBranch } = useBranch()
 const { success, info } = useToast()
+const { isDark, toggleTheme } = useTheme()
 const api = useApi()
 
 // Staff user state
 const staffUser = ref<{ username?: string; station?: string; branch?: string }>({})
-
-// Theme state
-const isDark = ref(false)
-function toggleTheme() {
-  isDark.value = !isDark.value
-  if (typeof document !== 'undefined') {
-    if (isDark.value) {
-      document.documentElement.classList.add('dark')
-      document.documentElement.setAttribute('data-theme', 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      document.documentElement.removeAttribute('data-theme')
-    }
-  }
-}
 
 function handleLogout() {
   const authCookie = useCookie('auth_token', { path: '/' })
@@ -364,9 +351,10 @@ onUnmounted(() => {
         type="button"
         class="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
         :title="isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
+        aria-label="Toggle theme"
         @click="toggleTheme"
       >
-        <Icon :name="isDark ? 'sparkles' : 'activity'" size="sm" />
+        <Icon :name="isDark ? 'sun' : 'moon'" size="sm" />
       </button>
 
       <!-- Logout / Lock Button -->

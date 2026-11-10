@@ -34,7 +34,7 @@ withDefaults(defineProps<Props>(), {
           <h3 v-if="title" class="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
             {{ title }}
           </h3>
-          <p v-if="subtitle" class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p v-if="subtitle" class="text-xs text-slate-600 dark:text-slate-300 font-medium mt-0.5">
             {{ subtitle }}
           </p>
         </div>

@@ -61,11 +61,11 @@ async function handleSignup() {
 </script>
 
 <template>
-  <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 p-8 sm:p-10 space-y-6">
+  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 p-8 sm:p-10 space-y-6 transition-colors">
     <!-- Header -->
     <div class="space-y-1.5 text-center sm:text-left">
       <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Create an Account</h1>
-      <p class="text-xs text-slate-500 dark:text-slate-400">Get started with Aarozi Healthcare</p>
+      <p class="text-xs text-slate-600 dark:text-slate-300 font-medium">Get started with Aarozi Healthcare</p>
     </div>
 
     <!-- Registration Form -->
@@ -127,7 +127,7 @@ async function handleSignup() {
     </form>
 
     <!-- Footer Links -->
-    <div class="pt-4 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
+    <div class="pt-4 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-600 dark:text-slate-300">
       <span>Already have an account? </span>
       <NuxtLink to="/login" class="text-teal-600 dark:text-teal-400 font-bold hover:underline">
         Sign in

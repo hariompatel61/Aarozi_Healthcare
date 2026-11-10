@@ -87,11 +87,11 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800 p-8 sm:p-10 space-y-6">
+  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 p-8 sm:p-10 space-y-6 transition-colors">
     <!-- Header -->
     <div class="space-y-1.5 text-center sm:text-left">
       <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Sign In</h1>
-      <p class="text-xs text-slate-500 dark:text-slate-400">Enter your credentials to access your account</p>
+      <p class="text-xs text-slate-600 dark:text-slate-300 font-medium">Enter your credentials to access your account</p>
     </div>
 
     <!-- Login Form -->
@@ -114,7 +114,7 @@ async function handleLogin() {
           prefix-icon="lock"
         />
         <div class="flex items-center justify-between text-xs pt-1">
-          <label class="flex items-center space-x-2 text-slate-600 dark:text-slate-400 cursor-pointer select-none">
+          <label class="flex items-center space-x-2 text-slate-700 dark:text-slate-300 cursor-pointer select-none">
             <input
               v-model="rememberMe"
               type="checkbox"
@@ -122,7 +122,7 @@ async function handleLogin() {
             />
             <span>Remember me</span>
           </label>
-          <NuxtLink to="/forgot-password" class="text-teal-600 dark:text-teal-400 hover:underline font-medium">
+          <NuxtLink to="/forgot-password" class="text-teal-600 dark:text-teal-400 hover:underline font-semibold">
             Forgot password?
           </NuxtLink>
         </div>
@@ -142,7 +142,7 @@ async function handleLogin() {
     </form>
 
     <!-- Footer Links -->
-    <div class="pt-4 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
+    <div class="pt-4 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-600 dark:text-slate-300">
       <span>Don't have an account? </span>
       <NuxtLink to="/signup" class="text-teal-600 dark:text-teal-400 font-bold hover:underline">
         Sign up

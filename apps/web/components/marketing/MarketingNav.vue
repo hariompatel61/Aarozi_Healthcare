@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useTheme } from '~/composables/useTheme'
 import Button from '~/components/ui/Button.vue'
 import Icon from '~/components/ui/Icon.vue'
 
+const { isDark, toggleTheme } = useTheme()
 const isMobileOpen = ref(false)
 const activeDropdown = ref<string | null>(null)
 
@@ -249,6 +251,17 @@ const resourceItems = [
 
       <!-- Right Action Buttons -->
       <div class="hidden sm:flex items-center space-x-3">
+        <!-- Theme Switcher Button -->
+        <button
+          type="button"
+          class="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+          :title="isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme'"
+          aria-label="Toggle theme"
+          @click="toggleTheme"
+        >
+          <Icon :name="isDark ? 'sun' : 'moon'" size="sm" />
+        </button>
+
         <!-- Login Button -->
         <NuxtLink to="/login">
           <Button variant="secondary" size="sm">
