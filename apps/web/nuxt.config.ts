@@ -1,4 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+// Cloudflare Pages production build is sourced from labs-website-public-pages.
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineNuxtConfig({
