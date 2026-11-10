@@ -31,5 +31,8 @@ jobs:
       - name: Run Mypy Typecheck
         run: mypy apps/api/app contracts
 
+      - name: Seed demo database
+        run: python scripts/seed_demo_data.py
+
       - name: Run Pytest
         run: PYTHONPATH=. python -m pytest apps/api/tests -q

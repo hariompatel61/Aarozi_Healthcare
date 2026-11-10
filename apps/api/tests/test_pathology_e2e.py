@@ -57,7 +57,11 @@ def db_session_factory(tmp_path):
     try:
         yield session_factory
     finally:
-        sessionmaker.close_all()
+        try:
+            from sqlalchemy.orm import close_all_sessions
+            close_all_sessions()
+        except Exception:
+            pass
         engine.dispose()
 
 

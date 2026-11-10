@@ -73,13 +73,24 @@ def get_sync_db_url() -> str:
     # In local development / offline, if Postgres is not reachable, fall back to dev_aarozi.db
     repo_root = Path(__file__).resolve().parents[3]
     dev_db = repo_root / "apps" / "api" / "dev_aarozi.db"
-    if dev_db.exists() and settings.APP_ENV != "production":
+    if settings.APP_ENV != "production":
+        postgres_reachable = False
         try:
             import socket
 
             with socket.create_connection(("localhost", 5432), timeout=0.3):
-                pass
+                postgres_reachable = True
         except OSError:
+            postgres_reachable = False
+
+        if not postgres_reachable:
+            if not dev_db.exists():
+                try:
+                    from scripts.seed_demo_data import seed_database
+
+                    seed_database()
+                except Exception:
+                    pass
             return f"sqlite:///{dev_db}"
 
     if "postgresql+asyncpg" in url:

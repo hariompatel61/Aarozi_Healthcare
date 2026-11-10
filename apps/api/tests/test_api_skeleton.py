@@ -286,7 +286,19 @@ class TestRequestIDMiddleware:
 
 class TestRouterRegistration:
     def _paths(self) -> set[str]:
-        return {route.path for route in app.routes}
+        paths = set()
+        for route in app.routes:
+            if hasattr(route, "path"):
+                paths.add(route.path)
+            elif hasattr(route, "routes"):
+                for sub in route.routes:
+                    if hasattr(sub, "path"):
+                        paths.add(sub.path)
+            elif hasattr(route, "app") and hasattr(route.app, "routes"):
+                for sub in route.app.routes:
+                    if hasattr(sub, "path"):
+                        paths.add(sub.path)
+        return paths
 
     def test_health_route_registered(self) -> None:
         assert "/health" in self._paths()
@@ -313,11 +325,14 @@ class TestRouterRegistration:
         assert "/agent-context-baseline" in self._paths()
 
     def test_no_duplicate_routes(self) -> None:
-        routes = [
-            (route.path, tuple(sorted(route.methods)))
-            for route in app.routes
-            if hasattr(route, "methods")
-        ]
+        routes = []
+        for route in app.routes:
+            if hasattr(route, "path") and hasattr(route, "methods"):
+                routes.append((route.path, tuple(sorted(route.methods))))
+            elif hasattr(route, "routes"):
+                for sub in route.routes:
+                    if hasattr(sub, "path") and hasattr(sub, "methods"):
+                        routes.append((sub.path, tuple(sorted(sub.methods))))
         assert len(routes) == len(set(routes)), f"Duplicate routes: {routes}"
 
     def test_health_returns_200(self) -> None:
