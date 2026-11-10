@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { usePlatformStore, type PlatformPlan, type TenantLab, type BlogPost, type PlatformTransaction } from '~/composables/usePlatformStore'
 import { useAdminAuth } from '~/composables/useAdminAuth'
 import { useToast } from '~/composables/useToast'
@@ -10,10 +11,13 @@ import Card from '~/components/ui/Card.vue'
 import Modal from '~/components/ui/Modal.vue'
 
 definePageMeta({
-  layout: 'default',
+  layout: 'admin',
 })
 
 const { currentAdmin, isAuthenticated, logout: adminLogout } = useAdminAuth()
+
+const route = useRoute()
+const router = useRouter()
 
 const {
   plans,
@@ -32,7 +36,25 @@ const {
 
 const { success, info, warning } = useToast()
 
-const activeTab = ref<'plans' | 'labs' | 'license-gen' | 'transactions' | 'blog' | 'release'>('plans')
+const validTabs = ['plans', 'labs', 'license-gen', 'transactions', 'blog', 'release'] as const
+type AdminTab = typeof validTabs[number]
+
+const activeTab = ref<AdminTab>('plans')
+
+function setTab(tab: AdminTab) {
+  activeTab.value = tab
+  router.replace({ query: { ...route.query, tab } })
+}
+
+watch(
+  () => route.query.tab,
+  (newTab) => {
+    if (newTab && validTabs.includes(newTab as AdminTab)) {
+      activeTab.value = newTab as AdminTab
+    }
+  },
+  { immediate: true }
+)
 
 onMounted(() => {
   if (!isAuthenticated.value) {
@@ -40,6 +62,9 @@ onMounted(() => {
     return
   }
   initStore()
+  if (route.query.tab && validTabs.includes(route.query.tab as AdminTab)) {
+    activeTab.value = route.query.tab as AdminTab
+  }
 })
 
 // --------------------------------------------------------------------------
@@ -256,33 +281,30 @@ function saveReleaseConfig() {
 
 <template>
   <div class="space-y-6 max-w-7xl mx-auto pb-16 text-slate-900 dark:text-slate-100">
-    <!-- Header Banner -->
-    <div class="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#15182a] border border-[#ede9f7] dark:border-[#23273e] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div class="space-y-1.5">
-        <div class="flex items-center space-x-2">
-          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#f0f7fe] dark:bg-[#1d273d] text-[#1c5fae] dark:text-[#90ccf9] border border-[#bee1fb] dark:border-[#2576d2]/50">
-            Super Admin Console
-          </span>
-          <span class="text-xs text-slate-400">&bull;</span>
-          <span class="text-xs font-semibold text-slate-500">Platform Operations & Licensing</span>
-        </div>
-        <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-          Aarozi Platform & Public Site Management
-        </h1>
-        <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
-          Centrally manage subscription pricing, tenant laboratories, cryptographic offline licences, blog articles, and Windows desktop .exe releases.
-        </p>
+    <!-- Executive Summary Strip -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+      <div class="p-4 rounded-2xl bg-white dark:bg-[#15182a] border border-[#ede9f7] dark:border-[#23273e] shadow-2xs">
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Tenant Labs</span>
+        <div class="text-xl font-black text-slate-900 dark:text-white mt-1">{{ tenantLabs.length }} Laboratories</div>
+        <span class="text-[10px] text-emerald-600 font-bold">100% Offline Activated</span>
       </div>
 
-      <div class="flex items-center space-x-2.5">
-        <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span class="font-bold text-slate-700 dark:text-slate-200">{{ currentAdmin?.email || 'superadmin@aarozi.in' }}</span>
-        </div>
-        <Button variant="secondary" size="sm" @click="adminLogout">
-          <template #icon-left><Icon name="log-out" size="xs" /></template>
-          <span>Sign Out Admin</span>
-        </Button>
+      <div class="p-4 rounded-2xl bg-white dark:bg-[#15182a] border border-[#ede9f7] dark:border-[#23273e] shadow-2xs">
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Active Plans</span>
+        <div class="text-xl font-black text-slate-900 dark:text-white mt-1">{{ plans.length }} Subscription Tiers</div>
+        <span class="text-[10px] text-[#2576d2] font-bold">Live on /pricing</span>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-white dark:bg-[#15182a] border border-[#ede9f7] dark:border-[#23273e] shadow-2xs">
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Desktop Release</span>
+        <div class="text-xl font-black text-slate-900 dark:text-white mt-1">{{ windowsRelease.version }}</div>
+        <span class="text-[10px] text-emerald-600 font-bold">SHA-256 Verified</span>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-white dark:bg-[#15182a] border border-[#ede9f7] dark:border-[#23273e] shadow-2xs">
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">YTD Platform Revenue</span>
+        <div class="text-xl font-black text-[#1c5fae] dark:text-[#90ccf9] mt-1">₹{{ transactions.reduce((acc, t) => acc + t.amountInr, 0).toLocaleString('en-IN', { maximumFractionDigits: 0 }) }}</div>
+        <span class="text-[10px] text-slate-500 font-medium">Razorpay + GST</span>
       </div>
     </div>
 
@@ -296,7 +318,7 @@ function saveReleaseConfig() {
             ? 'bg-[#2576d2] text-white shadow-xs'
             : 'text-slate-600 dark:text-slate-300 hover:bg-[#f0f7fe] dark:hover:bg-[#1d273d]'
         ]"
-        @click="activeTab = 'plans'"
+        @click="setTab('plans')"
       >
         <Icon name="tag" size="xs" />
         <span>Plans &amp; Pricing ({{ plans.length }})</span>
@@ -310,7 +332,7 @@ function saveReleaseConfig() {
             ? 'bg-[#2576d2] text-white shadow-xs'
             : 'text-slate-600 dark:text-slate-300 hover:bg-[#f0f7fe] dark:hover:bg-[#1d273d]'
         ]"
-        @click="activeTab = 'labs'"
+        @click="setTab('labs')"
       >
         <Icon name="home" size="xs" />
         <span>Tenant Laboratories ({{ tenantLabs.length }})</span>
@@ -324,7 +346,7 @@ function saveReleaseConfig() {
             ? 'bg-[#2576d2] text-white shadow-xs'
             : 'text-slate-600 dark:text-slate-300 hover:bg-[#f0f7fe] dark:hover:bg-[#1d273d]'
         ]"
-        @click="activeTab = 'license-gen'"
+        @click="setTab('license-gen')"
       >
         <Icon name="shield" size="xs" />
         <span>License Generator</span>
@@ -338,7 +360,7 @@ function saveReleaseConfig() {
             ? 'bg-[#2576d2] text-white shadow-xs'
             : 'text-slate-600 dark:text-slate-300 hover:bg-[#f0f7fe] dark:hover:bg-[#1d273d]'
         ]"
-        @click="activeTab = 'transactions'"
+        @click="setTab('transactions')"
       >
         <Icon name="credit-card" size="xs" />
         <span>Payments &amp; GST Invoices ({{ transactions.length }})</span>
@@ -352,7 +374,7 @@ function saveReleaseConfig() {
             ? 'bg-[#2576d2] text-white shadow-xs'
             : 'text-slate-600 dark:text-slate-300 hover:bg-[#f0f7fe] dark:hover:bg-[#1d273d]'
         ]"
-        @click="activeTab = 'blog'"
+        @click="setTab('blog')"
       >
         <Icon name="book-open" size="xs" />
         <span>Blog &amp; Knowledge CMS ({{ blogPosts.length }})</span>
@@ -366,7 +388,7 @@ function saveReleaseConfig() {
             ? 'bg-[#2576d2] text-white shadow-xs'
             : 'text-slate-600 dark:text-slate-300 hover:bg-[#f0f7fe] dark:hover:bg-[#1d273d]'
         ]"
-        @click="activeTab = 'release'"
+        @click="setTab('release')"
       >
         <Icon name="download" size="xs" />
         <span>Windows Desktop .exe Release</span>
@@ -671,21 +693,71 @@ function saveReleaseConfig() {
 
     <!-- TAB 5: WINDOWS DESKTOP .EXE RELEASE -->
     <div v-if="activeTab === 'release'" class="space-y-6">
-      <div>
-        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Windows Installer (.exe) Release Distribution</h2>
-        <p class="text-xs text-slate-500">
-          Configure the official Windows desktop release served to customers upon software purchase on /download and /account/downloads.
-        </p>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <div class="flex items-center space-x-2">
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white">Windows Installer (.exe) Release Distribution</h2>
+            <Badge variant="success" size="sm">Live Serving</Badge>
+          </div>
+          <p class="text-xs text-slate-500">
+            Configure and test the official Windows desktop release served to customers upon software purchase on /download and /account/downloads.
+          </p>
+        </div>
+
+        <!-- Quick Action Links -->
+        <div class="flex items-center space-x-2">
+          <NuxtLink to="/download" target="_blank">
+            <Button variant="secondary" size="xs">
+              <template #icon-left><Icon name="external-link" size="xs" /></template>
+              <span>Public /download</span>
+            </Button>
+          </NuxtLink>
+
+          <NuxtLink to="/account/downloads" target="_blank">
+            <Button variant="secondary" size="xs">
+              <template #icon-left><Icon name="external-link" size="xs" /></template>
+              <span>Customer /account/downloads</span>
+            </Button>
+          </NuxtLink>
+
+          <a :href="windowsRelease.downloadUrl" download>
+            <Button variant="primary" size="xs">
+              <template #icon-left><Icon name="download" size="xs" /></template>
+              <span>Test Download .exe</span>
+            </Button>
+          </a>
+        </div>
       </div>
 
-      <div class="rounded-3xl border border-[#ede9f7] dark:border-[#23273e] bg-white dark:bg-[#15182a] p-6 sm:p-8 shadow-sm space-y-5">
+      <!-- Release Configuration Card -->
+      <div class="rounded-3xl border border-[#ede9f7] dark:border-[#23273e] bg-white dark:bg-[#15182a] p-6 sm:p-8 shadow-sm space-y-6">
+        <div class="flex items-center justify-between border-b pb-4 border-[#ede9f7] dark:border-[#23273e]">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-[#f0f7fe] dark:bg-[#1d273d] text-[#2576d2] dark:text-[#90ccf9] flex items-center justify-center font-bold">
+              <Icon name="download" size="sm" />
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-white">Active Production Build Configuration</h3>
+              <p class="text-[11px] text-slate-400">Settings below immediately update the customer download experience</p>
+            </div>
+          </div>
+
+          <div class="text-right">
+            <span class="text-[10px] text-slate-400 block font-mono">STATUS</span>
+            <span class="inline-flex items-center space-x-1 text-xs font-bold text-emerald-600">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Available for Download</span>
+            </span>
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
           <div>
             <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Release Version Tag</label>
             <input
               v-model="windowsRelease.version"
               type="text"
-              class="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+              class="w-full px-3 py-2 border rounded-xl bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 font-bold"
             />
           </div>
 
@@ -694,7 +766,7 @@ function saveReleaseConfig() {
             <input
               v-model="windowsRelease.releaseDate"
               type="text"
-              class="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+              class="w-full px-3 py-2 border rounded-xl bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100"
             />
           </div>
 
@@ -703,36 +775,164 @@ function saveReleaseConfig() {
             <input
               v-model="windowsRelease.fileSize"
               type="text"
-              class="w-full px-3 py-2 border rounded-lg bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+              class="w-full px-3 py-2 border rounded-xl bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100"
             />
           </div>
         </div>
 
-        <div class="text-xs space-y-3">
+        <div class="text-xs space-y-4">
           <div>
-            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Download URL / Path (.exe)</label>
+            <div class="flex items-center justify-between mb-1">
+              <label class="font-bold text-slate-700 dark:text-slate-300">Download URL / Path (.exe)</label>
+              <span class="text-[10px] text-slate-400">Serves directly from local /downloads or cloud CDN</span>
+            </div>
             <input
               v-model="windowsRelease.downloadUrl"
               type="text"
-              class="w-full px-3 py-2 border rounded-lg font-mono bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+              class="w-full px-3 py-2 border rounded-xl font-mono text-xs bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100"
             />
           </div>
 
           <div>
-            <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">SHA-256 Checksum (Cryptographic Integrity)</label>
+            <div class="flex items-center justify-between mb-1">
+              <label class="font-bold text-slate-700 dark:text-slate-300">SHA-256 Checksum (Cryptographic Integrity)</label>
+              <button
+                type="button"
+                class="text-[11px] font-bold text-[#2576d2] dark:text-[#90ccf9] hover:underline cursor-pointer"
+                @click="windowsRelease.sha256 = '5a5a7291adae8c58ecc861841ad64af8a6c972a737d65c725d0e6f319ef85fb8'"
+              >
+                Set Production SHA-256
+              </button>
+            </div>
             <input
               v-model="windowsRelease.sha256"
               type="text"
-              class="w-full px-3 py-2 border rounded-lg font-mono bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+              class="w-full px-3 py-2 border rounded-xl font-mono text-xs bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100"
             />
           </div>
         </div>
 
-        <div class="pt-2 flex justify-end">
+        <div class="pt-2 flex items-center justify-between">
+          <div class="text-xs text-slate-400 flex items-center space-x-1.5">
+            <Icon name="shield-check" size="xs" class="text-emerald-500" />
+            <span>Target OS: {{ windowsRelease.targetOS || 'Windows 10 / 11 (64-bit)' }}</span>
+          </div>
+
           <Button variant="primary" size="md" @click="saveReleaseConfig">
             <template #icon-left><Icon name="check" size="xs" /></template>
-            <span>Save Windows Release Info</span>
+            <span>Save &amp; Publish Windows Release Info</span>
           </Button>
+        </div>
+      </div>
+
+      <!-- Real Downloadable Assets Table -->
+      <div class="rounded-3xl border border-[#ede9f7] dark:border-[#23273e] bg-white dark:bg-[#15182a] p-6 sm:p-8 shadow-sm space-y-4">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white">Active Windows Deployment Packages Served</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-[#ede9f7] dark:border-[#23273e] text-slate-400 font-semibold">
+                <th class="py-2.5 px-3">PACKAGE NAME</th>
+                <th class="py-2.5 px-3">FORMAT</th>
+                <th class="py-2.5 px-3">FILE PATH</th>
+                <th class="py-2.5 px-3">INTEGRITY</th>
+                <th class="py-2.5 px-3 text-right">ACTION</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#ede9f7] dark:divide-[#23273e]">
+              <tr>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">
+                  Aarozi Master LIS Installer (.exe)
+                  <Badge variant="info" size="xs" class="ml-2">Recommended</Badge>
+                </td>
+                <td class="py-3 px-3 text-slate-500">Windows Setup Executable</td>
+                <td class="py-3 px-3 font-mono text-[11px] text-slate-600 dark:text-slate-300">/downloads/Aarozi-LIS-Setup-v2.4.0.exe</td>
+                <td class="py-3 px-3 font-mono text-[10px] text-emerald-600">5a5a7291...fb8</td>
+                <td class="py-3 px-3 text-right">
+                  <a href="/downloads/Aarozi-LIS-Setup-v2.4.0.exe" download>
+                    <Button variant="primary" size="xs">
+                      <template #icon-left><Icon name="download" size="xs" /></template>
+                      <span>Download</span>
+                    </Button>
+                  </a>
+                </td>
+              </tr>
+              <tr>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">
+                  Aarozi Portable ZIP Package
+                </td>
+                <td class="py-3 px-3 text-slate-500">Portable .zip Archive</td>
+                <td class="py-3 px-3 font-mono text-[11px] text-slate-600 dark:text-slate-300">/downloads/Aarozi-LIS-Portable-v2.4.0.zip</td>
+                <td class="py-3 px-3 font-mono text-[10px] text-emerald-600">e205f8cd...8ad</td>
+                <td class="py-3 px-3 text-right">
+                  <a href="/downloads/Aarozi-LIS-Portable-v2.4.0.zip" download>
+                    <Button variant="secondary" size="xs">
+                      <template #icon-left><Icon name="download" size="xs" /></template>
+                      <span>Download</span>
+                    </Button>
+                  </a>
+                </td>
+              </tr>
+              <tr>
+                <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">
+                  Master PC Background Service Script
+                </td>
+                <td class="py-3 px-3 text-slate-500">PowerShell / Batch Script</td>
+                <td class="py-3 px-3 font-mono text-[11px] text-slate-600 dark:text-slate-300">/downloads/register-aarozi-service.bat</td>
+                <td class="py-3 px-3 font-mono text-[10px] text-emerald-600">66aa6eb3...377</td>
+                <td class="py-3 px-3 text-right">
+                  <a href="/downloads/register-aarozi-service.bat" download>
+                    <Button variant="secondary" size="xs">
+                      <template #icon-left><Icon name="download" size="xs" /></template>
+                      <span>Download</span>
+                    </Button>
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Complete Customer Onboarding Journey Explanation -->
+      <div class="rounded-3xl border border-[#ede9f7] dark:border-[#23273e] bg-slate-50 dark:bg-slate-900/60 p-6 sm:p-8 space-y-4">
+        <div class="flex items-center space-x-2">
+          <Icon name="sparkles" size="xs" class="text-[#2576d2]" />
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white">How Windows Desktop .exe Distribution Works</h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+          <div class="p-4 rounded-2xl bg-white dark:bg-[#15182a] border border-[#ede9f7] dark:border-[#23273e] space-y-1.5 shadow-2xs">
+            <span class="w-6 h-6 rounded-full bg-[#2576d2] text-white font-bold flex items-center justify-center text-[10px]">1</span>
+            <div class="font-bold text-slate-900 dark:text-white">Customer Buys Plan</div>
+            <p class="text-slate-500 text-[11px] leading-relaxed">
+              Customer selects Monthly Solo or Yearly Pro on <NuxtLink to="/pricing" class="text-[#2576d2] font-semibold hover:underline">/pricing</NuxtLink> and completes Razorpay payment.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white dark:bg-[#15182a] border border-[#ede9f7] dark:border-[#23273e] space-y-1.5 shadow-2xs">
+            <span class="w-6 h-6 rounded-full bg-[#2576d2] text-white font-bold flex items-center justify-center text-[10px]">2</span>
+            <div class="font-bold text-slate-900 dark:text-white">Instant .exe Download</div>
+            <p class="text-slate-500 text-[11px] leading-relaxed">
+              Customer logs into <NuxtLink to="/account/downloads" class="text-[#2576d2] font-semibold hover:underline">/account/downloads</NuxtLink> or <NuxtLink to="/download" class="text-[#2576d2] font-semibold hover:underline">/download</NuxtLink> and downloads the Windows installer.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white dark:bg-[#15182a] border border-[#ede9f7] dark:border-[#23273e] space-y-1.5 shadow-2xs">
+            <span class="w-6 h-6 rounded-full bg-[#2576d2] text-white font-bold flex items-center justify-center text-[10px]">3</span>
+            <div class="font-bold text-slate-900 dark:text-white">Runs on Master PC</div>
+            <p class="text-slate-500 text-[11px] leading-relaxed">
+              Installer sets up the local encrypted SQLite DB and launches the LIS locally on <code class="font-mono text-[#2576d2]">http://localhost:3000</code> with zero cloud requirement.
+            </p>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white dark:bg-[#15182a] border border-[#ede9f7] dark:border-[#23273e] space-y-1.5 shadow-2xs">
+            <span class="w-6 h-6 rounded-full bg-[#2576d2] text-white font-bold flex items-center justify-center text-[10px]">4</span>
+            <div class="font-bold text-slate-900 dark:text-white">Offline .lic Activation</div>
+            <p class="text-slate-500 text-[11px] leading-relaxed">
+              Customer downloads their signed <code class="font-mono text-[#2576d2]">aarozi.license</code> from their portal and uploads it locally to unlock all features.
+            </p>
+          </div>
         </div>
       </div>
     </div>

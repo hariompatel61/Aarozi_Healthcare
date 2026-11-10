@@ -26,3 +26,4 @@ DATABASE_URL="postgresql://user:pass@ep-host.neon.tech/neondb" python database/s
 ```bash
 uvicorn main:app --reload --port 8001
 ```
+

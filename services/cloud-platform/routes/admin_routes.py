@@ -430,3 +430,4 @@ def delete_blog_post(post_id: str, db: Session = Depends(get_cloud_db)):
     db.delete(post)
     db.commit()
     return {"status": "deleted", "id": post_id}
+

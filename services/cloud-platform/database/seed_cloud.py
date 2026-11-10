@@ -238,9 +238,9 @@ def seed_cloud():
                 version="v2.4.0",
                 release_title="Aarozi Healthcare LIS — Offline Master Edition v2.4.0",
                 release_notes="Features automated Mindray/Cobas analyzer interfacing, WhatsApp report dispatch, thermal barcode label printing, and NABL Levey-Jennings QC compliance.",
-                download_url="https://releases.aarozi.in/Aarozi_Healthcare_Setup_v2.4.0.exe",
+                download_url="/downloads/Aarozi-LIS-Setup-v2.4.0.exe",
                 file_size_mb=84.50,
-                sha256_checksum="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                sha256_checksum="5a5a7291adae8c58ecc861841ad64af8a6c972a737d65c725d0e6f319ef85fb8",
                 is_latest=True,
                 is_mandatory=False,
             )
@@ -288,3 +288,4 @@ def seed_cloud():
 
 if __name__ == "__main__":
     seed_cloud()
+

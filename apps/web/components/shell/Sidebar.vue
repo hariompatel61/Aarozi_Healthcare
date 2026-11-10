@@ -98,8 +98,7 @@ const navSections: NavSection[] = [
       { name: 'NABL & QC Desk', to: '/quality', icon: 'shield' },
       { name: 'WhatsApp & Cloud Sync', to: '/admin/integrations', icon: 'share' },
       { name: 'Automated Backups', to: '/admin/sync', icon: 'database' },
-      { name: 'Super Admin Console', to: '/admin/platform', icon: 'shield' },
-      { name: 'Settings Hub', to: '/admin/users', icon: 'settings' },
+      { name: 'Local Lab Settings', to: '/admin/users', icon: 'settings' },
     ],
   },
 ]

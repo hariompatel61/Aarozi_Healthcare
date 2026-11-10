@@ -64,3 +64,4 @@ def on_startup():
 @app.get("/health")
 def health_check():
     return {"status": "healthy", "service": "cloud-platform", "version": "2.4.0"}
+

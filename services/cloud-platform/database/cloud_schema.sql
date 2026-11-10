@@ -150,3 +150,4 @@ CREATE INDEX IF NOT EXISTS idx_transactions_status ON payment_transactions(payme
 CREATE INDEX IF NOT EXISTS idx_transactions_order ON payment_transactions(order_id);
 CREATE INDEX IF NOT EXISTS idx_blog_slug ON cms_blog_posts(slug);
 CREATE INDEX IF NOT EXISTS idx_blog_published ON cms_blog_posts(is_published);
+

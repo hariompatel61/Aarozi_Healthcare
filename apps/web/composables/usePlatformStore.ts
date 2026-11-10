@@ -282,10 +282,10 @@ Implementing automated Code 128 / QR thermal accessioning:
 
 const DEFAULT_WINDOWS_RELEASE: WindowsRelease = {
   version: 'v2.4.0-LTS',
-  releaseDate: '10 November 2026',
+  releaseDate: '11 November 2026',
   fileSize: '84.5 MB',
   targetOS: 'Windows 10 / 11 (64-bit)',
-  sha256: '9f83e4a2bc1d70e59a12c8b73f4e6012d9a8c7b6e5f4d3c2b1a0987654321fed',
+  sha256: '5a5a7291adae8c58ecc861841ad64af8a6c972a737d65c725d0e6f319ef85fb8',
   downloadUrl: '/downloads/Aarozi-LIS-Setup-v2.4.0.exe',
   changelog: [
     'Complete offline pathology & radiology clinical suite',
