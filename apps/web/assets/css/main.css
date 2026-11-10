@@ -42,7 +42,10 @@
   .dark select:-webkit-autofill,
   [data-theme="dark"] input:-webkit-autofill,
   [data-theme="dark"] input:-webkit-autofill:hover,
-  [data-theme="dark"] input:-webkit-autofill:focus {
+  [data-theme="dark"] input:-webkit-autofill:focus,
+  :root.dark input:-webkit-autofill,
+  :root.dark input:-webkit-autofill:hover,
+  :root.dark input:-webkit-autofill:focus {
     -webkit-box-shadow: 0 0 0 1000px #0f172a inset !important;
     -webkit-text-fill-color: #f8fafc !important;
     caret-color: #f8fafc !important;

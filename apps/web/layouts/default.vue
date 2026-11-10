@@ -15,7 +15,7 @@ function openCommandPalette() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#f4f7fb] flex font-sans text-slate-900 antialiased">
+  <div class="min-h-screen bg-slate-50 dark:bg-slate-950 flex font-sans text-slate-900 dark:text-slate-100 antialiased">
     <!-- Collapsible Operational Sidebar matching Reference Design -->
     <Sidebar
       v-model:collapsed="isSidebarCollapsed"
@@ -43,13 +43,13 @@ function openCommandPalette() {
       </main>
 
       <!-- Clean Clinical Footer -->
-      <footer class="bg-white border-t border-slate-200 px-6 py-2.5 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-6 py-2.5 text-xs text-slate-500 dark:text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-2">
         <div class="flex items-center space-x-2">
-          <span class="font-semibold text-slate-800">Aarozi Healthcare</span>
+          <span class="font-semibold text-slate-800 dark:text-slate-200">Aarozi Healthcare</span>
           <span>&bull;</span>
           <span>Laboratory Information System &bull; Pathology &bull; Billing &bull; Blood Bank</span>
         </div>
-        <div class="text-[11px] text-slate-400">
+        <div class="text-[11px] text-slate-400 dark:text-slate-500">
           Complete UI/UX for Modern Indian Pathology Laboratory &bull; 2026
         </div>
       </footer>

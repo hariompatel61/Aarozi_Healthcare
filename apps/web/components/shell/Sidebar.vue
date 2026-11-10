@@ -71,25 +71,37 @@ const navSections: NavSection[] = [
     title: 'Core Workflow',
     items: [
       { name: 'Dashboard', to: '/dashboard', icon: 'activity' },
-      { name: 'Registration', to: '/patients/register', icon: 'user', shortcut: 'F2' },
+      { name: 'Registration & POS', to: '/patients/register', icon: 'user', shortcut: 'F2' },
       { name: 'Patient Directory', to: '/patients', icon: 'users' },
+      { name: 'Home Collection', to: '/operations/home-collection', icon: 'map-pin' },
     ],
   },
   {
-    title: 'Laboratory Ops',
+    title: 'Clinical Diagnostics',
     items: [
       { name: 'Worklist & Results', to: '/pathology/results', icon: 'file-text' },
       { name: 'Sample Tracking', to: '/pathology/samples', icon: 'beaker' },
       { name: 'Pathologist Verification', to: '/pathology/verification', icon: 'shield-check' },
+      { name: 'Radiology & Imaging', to: '/radiology', icon: 'activity' },
       { name: 'Report Release Desk', to: '/reporting/release', icon: 'printer' },
+      { name: 'Test Catalog', to: '/pathology/catalog', icon: 'database' },
       { name: 'Blood Bank', to: '/blood_bank/inventory', icon: 'heart' },
     ],
   },
   {
-    title: 'Billing & Settings',
+    title: 'Financial & Inventory',
     items: [
-      { name: 'Invoices & POS', to: '/billing/invoices', icon: 'credit-card' },
-      { name: 'Referral Doctors', to: '/billing/referrals', icon: 'briefcase' },
+      { name: 'Invoices & Billing', to: '/billing/invoices', icon: 'credit-card' },
+      { name: 'Expenses & Cash', to: '/billing/expenses', icon: 'credit-card' },
+      { name: 'Corporate B2B', to: '/billing/corporates', icon: 'briefcase' },
+      { name: 'Referral Doctors', to: '/billing/referrals', icon: 'users' },
+      { name: 'Reagents & Stock', to: '/inventory', icon: 'layers' },
+    ],
+  },
+  {
+    title: 'Quality & Governance',
+    items: [
+      { name: 'NABL & QC Desk', to: '/quality', icon: 'shield' },
       { name: 'Settings Hub', to: '/admin/users', icon: 'settings' },
     ],
   },

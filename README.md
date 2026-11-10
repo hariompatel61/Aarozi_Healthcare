@@ -21,12 +21,12 @@ Designed to serve 10,000+ diagnostic laboratories with **Zero Central Patient Ho
 
 ## 2. Verified Test & Build Status
 
-| Suite | Component | Status | Evidence |
-| :--- | :--- | :--- | :--- |
-| **Backend Unit & Domain** | FastAPI + SQLAlchemy + Ed25519 | **50 / 50 Passed (100%)** | `pytest apps/api/tests -v` |
-| **Frontend Unit & Component** | Nuxt 3 + Pinia + Vitest | **50 / 50 Passed (100%)** | `vitest run` |
-| **Static Web Application** | Nuxt 3 + Nitro Static Prerender | **54 Routes Prerendered** | `npm run generate --workspace=apps/web` |
-| **Monolith Integration** | FastAPI serving Static Frontend | **Verified 200 OK** | Root `/` and API `/health` verified |
+| Suite                               | Component                       | Status                          | Evidence                                  |
+| :---------------------------------- | :------------------------------ | :------------------------------ | :---------------------------------------- |
+| **Backend Unit & Domain**     | FastAPI + SQLAlchemy + Ed25519  | **50 / 50 Passed (100%)** | `pytest apps/api/tests -v`              |
+| **Frontend Unit & Component** | Nuxt 3 + Pinia + Vitest         | **50 / 50 Passed (100%)** | `vitest run`                            |
+| **Static Web Application**    | Nuxt 3 + Nitro Static Prerender | **54 Routes Prerendered** | `npm run generate --workspace=apps/web` |
+| **Monolith Integration**      | FastAPI serving Static Frontend | **Verified 200 OK**       | Root `/` and API `/health` verified   |
 
 See [REAL_CODEBASE_AUDIT.md](docs/REAL_CODEBASE_AUDIT.md) for the full evidence-backed audit report.
 
@@ -35,11 +35,13 @@ See [REAL_CODEBASE_AUDIT.md](docs/REAL_CODEBASE_AUDIT.md) for the full evidence-
 ## 3. Quick Start & Developer Guide
 
 ### Prerequisites
+
 - Node.js 20+ & pnpm / npm
 - Python 3.11+
 - Windows 10/11 (for desktop distribution)
 
 ### Running Backend API & Monolith Server
+
 ```bash
 # Navigate to API
 cd apps/api
@@ -52,6 +54,7 @@ python run_server.py
 ```
 
 ### Running Frontend Development Server
+
 ```bash
 # In repository root
 npm install
@@ -59,6 +62,7 @@ npm run dev --workspace=apps/web
 ```
 
 ### Running Automated Test Suites
+
 ```bash
 # Backend pytest suite (50 tests)
 pytest apps/api/tests -v
@@ -68,6 +72,7 @@ npm run test --workspace=apps/web
 ```
 
 ### Compiling Frontend for Production
+
 ```bash
 # Generates static assets in apps/web/.output/public
 npm run generate --workspace=apps/web
@@ -78,10 +83,13 @@ npm run generate --workspace=apps/web
 ## 4. Windows Standalone Executable & Distribution
 
 To compile the self-contained Windows executable and package the lab installer:
+
 ```cmd
 scripts\build_windows_dist.bat
 ```
+
 This performs:
+
 1. Compilation of the static Nuxt 3 frontend into `apps/web/.output/public`.
 2. PyInstaller packaging of `AaroziHealthcareServer.exe` bundling FastAPI, SQLite, and the frontend.
 3. Assembly of the release bundle into `dist\AaroziHealthcare-Lab-Release\`.
@@ -106,3 +114,45 @@ This performs:
 ## 6. Regulatory & Clinical Safety Notice
 
 Aarozi Healthcare provides technical controls, audit logging, validation checks, and diagnostic workflows aligned with NABL (ISO 15189) guidelines. The software does not replace certified pathologists or authorized laboratory personnel. All final diagnostic reports must be authorized and signed by licensed practitioners.
+
+
+
+
+
+
+1. Start the FastAPI Backend
+
+Open a terminal in the project root:
+
+powershell
+python -m uvicorn app.main:app --reload --port 8000 --app-dir apps/api
+API Documentation (Swagger UI): http://localhost:8000/docs
+Health Check: http://localhost:8000/health
+2. Start the Nuxt 3 Frontend
+
+Open a second terminal in the project root:
+
+powershell
+pnpm --filter aarozi-healthcare-web dev
+Application URL: http://localhost:3000
+Pre-seeded Login:
+Tenant Code: AAROZI_HQ
+Username: admin (or dr_pathologist)
+Password: AdminPass123 (or password used in seed_demo_data.py)
+Option B: Local Docker Production Simulation
+
+Your repository already contains a production Docker setup in docker-compose.prod.yml and deploy/:
+
+powershell
+
+# Copy example environment variables
+
+cp deploy/production.env.example .env
+
+# Build and start all 5 production containers:
+
+# PostgreSQL 16 + Redis 7 + FastAPI + Nuxt 3 + Caddy (SSL Reverse Proxy)
+
+docker compose -f docker-compose.prod.yml up --build
+
+This tests the exact container images, reverse proxy routing (/api → FastAPI, / → Nuxt), and database persistence before going to the cloud.

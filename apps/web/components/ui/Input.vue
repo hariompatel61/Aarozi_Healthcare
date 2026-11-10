@@ -6,7 +6,7 @@ interface Props {
   modelValue?: string | number | null
   id?: string
   name?: string
-  type?: 'text' | 'email' | 'password' | 'number' | 'search' | 'tel'
+  type?: 'text' | 'email' | 'password' | 'number' | 'search' | 'tel' | 'date' | 'time' | 'datetime-local'
   label?: string
   placeholder?: string
   size?: 'sm' | 'md'

@@ -21,6 +21,8 @@ from app.models.pathology import (
     Result,
     ResultValue,
     CriticalAlert,
+    Analyzer,
+    AnalyzerMessage,
 )
 from app.models.patient import Patient, PatientIdentifier, PatientMergeAudit
 from app.models.billing import (
@@ -36,9 +38,26 @@ from app.models.billing import (
 )
 from app.models.reporting import ReportTemplate, Report, DigitalSignature, ReportDelivery
 from app.models.integrations import IntegrationConfig
-from app.models.blood_bank import Donor, DonorDeferral, DonorScreening, Donation, BloodUnit, BloodMovement, BloodUnitTest, CrossMatch, AdverseEvent
+from app.models.blood_bank import (
+    Donor,
+    DonorDeferral,
+    DonorScreening,
+    Donation,
+    BloodUnit,
+    BloodMovement,
+    BloodUnitTest,
+    CrossMatch,
+    AdverseEvent,
+)
 from app.models.offline import Device, SyncEvent, SyncConflict, SyncCheckpoint, SyncBatch, LocalBackup
 
+# Enterprise LIS / LIMS Expansions
+from app.models.expenses import Vendor, ExpenseCategory, Expense
+from app.models.home_collection import HomeCollectionBooking
+from app.models.inventory import InventoryItem, ReagentLot, StockMovement
+from app.models.radiology import RadiologyOrder, RadiologyFinding, RadiologyAttachment
+from app.models.corporate import CorporateAccount, CorporatePriceList, CorporateInvoice
+from app.models.quality import QualityControlRun, EquipmentCalibration
 
 
 __all__ = [
@@ -64,6 +83,8 @@ __all__ = [
     "Order",
     "OrderItem",
     "Sample",
+    "Analyzer",
+    "AnalyzerMessage",
     "PriceList",
     "PriceListItem",
     "Invoice",
@@ -96,4 +117,20 @@ __all__ = [
     "SyncCheckpoint",
     "SyncBatch",
     "LocalBackup",
+    # Enterprise Modules
+    "Vendor",
+    "ExpenseCategory",
+    "Expense",
+    "HomeCollectionBooking",
+    "InventoryItem",
+    "ReagentLot",
+    "StockMovement",
+    "RadiologyOrder",
+    "RadiologyFinding",
+    "RadiologyAttachment",
+    "CorporateAccount",
+    "CorporatePriceList",
+    "CorporateInvoice",
+    "QualityControlRun",
+    "EquipmentCalibration",
 ]

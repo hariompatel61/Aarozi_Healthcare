@@ -15,7 +15,30 @@ if _repo_root not in sys.path:
 
 from app.errors import register_exception_handlers  # noqa: E402
 from app.middleware import RequestIDMiddleware  # noqa: E402
-from app.routers import auth, backup, billing, blood_bank, customer_portal, google_drive, health, integrations, licensing, meta, migration, pathology, patients, payments, reports, sync  # noqa: E402
+from app.routers import (  # noqa: E402
+    auth,
+    backup,
+    billing,
+    blood_bank,
+    corporate,
+    customer_portal,
+    expenses,
+    google_drive,
+    health,
+    home_collection,
+    integrations,
+    inventory,
+    licensing,
+    meta,
+    migration,
+    pathology,
+    patients,
+    payments,
+    quality,
+    radiology,
+    reports,
+    sync,
+)
 from app.settings import get_settings  # noqa: E402
 
 
@@ -80,6 +103,12 @@ def create_app() -> FastAPI:
     application.include_router(backup.router)
     application.include_router(google_drive.router)
     application.include_router(migration.router)
+    application.include_router(expenses.router)
+    application.include_router(home_collection.router)
+    application.include_router(inventory.router)
+    application.include_router(radiology.router)
+    application.include_router(corporate.router)
+    application.include_router(quality.router)
 
     # Mount static frontend if available for offline/monolith distribution
     root_p = Path(__file__).resolve().parents[3]
