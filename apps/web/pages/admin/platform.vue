@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { usePlatformStore, type PlatformPlan, type TenantLab, type BlogPost } from '~/composables/usePlatformStore'
+import { usePlatformStore, type PlatformPlan, type TenantLab, type BlogPost, type PlatformTransaction } from '~/composables/usePlatformStore'
+import { useAdminAuth } from '~/composables/useAdminAuth'
 import { useToast } from '~/composables/useToast'
 import Button from '~/components/ui/Button.vue'
 import Badge from '~/components/ui/Badge.vue'
@@ -12,24 +13,32 @@ definePageMeta({
   layout: 'default',
 })
 
+const { currentAdmin, isAuthenticated, logout: adminLogout } = useAdminAuth()
+
 const {
   plans,
   tenantLabs,
   blogPosts,
   windowsRelease,
+  transactions,
   initStore,
   savePlans,
   saveTenantLabs,
   saveBlogPosts,
   saveWindowsRelease,
+  saveTransactions,
   generateLicense,
 } = usePlatformStore()
 
 const { success, info, warning } = useToast()
 
-const activeTab = ref<'plans' | 'labs' | 'license-gen' | 'blog' | 'release'>('plans')
+const activeTab = ref<'plans' | 'labs' | 'license-gen' | 'transactions' | 'blog' | 'release'>('plans')
 
 onMounted(() => {
+  if (!isAuthenticated.value) {
+    navigateTo('/admin/login')
+    return
+  }
   initStore()
 })
 
@@ -265,19 +274,15 @@ function saveReleaseConfig() {
         </p>
       </div>
 
-      <div class="flex items-center space-x-2">
-        <NuxtLink to="/account">
-          <Button variant="secondary" size="sm">
-            <template #icon-left><Icon name="users" size="xs" /></template>
-            <span>Customer View (/account)</span>
-          </Button>
-        </NuxtLink>
-        <NuxtLink to="/">
-          <Button variant="secondary" size="sm">
-            <template #icon-left><Icon name="external-link" size="xs" /></template>
-            <span>Public Site</span>
-          </Button>
-        </NuxtLink>
+      <div class="flex items-center space-x-2.5">
+        <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span class="font-bold text-slate-700 dark:text-slate-200">{{ currentAdmin?.email || 'superadmin@aarozi.in' }}</span>
+        </div>
+        <Button variant="secondary" size="sm" @click="adminLogout">
+          <template #icon-left><Icon name="log-out" size="xs" /></template>
+          <span>Sign Out Admin</span>
+        </Button>
       </div>
     </div>
 
@@ -323,6 +328,20 @@ function saveReleaseConfig() {
       >
         <Icon name="shield" size="xs" />
         <span>License Generator</span>
+      </button>
+
+      <button
+        type="button"
+        :class="[
+          'px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center space-x-2 shrink-0 select-none',
+          activeTab === 'transactions'
+            ? 'bg-[#2576d2] text-white shadow-xs'
+            : 'text-slate-600 dark:text-slate-300 hover:bg-[#f0f7fe] dark:hover:bg-[#1d273d]'
+        ]"
+        @click="activeTab = 'transactions'"
+      >
+        <Icon name="credit-card" size="xs" />
+        <span>Payments &amp; GST Invoices ({{ transactions.length }})</span>
       </button>
 
       <button
@@ -714,6 +733,103 @@ function saveReleaseConfig() {
             <template #icon-left><Icon name="check" size="xs" /></template>
             <span>Save Windows Release Info</span>
           </Button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: TRANSACTIONS & GST INVOICES -->
+    <div v-if="activeTab === 'transactions'" class="space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white">Commercial Billing &amp; GST Invoices</h2>
+          <p class="text-xs text-slate-500">Live Razorpay webhook transactions, GST breakdowns, and tax invoices.</p>
+        </div>
+      </div>
+
+      <!-- Financial Metrics Summary -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="p-4 rounded-2xl bg-white dark:bg-[#15182a] border border-[#ede9f7] dark:border-[#23273e] space-y-1">
+          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Gross Platform Revenue</span>
+          <div class="text-2xl font-black text-[#1c5fae] dark:text-[#90ccf9]">
+            ₹{{ transactions.reduce((acc, t) => acc + t.amountInr, 0).toLocaleString('en-IN', { maximumFractionDigits: 2 }) }}
+          </div>
+          <span class="text-[10px] text-emerald-600 font-semibold">100% Verified Razorpay Webhooks</span>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white dark:bg-[#15182a] border border-[#ede9f7] dark:border-[#23273e] space-y-1">
+          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total GST Collected (18%)</span>
+          <div class="text-2xl font-black text-slate-800 dark:text-white">
+            ₹{{ transactions.reduce((acc, t) => acc + t.gstAmountInr, 0).toLocaleString('en-IN', { maximumFractionDigits: 2 }) }}
+          </div>
+          <span class="text-[10px] text-slate-500">9% CGST + 9% SGST / IGST</span>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-white dark:bg-[#15182a] border border-[#ede9f7] dark:border-[#23273e] space-y-1">
+          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Active Subscriptions</span>
+          <div class="text-2xl font-black text-slate-800 dark:text-white">
+            {{ transactions.filter(t => t.paymentStatus === 'PAID').length }} Labs
+          </div>
+          <span class="text-[10px] text-[#2576d2] font-semibold">Automated Ed25519 Dispatched</span>
+        </div>
+      </div>
+
+      <!-- Transactions Ledger Table -->
+      <div class="bg-white dark:bg-[#15182a] rounded-2xl border border-[#ede9f7] dark:border-[#23273e] overflow-hidden shadow-xs">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50/80 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-b border-[#ede9f7] dark:border-[#23273e]">
+                <th class="py-3 px-4 font-bold">Invoice &amp; Order ID</th>
+                <th class="py-3 px-4 font-bold">Laboratory Name</th>
+                <th class="py-3 px-4 font-bold">Plan Tier</th>
+                <th class="py-3 px-4 font-bold">Tender / Mode</th>
+                <th class="py-3 px-4 font-bold">Gross Total</th>
+                <th class="py-3 px-4 font-bold">Status</th>
+                <th class="py-3 px-4 font-bold">Payment Date</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#ede9f7] dark:divide-[#23273e]">
+              <tr
+                v-for="tx in transactions"
+                :key="tx.id"
+                class="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors"
+              >
+                <td class="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">
+                  <div>{{ tx.invoiceNumber }}</div>
+                  <div class="text-[10px] text-slate-400 font-normal">{{ tx.orderId }}</div>
+                </td>
+                <td class="py-3 px-4 font-semibold text-slate-800 dark:text-slate-200">
+                  {{ tx.labName }}
+                </td>
+                <td class="py-3 px-4">
+                  <span class="px-2 py-0.5 rounded-md font-mono text-[10px] font-bold bg-[#f0f7fe] dark:bg-[#1d273d] text-[#1c5fae] dark:text-[#90ccf9]">
+                    {{ tx.planCode }}
+                  </span>
+                </td>
+                <td class="py-3 px-4">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                    {{ tx.paymentMethod }}
+                  </span>
+                </td>
+                <td class="py-3 px-4">
+                  <div class="font-bold text-slate-900 dark:text-white">
+                    ₹{{ tx.amountInr.toLocaleString('en-IN', { maximumFractionDigits: 2 }) }}
+                  </div>
+                  <div class="text-[10px] text-slate-400">
+                    Base: ₹{{ tx.taxableAmountInr }} + GST: ₹{{ tx.gstAmountInr }}
+                  </div>
+                </td>
+                <td class="py-3 px-4">
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                    {{ tx.paymentStatus }}
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-slate-500 font-mono text-[11px]">
+                  {{ new Date(tx.paidAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

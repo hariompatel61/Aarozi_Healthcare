@@ -33,12 +33,13 @@ export { requestIdleCallback, cancelIdleCallback } from '#app/compat/idle-callba
 export { setInterval } from '#app/compat/interval';
 export { definePageMeta, PageMeta } from '#app/composables/pages';
 export { defineLazyHydrationComponent } from '#app/composables/lazy-hydration';
+export { useAdminAuth, AdminUser } from '../composables/useAdminAuth';
 export { useApi } from '../composables/useApi';
 export { useAuth, AuthUser } from '../composables/useAuth';
 export { AVAILABLE_BRANCHES, useBranch, BranchInfo } from '../composables/useBranch';
 export { useCustomerAuth, CustomerProfile, CustomerLicense } from '../composables/useCustomerAuth';
 export { usePagination } from '../composables/usePagination';
-export { usePlatformStore, PlatformPlan, TenantLab, BlogPost, WindowsRelease } from '../composables/usePlatformStore';
+export { usePlatformStore, PlatformPlan, TenantLab, BlogPost, WindowsRelease, PlatformTransaction } from '../composables/usePlatformStore';
 export { REPORT_THEMES, useReportTheme, ThemeId, LabIdentity, Signatory, ThemePrintOptions, ReportThemeInfo } from '../composables/useReportTheme';
 export { useTheme } from '../composables/useTheme';
 export { useToast, ToastMessage } from '../composables/useToast';

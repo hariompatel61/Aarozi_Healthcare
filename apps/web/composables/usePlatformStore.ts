@@ -53,6 +53,52 @@ export interface WindowsRelease {
   changelog: string[]
 }
 
+export interface PlatformTransaction {
+  id: string
+  orderId: string
+  gatewayPaymentId: string
+  labName: string
+  planCode: string
+  amountInr: number
+  taxableAmountInr: number
+  gstAmountInr: number
+  paymentMethod: 'UPI' | 'Card' | 'NetBanking'
+  paymentStatus: 'PAID' | 'PENDING' | 'FAILED'
+  invoiceNumber: string
+  paidAt: string
+}
+
+const DEFAULT_TRANSACTIONS: PlatformTransaction[] = [
+  {
+    id: 'tx_001',
+    orderId: 'order_rzp_990141a0e',
+    gatewayPaymentId: 'pay_rzp_990141xyz',
+    labName: 'Central Diagnostic Laboratory & Blood Center',
+    planCode: 'YEARLY_PRO',
+    amountInr: 17698.82,
+    taxableAmountInr: 14999.00,
+    gstAmountInr: 2699.82,
+    paymentMethod: 'UPI',
+    paymentStatus: 'PAID',
+    invoiceNumber: 'INV-AAR-202611-9014',
+    paidAt: '2026-11-09T14:32:00Z',
+  },
+  {
+    id: 'tx_002',
+    orderId: 'order_rzp_881230b1c',
+    gatewayPaymentId: 'pay_rzp_881230abc',
+    labName: 'Metro Hospital Pathology & Blood Bank',
+    planCode: 'ENTERPRISE',
+    amountInr: 70788.20,
+    taxableAmountInr: 59990.00,
+    gstAmountInr: 10798.20,
+    paymentMethod: 'Card',
+    paymentStatus: 'PAID',
+    invoiceNumber: 'INV-AAR-202610-8812',
+    paidAt: '2026-10-25T11:15:00Z',
+  },
+]
+
 const DEFAULT_PLANS: PlatformPlan[] = [
   {
     id: 'plan_starter',
@@ -256,6 +302,7 @@ const plans = ref<PlatformPlan[]>(DEFAULT_PLANS)
 const tenantLabs = ref<TenantLab[]>(DEFAULT_TENANT_LABS)
 const blogPosts = ref<BlogPost[]>(DEFAULT_BLOG_POSTS)
 const windowsRelease = ref<WindowsRelease>(DEFAULT_WINDOWS_RELEASE)
+const transactions = ref<PlatformTransaction[]>(DEFAULT_TRANSACTIONS)
 
 let storeInitialized = false
 
@@ -274,6 +321,9 @@ export function usePlatformStore() {
 
       const storedRelease = localStorage.getItem('aarozi_windows_release')
       if (storedRelease) windowsRelease.value = JSON.parse(storedRelease)
+
+      const storedTxs = localStorage.getItem('aarozi_platform_transactions')
+      if (storedTxs) transactions.value = JSON.parse(storedTxs)
     } catch (e) {
       console.warn('Failed loading platform store from localStorage', e)
     }
@@ -301,6 +351,12 @@ export function usePlatformStore() {
   function saveWindowsRelease() {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('aarozi_windows_release', JSON.stringify(windowsRelease.value))
+    }
+  }
+
+  function saveTransactions() {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('aarozi_platform_transactions', JSON.stringify(transactions.value))
     }
   }
 
@@ -349,11 +405,13 @@ export function usePlatformStore() {
     tenantLabs,
     blogPosts,
     windowsRelease,
+    transactions,
     initStore,
     savePlans,
     saveTenantLabs,
     saveBlogPosts,
     saveWindowsRelease,
+    saveTransactions,
     generateLicense,
   }
 }

@@ -102,6 +102,7 @@ declare global {
   const tryUseNuxtApp: typeof import('../../node_modules/nuxt/dist/app/nuxt').tryUseNuxtApp
   const unref: typeof import('vue').unref
   const updateAppConfig: typeof import('../../node_modules/nuxt/dist/app/config').updateAppConfig
+  const useAdminAuth: typeof import('../../composables/useAdminAuth').useAdminAuth
   const useAnnouncer: typeof import('../../node_modules/nuxt/dist/app/composables/announcer').useAnnouncer
   const useApi: typeof import('../../composables/useApi').useApi
   const useAppConfig: typeof import('../../node_modules/nuxt/dist/app/config').useAppConfig
@@ -218,6 +219,9 @@ declare global {
   export type { PageMeta } from '../../node_modules/nuxt/dist/app/composables/pages'
   import('../../node_modules/nuxt/dist/app/composables/pages')
   // @ts-ignore
+  export type { AdminUser } from '../../composables/useAdminAuth'
+  import('../../composables/useAdminAuth')
+  // @ts-ignore
   export type { AuthUser } from '../../composables/useAuth'
   import('../../composables/useAuth')
   // @ts-ignore
@@ -227,7 +231,7 @@ declare global {
   export type { CustomerProfile, CustomerLicense } from '../../composables/useCustomerAuth'
   import('../../composables/useCustomerAuth')
   // @ts-ignore
-  export type { PlatformPlan, TenantLab, BlogPost, WindowsRelease } from '../../composables/usePlatformStore'
+  export type { PlatformPlan, TenantLab, BlogPost, WindowsRelease, PlatformTransaction } from '../../composables/usePlatformStore'
   import('../../composables/usePlatformStore')
   // @ts-ignore
   export type { ThemeId, LabIdentity, Signatory, ThemePrintOptions, ReportThemeInfo } from '../../composables/useReportTheme'
@@ -341,6 +345,7 @@ declare module 'vue' {
     readonly tryUseNuxtApp: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/nuxt')['tryUseNuxtApp']>
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
     readonly updateAppConfig: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/config')['updateAppConfig']>
+    readonly useAdminAuth: UnwrapRef<typeof import('../../composables/useAdminAuth')['useAdminAuth']>
     readonly useAnnouncer: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/announcer')['useAnnouncer']>
     readonly useApi: UnwrapRef<typeof import('../../composables/useApi')['useApi']>
     readonly useAppConfig: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/config')['useAppConfig']>

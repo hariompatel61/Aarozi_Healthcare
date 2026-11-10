@@ -203,3 +203,4 @@ def send_license_delivery_email(
         attachments=attachments,
         tags=["license-delivery"],
     )
+

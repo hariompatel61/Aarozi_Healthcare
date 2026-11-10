@@ -97,11 +97,19 @@ async function handleLogin() {
     </form>
 
     <!-- Footer Links -->
-    <div class="pt-4 border-t border-[#ede9f7] dark:border-[#23273e] text-center text-xs text-slate-600 dark:text-slate-300">
-      <span>Don't have an account? </span>
-      <NuxtLink to="/signup" class="text-[#2576d2] dark:text-[#90ccf9] font-bold hover:underline">
-        Sign up
-      </NuxtLink>
+    <div class="pt-4 border-t border-[#ede9f7] dark:border-[#23273e] text-center text-xs text-slate-600 dark:text-slate-300 space-y-2">
+      <div>
+        <span>Don't have an account? </span>
+        <NuxtLink to="/signup" class="text-[#2576d2] dark:text-[#90ccf9] font-bold hover:underline">
+          Sign up
+        </NuxtLink>
+      </div>
+      <div class="text-[11px] text-slate-500 pt-1">
+        <span>Platform Vendor? </span>
+        <NuxtLink to="/admin/login" class="text-[#b73612] dark:text-[#fb8f68] font-bold hover:underline">
+          Super Admin Console &rarr;
+        </NuxtLink>
+      </div>
     </div>
   </div>
 </template>

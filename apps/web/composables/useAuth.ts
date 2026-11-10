@@ -135,6 +135,17 @@ export function useAuth() {
       localStorage.setItem('aarozi_customer_email', cleanEmail)
     }
 
+    if (role === 'SUPER_ADMIN') {
+      const adminTokenCookie = useCookie('aarozi_admin_token', { path: '/' })
+      const adminEmailCookie = useCookie('aarozi_admin_email', { path: '/' })
+      adminTokenCookie.value = token
+      adminEmailCookie.value = cleanEmail
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('aarozi_admin_token', token)
+        localStorage.setItem('aarozi_admin_email', cleanEmail)
+      }
+    }
+
     const redirectPath = role === 'SUPER_ADMIN' ? '/admin/platform' : '/account'
     return { success: true, redirectPath }
   }
@@ -145,6 +156,10 @@ export function useAuth() {
     userCookie.value = null
     customerTokenCookie.value = null
     customerEmailCookie.value = null
+    const adminTokenCookie = useCookie('aarozi_admin_token', { path: '/' })
+    const adminEmailCookie = useCookie('aarozi_admin_email', { path: '/' })
+    adminTokenCookie.value = null
+    adminEmailCookie.value = null
 
     // 2. Clear client-side memory
     currentUser.value = null
@@ -156,6 +171,8 @@ export function useAuth() {
       localStorage.removeItem('aarozi_user')
       localStorage.removeItem('aarozi_customer_token')
       localStorage.removeItem('aarozi_customer_email')
+      localStorage.removeItem('aarozi_admin_token')
+      localStorage.removeItem('aarozi_admin_email')
       sessionStorage.clear()
 
       // 4. Perform clean page navigation with cache-busting query
@@ -173,3 +190,4 @@ export function useAuth() {
     logout,
   }
 }
+
