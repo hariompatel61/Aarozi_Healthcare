@@ -4,6 +4,7 @@ import type { ComponentProps } from "../../node_modules/vue-component-type-helpe
 declare module 'nuxt/app' {
   interface NuxtLayouts {
     auth: ComponentProps<typeof import("C:/Users/techn/Documents/Aarozi_Healthcare/apps/web/layouts/auth.vue").default>
+    customer: ComponentProps<typeof import("C:/Users/techn/Documents/Aarozi_Healthcare/apps/web/layouts/customer.vue").default>
     default: ComponentProps<typeof import("C:/Users/techn/Documents/Aarozi_Healthcare/apps/web/layouts/default.vue").default>
     marketing: ComponentProps<typeof import("C:/Users/techn/Documents/Aarozi_Healthcare/apps/web/layouts/marketing.vue").default>
   }

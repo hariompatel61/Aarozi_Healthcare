@@ -14,6 +14,11 @@ type HydrationStrategies = {
 type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {}, {}, { hydrated: () => void }> & T
 
 
+export const MarketingCtaBanner: typeof import("../components/marketing/CtaBanner.vue")['default']
+export const MarketingFooter: typeof import("../components/marketing/MarketingFooter.vue")['default']
+export const MarketingNav: typeof import("../components/marketing/MarketingNav.vue")['default']
+export const MarketingPricingCalculator: typeof import("../components/marketing/PricingCalculator.vue")['default']
+export const MarketingScreenshotGallery: typeof import("../components/marketing/ScreenshotGallery.vue")['default']
 export const ShellCommandPalette: typeof import("../components/shell/CommandPalette.vue")['default']
 export const ShellSidebar: typeof import("../components/shell/Sidebar.vue")['default']
 export const ShellTopHeader: typeof import("../components/shell/TopHeader.vue")['default']
@@ -69,6 +74,11 @@ export const Head: typeof import("../node_modules/nuxt/dist/head/runtime/compone
 export const Html: typeof import("../node_modules/nuxt/dist/head/runtime/components")['Html']
 export const Body: typeof import("../node_modules/nuxt/dist/head/runtime/components")['Body']
 export const NuxtIsland: typeof import("../node_modules/nuxt/dist/app/components/nuxt-island")['default']
+export const LazyMarketingCtaBanner: LazyComponent<typeof import("../components/marketing/CtaBanner.vue")['default']>
+export const LazyMarketingFooter: LazyComponent<typeof import("../components/marketing/MarketingFooter.vue")['default']>
+export const LazyMarketingNav: LazyComponent<typeof import("../components/marketing/MarketingNav.vue")['default']>
+export const LazyMarketingPricingCalculator: LazyComponent<typeof import("../components/marketing/PricingCalculator.vue")['default']>
+export const LazyMarketingScreenshotGallery: LazyComponent<typeof import("../components/marketing/ScreenshotGallery.vue")['default']>
 export const LazyShellCommandPalette: LazyComponent<typeof import("../components/shell/CommandPalette.vue")['default']>
 export const LazyShellSidebar: LazyComponent<typeof import("../components/shell/Sidebar.vue")['default']>
 export const LazyShellTopHeader: LazyComponent<typeof import("../components/shell/TopHeader.vue")['default']>

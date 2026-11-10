@@ -14,6 +14,11 @@ type HydrationStrategies = {
 type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {}, {}, { hydrated: () => void }> & T
 
 interface _GlobalComponents {
+  MarketingCtaBanner: typeof import("../../components/marketing/CtaBanner.vue")['default']
+  MarketingFooter: typeof import("../../components/marketing/MarketingFooter.vue")['default']
+  MarketingNav: typeof import("../../components/marketing/MarketingNav.vue")['default']
+  MarketingPricingCalculator: typeof import("../../components/marketing/PricingCalculator.vue")['default']
+  MarketingScreenshotGallery: typeof import("../../components/marketing/ScreenshotGallery.vue")['default']
   ShellCommandPalette: typeof import("../../components/shell/CommandPalette.vue")['default']
   ShellSidebar: typeof import("../../components/shell/Sidebar.vue")['default']
   ShellTopHeader: typeof import("../../components/shell/TopHeader.vue")['default']
@@ -69,6 +74,11 @@ interface _GlobalComponents {
   Html: typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Html']
   Body: typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Body']
   NuxtIsland: typeof import("../../node_modules/nuxt/dist/app/components/nuxt-island")['default']
+  LazyMarketingCtaBanner: LazyComponent<typeof import("../../components/marketing/CtaBanner.vue")['default']>
+  LazyMarketingFooter: LazyComponent<typeof import("../../components/marketing/MarketingFooter.vue")['default']>
+  LazyMarketingNav: LazyComponent<typeof import("../../components/marketing/MarketingNav.vue")['default']>
+  LazyMarketingPricingCalculator: LazyComponent<typeof import("../../components/marketing/PricingCalculator.vue")['default']>
+  LazyMarketingScreenshotGallery: LazyComponent<typeof import("../../components/marketing/ScreenshotGallery.vue")['default']>
   LazyShellCommandPalette: LazyComponent<typeof import("../../components/shell/CommandPalette.vue")['default']>
   LazyShellSidebar: LazyComponent<typeof import("../../components/shell/Sidebar.vue")['default']>
   LazyShellTopHeader: LazyComponent<typeof import("../../components/shell/TopHeader.vue")['default']>

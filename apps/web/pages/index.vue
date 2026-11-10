@@ -1,623 +1,802 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
+import Button from '~/components/ui/Button.vue'
+import Icon from '~/components/ui/Icon.vue'
+import Badge from '~/components/ui/Badge.vue'
+import ScreenshotGallery from '~/components/marketing/ScreenshotGallery.vue'
+import PricingCalculator from '~/components/marketing/PricingCalculator.vue'
+import CtaBanner from '~/components/marketing/CtaBanner.vue'
 
 definePageMeta({
   layout: 'marketing',
 })
 
-const isAnnual = ref(true)
-const couponInput = ref('')
-const appliedCoupon = ref('')
-const discountPercent = ref(0)
-const isCheckoutOpen = ref(false)
-const selectedPlan = ref('YEARLY_PRO')
+// FAQ Accordion State
+const activeFaq = ref<number | null>(0)
 
-// Checkout Form State
-const checkoutForm = ref({
-  lab_name: '',
-  contact_name: '',
-  email: '',
-  phone: '',
-  gstin: '',
-})
-
-const isSubmitting = ref(false)
-const checkoutSuccess = ref<any>(null)
-
-const activeTab = ref('pathology')
-
-const basePrices = {
-  YEARLY_PRO: 14999,
-  LIFETIME_ENTERPRISE: 39999,
+function toggleFaq(index: number) {
+  activeFaq.value = activeFaq.value === index ? null : index
 }
 
-const currentBasePrice = computed(() => {
-  return isAnnual.value ? basePrices.YEARLY_PRO : basePrices.LIFETIME_ENTERPRISE
-})
-
-const discountAmount = computed(() => {
-  return Math.round((currentBasePrice.value * discountPercent.value) / 100)
-})
-
-const taxableAmount = computed(() => {
-  return currentBasePrice.value - discountAmount.value
-})
-
-const gstAmount = computed(() => {
-  return Math.round(taxableAmount.value * 0.18)
-})
-
-const totalPayable = computed(() => {
-  return taxableAmount.value + gstAmount.value
-})
-
-function applyCoupon() {
-  const code = couponInput.value.trim().toUpperCase()
-  if (code === 'AAROZI2026') {
-    appliedCoupon.value = code
-    discountPercent.value = 10
-  } else if (code === 'EARLYBIRD') {
-    appliedCoupon.value = code
-    discountPercent.value = 15
-  } else {
-    alert('Invalid coupon code. Try AAROZI2026 or EARLYBIRD')
+const faqs = [
+  {
+    q: 'Is Aarozi Healthcare an offline-first laboratory software?',
+    a: 'Yes. Aarozi is built on a strictly offline-first architecture. It installs locally on your laboratory’s Windows master PC. All patient demographics, test results, orders, and billing invoices are saved to your local database without requiring any internet connection.'
+  },
+  {
+    q: 'Does daily testing, result entry, and billing require an internet connection?',
+    a: 'No. You can register patients, print barcode labels, fetch results from analyzers, authorize reports, and print GST bills completely offline. Internet is only required if you choose to download updates, activate an online license key, or dispatch reports via WhatsApp.'
+  },
+  {
+    q: 'Can multiple computers connect over our local lab network (LAN)?',
+    a: 'Yes. Aarozi supports unlimited local LAN workstations. Your reception desk, phlebotomy station, technician bench, and pathologist review room can all access the software simultaneously across your local Wi-Fi or Ethernet router with sub-10ms response times.'
+  },
+  {
+    q: 'Where is patient and clinical diagnostic data stored?',
+    a: 'All clinical and patient data is stored entirely on your laboratory’s master computer in an encrypted relational database. Aarozi’s central cloud servers never receive or store your patient records, maintaining 100% data sovereignty and patient privacy.'
+  },
+  {
+    q: 'How do I install Aarozi on Windows?',
+    a: 'Simply download our standard Windows installer (AaroziHealthcare-Setup-v1.0.4.exe). Run the setup wizard with administrative privileges. It automatically configures the local database, firewall ports for LAN workstations, and creates desktop launcher shortcuts.'
+  },
+  {
+    q: 'How does digital software licensing work?',
+    a: 'Licenses are cryptographically signed using the industry-standard Ed25519 public-key algorithm. When you purchase or renew a license, you receive a tamper-proof .lic file that you import once into your local installation. The desktop software verifies the cryptographic signature offline without needing to call home.'
+  },
+  {
+    q: 'What happens when a subscription license expires?',
+    a: 'Per our strict clinical safety charter, license expiry NEVER deletes, locks, or corrupts your patient records. A 30-day grace period is provided, and historical records, patient reports, and financial ledgers remain accessible for audit and read-only export.'
+  },
+  {
+    q: 'How do I back up my laboratory database?',
+    a: 'Aarozi includes automated 1-click database backup and scheduled snapshots. You can back up to local drives, external USB flash drives, or customer-owned network storage. Backups are fully encrypted and can be restored in seconds with our built-in recovery tool.'
+  },
+  {
+    q: 'Can I migrate patient data from my existing LIS software?',
+    a: 'Yes. Aarozi provides an automated Excel/CSV data migration assistant. You can import your historical patient directory, test catalog, doctor referral contacts, and custom pricing lists with schema validation in minutes.'
+  },
+  {
+    q: 'How can our laboratory contact technical support?',
+    a: 'We provide email support (support@aarozi.in), priority phone desk support (+91 98200 12345), and remote AnyDesk/TeamViewer onboarding assistance for all active license holders.'
+  },
+  {
+    q: 'Does Aarozi support automated analyzer interfacing?',
+    a: 'Yes. Aarozi includes built-in bidirectional and unidirectional interfacing drivers for standard clinical analyzers (including Mindray BC/BS series, Roche Cobas, Sysmex, ERBA, and Abbott) over serial RS-232 and TCP/IP ASTM protocols.'
   }
-}
+]
 
-function openCheckout(planCode: string) {
-  selectedPlan.value = planCode
-  isAnnual.value = planCode === 'YEARLY_PRO'
-  isCheckoutOpen.value = true
-}
+const reportFormats = [
+  { dept: 'Hematology', name: 'Complete Blood Count (CBC) with Automated Indices', tests: 24, code: 'HEM-CBC-01' },
+  { dept: 'Biochemistry', name: 'Comprehensive Lipid Profile with Calculated Ratios', tests: 8, code: 'BIO-LIP-02' },
+  { dept: 'Biochemistry', name: 'Liver Function Test (LFT) with Bilirubin Fractionation', tests: 11, code: 'BIO-LFT-03' },
+  { dept: 'Clinical Pathology', name: 'Complete Urine Routine & Microscopic Examination', tests: 18, code: 'CP-URM-01' },
+  { dept: 'Serology', name: 'Widal Slide Agglutination & Rapid Typhoid Panel', tests: 4, code: 'SER-WID-01' },
+  { dept: 'Endocrinology', name: 'Thyroid Panel (Total T3, Total T4 & Ultrasensitive TSH)', tests: 3, code: 'END-THY-01' },
+  { dept: 'Microbiology', name: 'Urine Culture & Antibiotic Susceptibility Testing', tests: 15, code: 'MIC-AST-01' },
+  { dept: 'Blood Bank', name: 'Blood Group ABO & Rh Typing with Forward/Reverse Match', tests: 4, code: 'BB-GRP-01' },
+]
 
-async function handleCheckoutSubmit() {
-  if (!checkoutForm.value.lab_name || !checkoutForm.value.email || !checkoutForm.value.phone) {
-    alert('Please enter your Laboratory Name, Email, and Phone Number.')
-    return
-  }
-
-  isSubmitting.value = true
-  try {
-    const res = await fetch('/payments/create-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        lab_name: checkoutForm.value.lab_name,
-        contact_name: checkoutForm.value.contact_name || checkoutForm.value.lab_name,
-        email: checkoutForm.value.email,
-        phone: checkoutForm.value.phone,
-        gstin: checkoutForm.value.gstin || null,
-        plan_code: selectedPlan.value,
-        coupon_code: appliedCoupon.value || null,
-      }),
-    })
-    const orderData = await res.json()
-
-    // Simulate instant test checkout completion for demonstration
-    const simRes = await fetch('/payments/webhook/razorpay', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        event: 'payment.captured',
-        event_id: `evt_${Date.now()}`,
-        order_id: orderData.order_id,
-        payload: {
-          payment: {
-            entity: {
-              id: `pay_${Date.now()}`,
-              order_id: orderData.order_id,
-              method: 'upi',
-            },
-          },
-        },
-      }),
-    })
-
-    const updatedOrderRes = await fetch(`/payments/order/${orderData.order_id}`)
-    checkoutSuccess.value = await updatedOrderRes.json()
-  } catch (err) {
-    alert('Checkout failed. Please ensure the backend server is running.')
-  } finally {
-    isSubmitting.value = false
-  }
-}
+const useCases = [
+  {
+    title: 'Pathology Laboratories',
+    path: '/solutions/pathology-lab',
+    desc: 'Automated CBC & biochemistry result entry, normal interval delta-checks, barcode labels, and instant WhatsApp report delivery.',
+    icon: 'beaker',
+    tag: 'Core Specialization',
+  },
+  {
+    title: 'Integrated Diagnostic Centres',
+    path: '/solutions/diagnostic-centre',
+    desc: 'Unify your blood testing, ultrasound scanning, and radiology investigations on a single patient invoice and single UHID file.',
+    icon: 'cube',
+    tag: 'Pathology + Radiology',
+  },
+  {
+    title: 'Radiology & Imaging Centres',
+    path: '/solutions/radiology-centre',
+    desc: 'Structured report impression templates for Ultrasound, X-Ray, ECG, and CT scans with digital radiologist authorization.',
+    icon: 'document',
+    tag: 'Imaging Workflows',
+  },
+  {
+    title: 'Blood Banks & Transfusion Hubs',
+    path: '/solutions/blood-bank',
+    desc: 'Donor screening questionnaires, TTI testing (HIV, HCV, HBsAg, VDRL, Malaria), cross-match reservations, and component cold inventory.',
+    icon: 'shield',
+    tag: 'Transfusion Safety',
+  },
+]
 </script>
 
 <template>
-  <div class="min-h-screen bg-white text-slate-900 font-sans antialiased selection:bg-teal-500 selection:text-white">
+  <div class="space-y-20 lg:space-y-28">
+    <!-- SECTION 1: HERO -->
+    <section class="relative pt-12 pb-16 lg:pt-20 lg:pb-24 overflow-hidden">
+      <!-- Subtle Background Decorative Gradients -->
+      <div class="absolute -top-32 -left-32 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
-    <!-- Hero Section -->
-    <section class="relative pt-20 pb-16 overflow-hidden bg-gradient-to-b from-slate-50/70 to-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-        <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-semibold mb-6">
-          <span class="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
-          <span>100% Offline-First LIS &bull; Engineered for 10,000+ Indian Diagnostic Centers</span>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8 relative z-10">
+        <!-- Architecture Pill Badge -->
+        <div class="inline-flex items-center space-x-2.5 px-4 py-1.5 rounded-full bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 text-xs font-bold uppercase tracking-wider shadow-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Offline-First LAN Architecture &bull; Zero Cloud Dependency</span>
         </div>
 
-        <h1 class="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight max-w-4xl mx-auto leading-[1.15]">
-          The Next-Generation Diagnostic Laboratory <span class="bg-gradient-to-r from-indigo-600 to-indigo-700 bg-clip-text text-transparent">Operating System</span>.
+        <!-- Main Headline -->
+        <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 dark:text-white max-w-5xl mx-auto leading-tight sm:leading-none">
+          The Complete Diagnostic Laboratory & Blood Bank Management System
         </h1>
 
-        <p class="mt-6 text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-          From high-speed patient registration and Mindray/Cobas analyzer interfacing to 1-click doctor sign-offs, thermal barcoding, and WhatsApp reports. Operates <strong>100% offline</strong> over your clinic's local LAN.
+        <!-- Subheadline -->
+        <p class="text-base sm:text-lg lg:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
+          Engineered for modern Indian pathology labs, imaging centres, and blood banks. Install locally on your master PC, connect all LAN workstations, and manage patients, barcodes, automated test results, and billing — <strong class="text-slate-900 dark:text-white">even when the internet is completely offline</strong>.
         </p>
 
         <!-- CTA Buttons -->
-        <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <a
-            href="#pricing"
-            class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-6 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-md shadow-indigo-200 transition"
-          >
-            <span>Get Commercial License</span>
-            <span>&rarr;</span>
-          </a>
-          <NuxtLink
-            to="/dashboard"
-            class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-6 py-3.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold border border-slate-200 shadow-xs transition"
-          >
-            <span>Explore Live Lab Workstation</span>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+          <NuxtLink to="/features">
+            <Button variant="primary" size="lg" class="w-full sm:w-auto px-8 shadow-lg shadow-teal-600/20">
+              Explore All Features &rarr;
+            </Button>
+          </NuxtLink>
+          <NuxtLink to="/pricing">
+            <Button variant="secondary" size="lg" class="w-full sm:w-auto px-8">
+              View Transparent Pricing
+            </Button>
+          </NuxtLink>
+          <NuxtLink to="/download">
+            <Button variant="ghost" size="lg" class="w-full sm:w-auto px-6 text-slate-600 hover:text-teal-600">
+              <template #icon-left><Icon name="arrow-down" size="sm" /></template>
+              Download Windows v1.0.4
+            </Button>
           </NuxtLink>
         </div>
 
-        <!-- Trust Features Bar -->
-        <div class="mt-12 pt-8 border-t border-slate-200/60 max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-medium text-slate-500">
-          <div class="flex items-center justify-center space-x-2">
-            <span class="text-emerald-500 font-bold text-base">&check;</span>
-            <span>100% Offline Local Server</span>
-          </div>
-          <div class="flex items-center justify-center space-x-2">
-            <span class="text-emerald-500 font-bold text-base">&check;</span>
-            <span>50+ Analyzers Supported</span>
-          </div>
-          <div class="flex items-center justify-center space-x-2">
-            <span class="text-emerald-500 font-bold text-base">&check;</span>
-            <span>Ed25519 Cryptographic Security</span>
-          </div>
-          <div class="flex items-center justify-center space-x-2">
-            <span class="text-emerald-500 font-bold text-base">&check;</span>
-            <span>India DPDP Act Compliant</span>
+        <!-- Hero Verified Screen Preview Banner -->
+        <div class="pt-8 max-w-5xl mx-auto">
+          <div class="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl p-4 sm:p-6 text-left space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div class="flex items-center space-x-3">
+                <div class="w-3 h-3 rounded-full bg-rose-500" />
+                <div class="w-3 h-3 rounded-full bg-amber-500" />
+                <div class="w-3 h-3 rounded-full bg-emerald-500" />
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono ml-2">Aarozi LIS Desktop &bull; Master Workstation</span>
+              </div>
+              <span class="px-2.5 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200">
+                LAN Server: 192.168.1.100 (Connected)
+              </span>
+            </div>
+
+            <!-- Workflow Quick Strip -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2 text-xs">
+              <div class="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">1. Reception</span>
+                <strong class="text-slate-800 dark:text-slate-200">Patient UHID & POS</strong>
+              </div>
+              <div class="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">2. Phlebotomy</span>
+                <strong class="text-slate-800 dark:text-slate-200">Code 128 Barcodes</strong>
+              </div>
+              <div class="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">3. Analytical Bench</span>
+                <strong class="text-slate-800 dark:text-slate-200">Analyzer Auto-Fetch</strong>
+              </div>
+              <div class="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">4. Approval</span>
+                <strong class="text-slate-800 dark:text-slate-200">QR-Coded Signed PDF</strong>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Interactive Workstation Showcase -->
-    <section class="py-16 bg-white border-y border-slate-100">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto mb-10">
-          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Designed for Speed at the Phlebotomy &amp; Doctor Desk
+    <!-- SECTION 2: TRUST & VALUE PROPOSITIONS -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 sm:p-12 shadow-lg">
+        <div class="text-center max-w-3xl mx-auto space-y-3 mb-10">
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+            Built Specifically for High-Throughput Diagnostic Labs
           </h2>
-          <p class="text-sm text-slate-500 mt-2">
-            No lag, no buffering, and no internet spinning wheels. Built with FAANG keyboard shortcuts for rapid patient turnover.
+          <p class="text-sm text-slate-600 dark:text-slate-400">
+            Unlike cloud-only tools that grind to a halt when broadband lines disconnect, Aarozi guarantees uninterrupted operations through dedicated architectural principles:
           </p>
         </div>
 
-        <!-- Interactive Tabs -->
-        <div class="flex justify-center border-b border-slate-200 mb-8 space-x-2 overflow-x-auto pb-2">
-          <button
-            type="button"
-            class="px-4 py-2 text-xs font-semibold rounded-lg transition"
-            :class="activeTab === 'pathology' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'"
-            @click="activeTab = 'pathology'"
-          >
-            Pathology &amp; Quick Workstation
-          </button>
-          <button
-            type="button"
-            class="px-4 py-2 text-xs font-semibold rounded-lg transition"
-            :class="activeTab === 'analyzers' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'"
-            @click="activeTab = 'analyzers'"
-          >
-            Analyzer Interfacing (ASTM/HL7)
-          </button>
-          <button
-            type="button"
-            class="px-4 py-2 text-xs font-semibold rounded-lg transition"
-            :class="activeTab === 'bloodbank' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'"
-            @click="activeTab = 'bloodbank'"
-          >
-            Blood Bank &amp; Cross-Match
-          </button>
-          <button
-            type="button"
-            class="px-4 py-2 text-xs font-semibold rounded-lg transition"
-            :class="activeTab === 'billing' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'"
-            @click="activeTab = 'billing'"
-          >
-            Cashier Billing &amp; Invoicing
-          </button>
-        </div>
-
-        <!-- Tab Content Display -->
-        <div class="bg-slate-900 rounded-2xl p-6 sm:p-8 text-white shadow-xl shadow-slate-200 border border-slate-800">
-          <div v-if="activeTab === 'pathology'" class="space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-              <div>
-                <span class="text-xs uppercase font-bold text-indigo-400">Pathology Result Desk</span>
-                <h3 class="text-lg font-bold text-slate-100">Keyboard-Accelerated Result Entry &amp; Automatic Panic Range Highlighting</h3>
-              </div>
-              <NuxtLink to="/pathology/results" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold">&rarr; Open Workstation</NuxtLink>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="space-y-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800">
+            <div class="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-950 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold">
+              <Icon name="shield" size="sm" />
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-              <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60">
-                <span class="text-slate-400">Sample Barcode</span>
-                <p class="font-mono text-emerald-400 font-bold mt-1 text-sm">SMP-2026-BIO-0914</p>
-                <span class="inline-block mt-2 px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 text-[10px]">Plasma EDTA</span>
-              </div>
-              <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60">
-                <span class="text-slate-400">Doctor Verification</span>
-                <p class="font-semibold text-slate-200 mt-1">Dr. S. Mehta, MD (Pathology)</p>
-                <span class="inline-block mt-2 px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 text-[10px]">Digital Signature Embedded</span>
-              </div>
-              <div class="p-4 rounded-xl bg-slate-800/60 border border-slate-700/60">
-                <span class="text-slate-400">Clinical Audit Trail</span>
-                <p class="font-mono text-slate-300 mt-1 text-[11px]">Event #4810 &bull; Timestamp Verified</p>
-                <span class="inline-block mt-2 px-2 py-0.5 rounded bg-slate-700 text-slate-200 text-[10px]">Immutable History</span>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="activeTab === 'analyzers'" class="space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-              <div>
-                <span class="text-xs uppercase font-bold text-emerald-400">Analyzer Connector Service</span>
-                <h3 class="text-lg font-bold text-slate-100">Direct Serial (RS-232 COM) &amp; Ethernet TCP/IP ASTM Driver</h3>
-              </div>
-              <NuxtLink to="/pathology/instruments" class="text-xs text-emerald-400 hover:text-emerald-300 font-semibold">&rarr; Instruments Catalog</NuxtLink>
-            </div>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Connect your Mindray BC-5000, Erba Chem-7, Roche Cobas, and Sysmex analyzers. Test results are fetched directly into patient sample records without manual technician transcription error.
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">Offline-First Operations</h3>
+            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              Every critical action — sample registration, analyzer interfacing, result verification, and cashier billing — executes against your local master PC database without cloud roundtrips.
             </p>
           </div>
 
-          <div v-if="activeTab === 'bloodbank'" class="space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-              <div>
-                <span class="text-xs uppercase font-bold text-rose-400">Blood Bank &amp; Transfusion Safety</span>
-                <h3 class="text-lg font-bold text-slate-100">Donor Registration, Serology Screening &amp; Cross-Match Issue</h3>
-              </div>
-              <NuxtLink to="/blood_bank/inventory" class="text-xs text-rose-400 hover:text-rose-300 font-semibold">&rarr; Blood Inventory</NuxtLink>
+          <div class="space-y-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+              <Icon name="lock" size="sm" />
             </div>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Full cold-chain tracking for PRBC, FFP, and Platelet Concentrates. Strict TTI (Transfusion-Transmissible Infection) clearance before release.
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">100% Patient Data Ownership</h3>
+            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              Your patient records and diagnostic reports never leave your clinic unless you explicitly export them. Meets rigorous medical confidentiality standards with zero central cloud leakage.
             </p>
           </div>
 
-          <div v-if="activeTab === 'billing'" class="space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-              <div>
-                <span class="text-xs uppercase font-bold text-amber-400">Cashier Billing &amp; Taxation</span>
-                <h3 class="text-lg font-bold text-slate-100">Instant GST Invoicing, Referral Partner Cut &amp; Dual Print Desk</h3>
-              </div>
-              <NuxtLink to="/billing/invoices" class="text-xs text-amber-400 hover:text-amber-300 font-semibold">&rarr; Invoice Manager</NuxtLink>
+          <div class="space-y-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800">
+            <div class="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-950 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold">
+              <Icon name="users" size="sm" />
             </div>
-            <p class="text-xs text-slate-400 leading-relaxed">
-              Complete accounts ledger with automatic B2B/B2C GST tax calculation, split cash/UPI tracking, and referral doctor incentive ledgers.
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">Multi-PC LAN Connectivity</h3>
+            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              Connect 10 to 50 computers inside your clinic using your existing local router. The front counter, phlebotomy room, and doctor’s desk share synchronized records instantly.
             </p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Pricing Section -->
-    <section id="pricing" class="py-20 bg-slate-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-3xl mx-auto mb-12">
-          <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Transparent Indian Pricing</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mt-1">
-            Choose Your Laboratory License
+    <!-- SECTION 3: WHY CHOOSE AAROZI? -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div class="space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 text-xs font-bold uppercase tracking-wider">
+            <span>Operational Excellence</span>
+          </div>
+
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
+            Designed to Cut Turnaround Time by Over 60%
           </h2>
-          <p class="text-sm text-slate-600 mt-2">
-            One License = One Laboratory Organization / Local Master Server. Connect unlimited workstations on your clinic LAN.
+
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+            Manual calculations, paper registers, and sluggish browser tabs cause diagnostic errors and front-desk bottlenecks. Aarozi removes friction at every phase of the laboratory lifecycle.
           </p>
 
-          <!-- Toggle -->
-          <div class="mt-8 flex items-center justify-center space-x-3">
-            <span class="text-xs font-semibold" :class="isAnnual ? 'text-indigo-600 font-bold' : 'text-slate-500'">Yearly Plan</span>
-            <button
-              type="button"
-              class="w-12 h-6 rounded-full p-1 transition bg-indigo-600 relative cursor-pointer"
-              @click="isAnnual = !isAnnual"
-            >
-              <div
-                class="w-4 h-4 rounded-full bg-white transition-transform"
-                :class="isAnnual ? 'translate-x-0' : 'translate-x-6'"
-              ></div>
-            </button>
-            <span class="text-xs font-semibold" :class="!isAnnual ? 'text-indigo-600 font-bold' : 'text-slate-500'">
-              Lifetime License <span class="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold ml-1">POPULAR</span>
-            </span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div class="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1">
+              <strong class="text-slate-900 dark:text-white block font-bold text-sm">Automated Calculations</strong>
+              <p class="text-slate-500">Auto-derives eGFR, Lipid Ratios, A/G Ratio, and Absolute Cell Counts with zero math errors.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1">
+              <strong class="text-slate-900 dark:text-white block font-bold text-sm">Organized Patient History</strong>
+              <p class="text-slate-500">One-click longitudinal delta checks compare today’s result with past visits automatically.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1">
+              <strong class="text-slate-900 dark:text-white block font-bold text-sm">Thermal Barcoding</strong>
+              <p class="text-slate-500">Eliminates specimen mix-ups with Code 128 barcodes printed instantly at patient registration.</p>
+            </div>
+            <div class="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1">
+              <strong class="text-slate-900 dark:text-white block font-bold text-sm">Doctor Commission Ledger</strong>
+              <p class="text-slate-500">Tracks referral doctor incentives, percentages, and settlements with full audit transparency.</p>
+            </div>
           </div>
         </div>
 
-        <!-- Pricing Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          <!-- Card 1: Yearly Subscription -->
-          <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm hover:shadow-md transition relative flex flex-col justify-between">
-            <div>
-              <div class="flex justify-between items-start">
-                <div>
-                  <h3 class="text-lg font-bold text-slate-900">Yearly Subscription</h3>
-                  <p class="text-xs text-slate-500 mt-0.5">Annual subscription with continuous software updates</p>
-                </div>
-                <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
-                  Annual OPEX
-                </span>
-              </div>
-
-              <div class="mt-6 flex items-baseline">
-                <span class="text-4xl font-extrabold text-slate-900">₹14,999</span>
-                <span class="text-xs text-slate-500 ml-2">/ year (+ 18% GST)</span>
-              </div>
-              <p class="text-[11px] text-emerald-600 font-medium mt-1">Approx. ₹1,250 / month &bull; Billed annually</p>
-
-              <ul class="mt-8 space-y-3 text-xs text-slate-600">
-                <li class="flex items-center space-x-2"><span class="text-indigo-600 font-bold">&check;</span><span>All 9 Clinical Modules Included</span></li>
-                <li class="flex items-center space-x-2"><span class="text-indigo-600 font-bold">&check;</span><span>Unlimited LAN Workstations (Same Lab)</span></li>
-                <li class="flex items-center space-x-2"><span class="text-indigo-600 font-bold">&check;</span><span>Automated Mindray / Cobas Interfacing</span></li>
-                <li class="flex items-center space-x-2"><span class="text-indigo-600 font-bold">&check;</span><span>30-Day Soft Renewal Grace Period</span></li>
-                <li class="flex items-center space-x-2"><span class="text-indigo-600 font-bold">&check;</span><span>Free Version Updates during Subscription</span></li>
-                <li class="flex items-center space-x-2"><span class="text-indigo-600 font-bold">&check;</span><span>Local Encrypted Database Backups</span></li>
-              </ul>
-            </div>
-
-            <button
-              type="button"
-              class="mt-8 w-full py-3 px-4 rounded-xl text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition border border-indigo-200 cursor-pointer"
-              @click="openCheckout('YEARLY_PRO')"
-            >
-              Select Yearly License
-            </button>
-          </div>
-
-          <!-- Card 2: Lifetime License -->
-          <div class="bg-white rounded-2xl p-8 border-2 border-indigo-600 shadow-md relative flex flex-col justify-between">
-            <div class="absolute -top-3 right-6 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-0.5 rounded-full shadow-xs">
-              Best Long-Term Value
-            </div>
-
-            <div>
-              <div class="flex justify-between items-start">
-                <div>
-                  <h3 class="text-lg font-bold text-slate-900">Lifetime License</h3>
-                  <p class="text-xs text-slate-500 mt-0.5">One-time payment for permanent offline use</p>
-                </div>
-              </div>
-
-              <div class="mt-6 flex items-baseline">
-                <span class="text-4xl font-extrabold text-slate-900">₹39,999</span>
-                <span class="text-xs text-slate-500 ml-2">one-time (+ 18% GST)</span>
-              </div>
-              <p class="text-[11px] text-indigo-600 font-medium mt-1">Zero recurring license fees &bull; Own your LIS forever</p>
-
-              <ul class="mt-8 space-y-3 text-xs text-slate-600">
-                <li class="flex items-center space-x-2"><span class="text-emerald-600 font-bold">&check;</span><span>Perpetual Offline License (Never Expires)</span></li>
-                <li class="flex items-center space-x-2"><span class="text-emerald-600 font-bold">&check;</span><span>Zero Recurring Monthly or Yearly Software Rent</span></li>
-                <li class="flex items-center space-x-2"><span class="text-emerald-600 font-bold">&check;</span><span>All Clinical Modules (Pathology, Blood Bank, Billing)</span></li>
-                <li class="flex items-center space-x-2"><span class="text-emerald-600 font-bold">&check;</span><span>Unlimited LAN Workstations on Lab Network</span></li>
-                <li class="flex items-center space-x-2"><span class="text-emerald-600 font-bold">&check;</span><span>1 Year of Included Software Updates (v1.x)</span></li>
-                <li class="flex items-center space-x-2"><span class="text-emerald-600 font-bold">&check;</span><span>Priority Telephonic &amp; Remote Desk Support</span></li>
-              </ul>
-            </div>
-
-            <button
-              type="button"
-              class="mt-8 w-full py-3 px-4 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition shadow-indigo-200 cursor-pointer"
-              @click="openCheckout('LIFETIME_ENTERPRISE')"
-            >
-              Buy Lifetime License
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section id="faq" class="py-16 bg-white border-t border-slate-100">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-2xl font-extrabold text-slate-900 text-center tracking-tight mb-8">
-          Frequently Asked Questions by Laboratory Owners
-        </h2>
-
-        <div class="space-y-4 text-xs">
-          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-            <h4 class="font-bold text-slate-900">Does Aarozi Healthcare work without an internet connection?</h4>
-            <p class="mt-1 text-slate-600 leading-relaxed">
-              Yes. Aarozi is built offline-first. Patient registration, billing, barcode printing, analyzer data ingestion, and report verification all run on your local master PC. An internet connection is only needed during initial license download or optional cloud backup.
-            </p>
-          </div>
-
-          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-            <h4 class="font-bold text-slate-900">How do multiple computers connect in my lab?</h4>
-            <p class="mt-1 text-slate-600 leading-relaxed">
-              Your main computer runs the Aarozi server. All other computers (reception, doctor desk, phlebotomy) simply open Chrome or Edge and enter the server's local IP address (e.g. <code>http://192.168.1.50:8000</code>). You do NOT need to buy separate licenses for each workstation.
-            </p>
-          </div>
-
-          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-            <h4 class="font-bold text-slate-900">What happens to our patient data if our subscription expires?</h4>
-            <p class="mt-1 text-slate-600 leading-relaxed">
-              Your patient records and financial data are <strong>never deleted or locked</strong>. If a yearly subscription expires past its 30-day grace period, the system enters a read-only mode where you can view, print, search, and export all historical records indefinitely until you choose to renew.
-            </p>
-          </div>
-
-          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-            <h4 class="font-bold text-slate-900">What if my server computer's hard drive crashes?</h4>
-            <p class="mt-1 text-slate-600 leading-relaxed">
-              You can restore your database instantly from your daily external USB backup. You can transfer your commercial license to a new PC up to twice per year directly from your online Customer Portal.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Checkout Modal -->
-    <div v-if="isCheckoutOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-      <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 class="font-bold text-slate-900 text-sm">
-            {{ isAnnual ? 'Yearly Commercial Subscription' : 'Lifetime Commercial License' }} Checkout
+        <!-- Right Side: Workflow Comparison Card -->
+        <div class="bg-gradient-to-br from-slate-900 to-slate-950 text-white p-8 rounded-3xl border border-slate-800 shadow-2xl space-y-6">
+          <h3 class="text-lg font-bold text-white border-b border-slate-800 pb-3 flex items-center justify-between">
+            <span>Traditional Workflow vs. Aarozi</span>
+            <span class="text-xs text-teal-400 font-mono">BENCHMARK</span>
           </h3>
-          <button type="button" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer" @click="isCheckoutOpen = false">&times;</button>
+
+          <div class="space-y-4 text-xs">
+            <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
+              <div class="flex justify-between font-bold text-slate-300">
+                <span>Patient Registration & Barcoding</span>
+                <span class="text-teal-400">45 Seconds (was 4 mins)</span>
+              </div>
+              <p class="text-slate-500 text-[11px]">Auto-fills previous demographics from mobile number and prints tube labels concurrently.</p>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
+              <div class="flex justify-between font-bold text-slate-300">
+                <span>Result Entry & Delta Comparison</span>
+                <span class="text-teal-400">Direct Auto-Fetch</span>
+              </div>
+              <p class="text-slate-500 text-[11px]">Pulls directly from Mindray / Cobas machines; flags abnormal results in red automatically.</p>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
+              <div class="flex justify-between font-bold text-slate-300">
+                <span>Report Release & Delivery</span>
+                <span class="text-teal-400">Instant PDF & WhatsApp</span>
+              </div>
+              <p class="text-slate-500 text-[11px]">Digital signature attached; QR code generated for patient phone verification.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: CORE PRODUCT FEATURES -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+      <div class="text-center max-w-3xl mx-auto space-y-3">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+          Complete Feature Suite for Diagnostic Operations
+        </h2>
+        <p class="text-sm text-slate-600 dark:text-slate-400">
+          Everything your clinical laboratory needs under one unified desktop system.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <NuxtLink to="/features/patient-management" class="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 hover:shadow-lg transition-all space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold">
+            <Icon name="users" size="sm" />
+          </div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors">
+            Patient Management & UHID
+          </h3>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            Unique Health ID generation, Aadhaar verification, family member linking, and historical visit tracking.
+          </p>
+        </NuxtLink>
+
+        <NuxtLink to="/features/lab-reporting" class="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 hover:shadow-lg transition-all space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+            <Icon name="beaker" size="sm" />
+          </div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors">
+            Laboratory Reporting Engine
+          </h3>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            Multi-department formats, age/gender normal ranges, panic value alerts, and digital signature stamps.
+          </p>
+        </NuxtLink>
+
+        <NuxtLink to="/features/radiology-reporting" class="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 hover:shadow-lg transition-all space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold">
+            <Icon name="document" size="sm" />
+          </div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors">
+            Radiology & Ultrasound
+          </h3>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            Pre-built structured templates for Abdominal USG, Chest X-Ray, CT Brain, and ECG impressions.
+          </p>
+        </NuxtLink>
+
+        <NuxtLink to="/features/billing" class="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 hover:shadow-lg transition-all space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+            <Icon name="shopping-cart" size="sm" />
+          </div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors">
+            Cashier Billing & Invoicing
+          </h3>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            GST compliant invoices, discount authorizations, doctor commission cut ledgers, and cash counter closing.
+          </p>
+        </NuxtLink>
+
+        <NuxtLink to="/features/barcode-management" class="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 hover:shadow-lg transition-all space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
+            <Icon name="qr-code" size="sm" />
+          </div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors">
+            Barcode & Phlebotomy
+          </h3>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            Thermal tube label printing with color guidance, specimen collection timestamps, and rejection audits.
+          </p>
+        </NuxtLink>
+
+        <NuxtLink to="/features/offline-lan" class="group p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 hover:shadow-lg transition-all space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold">
+            <Icon name="shield" size="sm" />
+          </div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors">
+            Offline LAN Multi-PC
+          </h3>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            Local network source of truth. Zero subscription cloud dependency for all core clinical transactions.
+          </p>
+        </NuxtLink>
+      </div>
+
+      <div class="text-center pt-4">
+        <NuxtLink to="/features">
+          <Button variant="secondary" size="md">
+            View All 18 Laboratory Modules &rarr;
+          </Button>
+        </NuxtLink>
+      </div>
+    </section>
+
+    <!-- SECTION 5: CLINICAL SAFETY & LABORATORY REPORTING -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-slate-900 text-white rounded-3xl p-8 sm:p-12 border border-slate-800 space-y-8">
+        <div class="max-w-3xl space-y-3">
+          <span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-teal-500/10 text-teal-300 border border-teal-500/30">
+            Clinical Safety & Governance
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            Strict Pathologist Authorization & Clinical Verification
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
+            Software should assist clinical workflows, not bypass medical expertise. Aarozi enforces strict role-based sign-offs so no diagnostic report reaches a patient without authorized verification.
+          </p>
         </div>
 
-        <div v-if="!checkoutSuccess" class="mt-4 space-y-4">
-          <!-- Pricing Summary Box -->
-          <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
-            <div class="flex justify-between text-slate-600">
-              <span>Base License Fee:</span>
-              <span class="font-semibold text-slate-900">₹{{ currentBasePrice.toLocaleString('en-IN') }}</span>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
+          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+            <strong class="text-teal-400 block text-sm">Age & Gender Normal Intervals</strong>
+            <p class="text-slate-400">Supports neonatal, pediatric, adult male, adult female, and trimester-specific reference ranges with automated unit conversions.</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+            <strong class="text-rose-400 block text-sm">Panic Value Alerts</strong>
+            <p class="text-slate-400">Immediate visual alerts when electrolyte or cardiac markers breach life-threatening panic thresholds, prompting urgent doctor notification.</p>
+          </div>
+          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+            <strong class="text-emerald-400 block text-sm">Cryptographic Audit History</strong>
+            <p class="text-slate-400">Every parameter modification, amendment, and sign-off is logged with timestamp, user ID, and station ID for complete NABL compliance.</p>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-teal-950/40 border border-teal-800 text-[11px] text-teal-200">
+          <strong>Important Clinical Charter:</strong> Aarozi Healthcare assists laboratory technologists and consulting pathologists in structuring observations and calculations. It never replaces professional medical evaluation or statutory pathologist sign-offs.
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6 & 7: PATIENT EXPERIENCE & BUSINESS MANAGEMENT -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Patient Experience Card -->
+        <div class="p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
+          <span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300 border border-sky-200">
+            Patient Experience
+          </span>
+          <h3 class="text-xl font-bold text-slate-900 dark:text-white">Seamless Walk-in to Report Journey</h3>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            Give patients a modern diagnostic experience from the moment they arrive at your reception counter.
+          </p>
+          <ul class="space-y-2 text-xs text-slate-700 dark:text-slate-300">
+            <li class="flex items-center space-x-2">
+              <span class="text-teal-600 font-bold">&check;</span>
+              <span>Instant mobile number search brings up previous medical history</span>
+            </li>
+            <li class="flex items-center space-x-2">
+              <span class="text-teal-600 font-bold">&check;</span>
+              <span>Detailed itemized bills with thermal or A4 invoice printing</span>
+            </li>
+            <li class="flex items-center space-x-2">
+              <span class="text-teal-600 font-bold">&check;</span>
+              <span>QR code on reports allows patients to download authenticated PDFs instantly</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Laboratory Business Management Card -->
+        <div class="p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
+          <span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border border-amber-200">
+            Financial & Business Analytics
+          </span>
+          <h3 class="text-xl font-bold text-slate-900 dark:text-white">Real-Time Daily Collection & Audit</h3>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            Eliminate cashier discrepancies and maintain complete control over lab revenue and doctor settlements.
+          </p>
+          <ul class="space-y-2 text-xs text-slate-700 dark:text-slate-300">
+            <li class="flex items-center space-x-2">
+              <span class="text-teal-600 font-bold">&check;</span>
+              <span>End-of-shift cashier settlement balancing Cash, UPI, Card, and Credit</span>
+            </li>
+            <li class="flex items-center space-x-2">
+              <span class="text-teal-600 font-bold">&check;</span>
+              <span>Monthly referral doctor commission ledgers with percentage/fixed payouts</span>
+            </li>
+            <li class="flex items-center space-x-2">
+              <span class="text-teal-600 font-bold">&check;</span>
+              <span>Reagent consumption tracking preventing inventory stockouts and expiry waste</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 8: OFFLINE-FIRST TECHNOLOGY ARCHITECTURE -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950 text-white rounded-3xl p-8 sm:p-12 lg:p-16 border border-slate-800 space-y-10">
+        <div class="text-center max-w-3xl mx-auto space-y-3">
+          <span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-teal-500/10 text-teal-300 border border-teal-500/30">
+            Technical Architecture
+          </span>
+          <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight">
+            How Aarozi’s Offline-First LAN Topology Operates
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-400">
+            Complete understanding of where your data lives and why your lab never stops working.
+          </p>
+        </div>
+
+        <!-- Architectural Visual Diagram -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+          <div class="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+            <div class="w-12 h-12 rounded-xl bg-teal-500/20 text-teal-400 flex items-center justify-center mx-auto text-lg font-bold">
+              1
             </div>
-            <div v-if="discountAmount > 0" class="flex justify-between text-emerald-600 font-medium">
-              <span>Discount ({{ appliedCoupon }} - {{ discountPercent }}%):</span>
-              <span>-₹{{ discountAmount.toLocaleString('en-IN') }}</span>
+            <h3 class="text-sm font-bold text-white">Master Windows PC</h3>
+            <p class="text-xs text-slate-400">
+              Installed on your primary computer. Houses the local relational database, report engine, and cryptographic license verification service.
+            </p>
+          </div>
+
+          <div class="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+            <div class="w-12 h-12 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center mx-auto text-lg font-bold">
+              2
             </div>
-            <div class="flex justify-between text-slate-600">
-              <span>GST (18%):</span>
-              <span>₹{{ gstAmount.toLocaleString('en-IN') }}</span>
+            <h3 class="text-sm font-bold text-white">Local LAN Router</h3>
+            <p class="text-xs text-slate-400">
+              Your existing clinic Wi-Fi or Ethernet switch. Broadcasts the LIS to all other clinic PCs with zero internet bandwidth consumption.
+            </p>
+          </div>
+
+          <div class="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+            <div class="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center mx-auto text-lg font-bold">
+              3
             </div>
-            <div class="flex justify-between text-slate-900 font-bold border-t border-slate-200 pt-1.5 text-sm">
-              <span>Total Payable:</span>
-              <span class="text-indigo-600">₹{{ totalPayable.toLocaleString('en-IN') }}</span>
+            <h3 class="text-sm font-bold text-white">LAN Workstations</h3>
+            <p class="text-xs text-slate-400">
+              Receptionists, phlebotomists, and pathologists connect via local browser (e.g. <code class="text-teal-300">http://192.168.1.100:8000</code>).
+            </p>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-800 pt-6 text-center text-xs text-slate-400">
+          <strong class="text-white">When is Internet Used?</strong> Only when customer-initiated: software version checks, WhatsApp PDF report dispatch via API, or customer-configured Google Drive encrypted backups.
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 9: PRODUCT SCREENSHOTS & WORKFLOW (INTERACTIVE GALLERY) -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      <div class="text-center max-w-3xl mx-auto space-y-3">
+        <span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-200">
+          Interactive Walkthrough
+        </span>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+          See the Diagnostic Workflow in Action
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+          Explore how real patient registrations flow from front desk intake to authorized digital reports.
+        </p>
+      </div>
+
+      <ScreenshotGallery />
+    </section>
+
+    <!-- SECTION 10: USE CASES & SOLUTIONS -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+      <div class="text-center max-w-3xl mx-auto space-y-3">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+          Tailored for Every Diagnostic Facility
+        </h2>
+        <p class="text-sm text-slate-600 dark:text-slate-400">
+          Whether you run a single collection point or a multi-department hospital transfusion centre.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <NuxtLink
+          v-for="uc in useCases"
+          :key="uc.path"
+          :to="uc.path"
+          class="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 hover:shadow-lg transition-all space-y-3 group"
+        >
+          <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-200">
+            {{ uc.tag }}
+          </span>
+          <h3 class="text-base font-bold text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors">
+            {{ uc.title }}
+          </h3>
+          <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            {{ uc.desc }}
+          </p>
+          <span class="text-xs font-bold text-teal-600 inline-block pt-1 group-hover:underline">
+            Read Solution Guide &rarr;
+          </span>
+        </NuxtLink>
+      </div>
+    </section>
+
+    <!-- SECTION 11: REPORT FORMAT LIBRARY PREVIEW -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+            Pre-Built NABL Diagnostic Report Formats
+          </h2>
+          <p class="text-xs text-slate-500 mt-1">
+            Browse our library of pre-configured clinical templates across all diagnostic departments.
+          </p>
+        </div>
+        <NuxtLink to="/report-formats">
+          <Button variant="secondary" size="sm">
+            Browse All 50+ Formats &rarr;
+          </Button>
+        </NuxtLink>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div
+          v-for="rf in reportFormats"
+          :key="rf.code"
+          class="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 hover:border-teal-400 transition-colors"
+        >
+          <div class="flex items-center justify-between text-[10px]">
+            <span class="font-bold text-teal-600 uppercase">{{ rf.dept }}</span>
+            <span class="font-mono text-slate-400">{{ rf.code }}</span>
+          </div>
+          <h3 class="text-xs font-bold text-slate-900 dark:text-white line-clamp-2">
+            {{ rf.name }}
+          </h3>
+          <div class="text-[11px] text-slate-500 pt-1 flex items-center justify-between">
+            <span>{{ rf.tests }} Parameters</span>
+            <NuxtLink to="/report-formats" class="text-teal-600 hover:underline">Preview</NuxtLink>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 12: CUSTOMER CASE STUDIES & SUCCESS PROFILES -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="p-8 sm:p-12 rounded-3xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-8">
+        <div class="text-center max-w-2xl mx-auto space-y-2">
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+            Laboratory Modernization Case Studies
+          </h2>
+          <p class="text-xs text-slate-600 dark:text-slate-400">
+            Real operational transformations achieved by diagnostic centers adopting Aarozi's offline-first architecture.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-xs">
+          <!-- Case Study 1 -->
+          <div class="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
+            <span class="px-2.5 py-1 rounded bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300 font-bold text-[10px]">
+              PATHOLOGY LAB PROFILE &bull; MUMBAI, MH
+            </span>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">
+              Overcoming Frequent ISP Outages with Zero Revenue Loss
+            </h3>
+            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+              A standalone diagnostic center processing 180+ patients daily suffered recurring broadband cuts that stalled their cloud software for 2 to 3 hours every afternoon.
+            </p>
+            <div class="pt-2 border-t border-slate-100 dark:border-slate-800 grid grid-cols-3 gap-2 text-center">
+              <div><strong class="text-sm text-teal-600 font-bold block">100%</strong> <span class="text-[10px] text-slate-500">Offline Uptime</span></div>
+              <div><strong class="text-sm text-teal-600 font-bold block">45 Sec</strong> <span class="text-[10px] text-slate-500">Intake Time</span></div>
+              <div><strong class="text-sm text-teal-600 font-bold block">0 Errors</strong> <span class="text-[10px] text-slate-500">Tube Mix-ups</span></div>
             </div>
           </div>
 
-          <!-- Coupon Input -->
-          <div class="flex space-x-2">
-            <input
-              v-model="couponInput"
-              type="text"
-              placeholder="Coupon Code (e.g. AAROZI2026)"
-              class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-xs uppercase focus:ring-1 focus:ring-indigo-500 focus:outline-hidden"
-            />
-            <button
-              type="button"
-              class="px-3 py-2 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-900 transition cursor-pointer"
-              @click="applyCoupon"
-            >
-              Apply
-            </button>
-          </div>
-
-          <!-- Laboratory Registration Form -->
-          <div class="space-y-3 text-xs">
-            <div>
-              <label class="block font-medium text-slate-700 mb-1">Diagnostic Laboratory Name *</label>
-              <input
-                v-model="checkoutForm.lab_name"
-                type="text"
-                required
-                placeholder="e.g. Apex Clinical Pathology & Diagnostic Center"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-1 focus:ring-indigo-500 focus:outline-hidden"
-              />
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block font-medium text-slate-700 mb-1">Doctor / Owner Name</label>
-                <input
-                  v-model="checkoutForm.contact_name"
-                  type="text"
-                  placeholder="Dr. R. Sharma"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-1 focus:ring-indigo-500 focus:outline-hidden"
-                />
-              </div>
-              <div>
-                <label class="block font-medium text-slate-700 mb-1">Mobile / WhatsApp *</label>
-                <input
-                  v-model="checkoutForm.phone"
-                  type="tel"
-                  required
-                  placeholder="9876543210"
-                  class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-1 focus:ring-indigo-500 focus:outline-hidden"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label class="block font-medium text-slate-700 mb-1">Official Email Address *</label>
-              <input
-                v-model="checkoutForm.email"
-                type="email"
-                required
-                placeholder="contact@apexdiagnostics.com"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-1 focus:ring-indigo-500 focus:outline-hidden"
-              />
-            </div>
-
-            <div>
-              <label class="block font-medium text-slate-700 mb-1">GSTIN Number (Optional for Tax Invoice)</label>
-              <input
-                v-model="checkoutForm.gstin"
-                type="text"
-                placeholder="27ABCDE1234F1Z5"
-                class="w-full px-3 py-2 border border-slate-300 rounded-lg uppercase focus:ring-1 focus:ring-indigo-500 focus:outline-hidden"
-              />
+          <!-- Case Study 2 -->
+          <div class="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4">
+            <span class="px-2.5 py-1 rounded bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300 font-bold text-[10px]">
+              BLOOD BANK & TRANSFUSION &bull; JAIPUR, RJ
+            </span>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">
+              Strict Donor Traceability & TTI Testing Compliance
+            </h3>
+            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+              Replacing paper donation records with Aarozi’s digital donor questionnaire, TTI marker validation, and cross-match reservation ledger.
+            </p>
+            <div class="pt-2 border-t border-slate-100 dark:border-slate-800 grid grid-cols-3 gap-2 text-center">
+              <div><strong class="text-sm text-purple-600 font-bold block">Zero</strong> <span class="text-[10px] text-slate-500">Manual Logs</span></div>
+              <div><strong class="text-sm text-purple-600 font-bold block">100%</strong> <span class="text-[10px] text-slate-500">Cold Chain Audit</span></div>
+              <div><strong class="text-sm text-purple-600 font-bold block">ISO</strong> <span class="text-[10px] text-slate-500">Audit Ready</span></div>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
 
+    <!-- SECTION 13: COMPARISON MATRIX -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <div class="text-center max-w-2xl mx-auto space-y-2">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+          Why Diagnostic Centers Choose Aarozi
+        </h2>
+        <p class="text-xs text-slate-600 dark:text-slate-400">
+          Comparing traditional manual or fragile cloud software against Aarozi’s offline-first engineering.
+        </p>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-lg">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-50 dark:bg-slate-800/80 text-slate-500 uppercase text-[10px] font-bold">
+            <tr>
+              <th class="p-4 sm:p-5">Capability / Requirement</th>
+              <th class="p-4 sm:p-5">Traditional Paper / Generic Softwares</th>
+              <th class="p-4 sm:p-5 text-teal-600 dark:text-teal-400">Aarozi Healthcare LIS</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            <tr>
+              <td class="p-4 sm:p-5 font-bold text-slate-900 dark:text-white">Internet Outage Resilience</td>
+              <td class="p-4 sm:p-5 text-slate-500">Fails entirely; laboratory stops operating</td>
+              <td class="p-4 sm:p-5 text-emerald-600 font-bold">&check; 100% Operational without internet</td>
+            </tr>
+            <tr>
+              <td class="p-4 sm:p-5 font-bold text-slate-900 dark:text-white">Patient Record Privacy</td>
+              <td class="p-4 sm:p-5 text-slate-500">Stored on 3rd party public clouds or paper</td>
+              <td class="p-4 sm:p-5 text-emerald-600 font-bold">&check; 100% Local Master PC Database</td>
+            </tr>
+            <tr>
+              <td class="p-4 sm:p-5 font-bold text-slate-900 dark:text-white">Thermal Barcode Integration</td>
+              <td class="p-4 sm:p-5 text-slate-500">Requires expensive third-party drivers</td>
+              <td class="p-4 sm:p-5 text-emerald-600 font-bold">&check; Built-in Code 128 label generator</td>
+            </tr>
+            <tr>
+              <td class="p-4 sm:p-5 font-bold text-slate-900 dark:text-white">Analyzer Interfacing</td>
+              <td class="p-4 sm:p-5 text-slate-500">Manual re-typing of technician results</td>
+              <td class="p-4 sm:p-5 text-emerald-600 font-bold">&check; Direct RS232 / TCP auto-import</td>
+            </tr>
+            <tr>
+              <td class="p-4 sm:p-5 font-bold text-slate-900 dark:text-white">Licence Model</td>
+              <td class="p-4 sm:p-5 text-slate-500">Mandatory monthly recurring fees forever</td>
+              <td class="p-4 sm:p-5 text-emerald-600 font-bold">&check; Flexible Yearly or Lifetime Perpetual</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 14: PRICING PREVIEW & INTERACTIVE CALCULATOR -->
+    <section id="pricing" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+      <div class="text-center max-w-3xl mx-auto space-y-3">
+        <span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-200">
+          Transparent Pricing
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
+          Straightforward Plans. No Hidden Charges.
+        </h2>
+        <p class="text-sm text-slate-600 dark:text-slate-400">
+          Choose between an annual commercial subscription or a perpetual lifetime license. Both include offline-first operation, multi-PC LAN access, and full data ownership.
+        </p>
+      </div>
+
+      <PricingCalculator />
+    </section>
+
+    <!-- SECTION 15: FREQUENTLY ASKED QUESTIONS -->
+    <section id="faq" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <div class="text-center space-y-2">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
+          Frequently Asked Questions
+        </h2>
+        <p class="text-xs text-slate-500">
+          Clear answers regarding offline functionality, LAN installation, data privacy, and licensing.
+        </p>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div
+          v-for="(f, idx) in faqs"
+          :key="idx"
+          class="border border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900 overflow-hidden"
+        >
           <button
             type="button"
-            :disabled="isSubmitting"
-            class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs shadow-md shadow-indigo-100 transition cursor-pointer"
-            @click="handleCheckoutSubmit"
+            class="w-full p-4 sm:p-5 text-left font-bold text-slate-900 dark:text-white flex items-center justify-between gap-4 cursor-pointer"
+            @click="toggleFaq(idx)"
           >
-            <span v-if="!isSubmitting">Pay ₹{{ totalPayable.toLocaleString('en-IN') }} via UPI / Cards / NetBanking</span>
-            <span v-else>Processing Order &amp; Issuing License...</span>
+            <span>{{ f.q }}</span>
+            <Icon name="chevron-down" size="xs" :class="{ 'rotate-180': activeFaq === idx }" class="transition-transform duration-200 shrink-0 text-slate-400" />
           </button>
-        </div>
-
-        <!-- Success & Instant License Issuance Screen -->
-        <div v-else class="mt-4 text-center space-y-4">
-          <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-xl font-bold">
-            &check;
-          </div>
-          <div>
-            <h4 class="font-bold text-slate-900 text-base">Payment Confirmed &amp; License Issued!</h4>
-            <p class="text-xs text-slate-500 mt-1">Invoice: {{ checkoutSuccess.invoice_number }} &bull; Order: {{ checkoutSuccess.order_id }}</p>
-          </div>
-
-          <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-left text-xs font-mono space-y-1">
-            <p><span class="text-slate-400">Lab:</span> {{ checkoutSuccess.lab_name }}</p>
-            <p><span class="text-slate-400">License ID:</span> {{ checkoutSuccess.issued_license_id }}</p>
-            <p><span class="text-slate-400">Plan:</span> {{ checkoutSuccess.totals.plan_name }}</p>
-            <p><span class="text-slate-400">Status:</span> <span class="text-emerald-600 font-bold uppercase">Active Commercial</span></p>
-          </div>
-
-          <div class="space-y-2 pt-2">
-            <a
-              :href="`/payments/order/${checkoutSuccess.order_id}/download-license`"
-              class="w-full block py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-xs transition"
-              download
-            >
-              Download License (.lic) File
-            </a>
-            <NuxtLink
-              to="/customer/dashboard"
-              class="w-full block py-2 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition"
-            >
-              Go to Customer Portal &rarr;
-            </NuxtLink>
+          <div v-if="activeFaq === idx" class="px-4 sm:px-5 pb-5 text-slate-600 dark:text-slate-400 leading-relaxed border-t border-slate-100 dark:border-slate-800 pt-3">
+            {{ f.a }}
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Footer -->
-    <footer class="bg-slate-900 text-slate-400 py-12 text-xs border-t border-slate-800">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="flex items-center space-x-2">
-          <span class="font-bold text-white">Aarozi Healthcare Systems</span>
-          <span>&mdash; Modern Diagnostic Laboratory &amp; Blood Bank LIS</span>
-        </div>
-        <div class="flex items-center space-x-6 text-[11px]">
-          <NuxtLink to="/customer/dashboard" class="hover:text-white transition">Customer Portal</NuxtLink>
-          <NuxtLink to="/admin/commercial" class="hover:text-white transition">Vendor Admin</NuxtLink>
-          <a href="#pricing" class="hover:text-white transition">Pricing</a>
-          <a href="#faq" class="hover:text-white transition">Support</a>
-        </div>
-      </div>
-    </footer>
+    <!-- SECTION 16: FINAL CALL TO ACTION -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <CtaBanner
+        title="Start Running Your Lab on Aarozi Healthcare Today"
+        subtitle="Download the Windows installer or choose a commercial licence plan. 15-minute setup on your master PC with zero cloud dependency."
+      />
+    </section>
   </div>
 </template>

@@ -8,7 +8,7 @@ import Icon, { type IconName } from './Icon.vue'
  */
 interface Props {
   variant?: 'primary' | 'secondary' | 'tertiary' | 'danger' | 'success' | 'ghost'
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
   type?: 'button' | 'submit' | 'reset'
   disabled?: boolean
   loading?: boolean
@@ -47,6 +47,8 @@ const variantClasses = computed(() => {
 
 const sizeClasses = computed(() => {
   switch (props.size) {
+    case 'xs':
+      return 'h-6 px-2 text-[11px] gap-1 rounded'
     case 'sm':
       return 'h-7 px-2.5 text-xs gap-1.5 rounded-md'
     case 'lg':
@@ -59,6 +61,7 @@ const sizeClasses = computed(() => {
 
 const iconSize = computed(() => {
   switch (props.size) {
+    case 'xs': return 'xs'
     case 'sm': return 'xs'
     case 'lg': return 'md'
     case 'md':

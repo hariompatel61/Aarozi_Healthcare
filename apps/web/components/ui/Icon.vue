@@ -9,15 +9,18 @@ export type IconName =
   | 'phone'
   | 'mail'
   | 'check'
+  | 'check-circle'
   | 'x'
   | 'alert-circle'
   | 'alert-triangle'
+  | 'shield'
   | 'shield-check'
   | 'beaker'
   | 'credit-card'
   | 'printer'
   | 'share'
   | 'download'
+  | 'arrow-down'
   | 'refresh'
   | 'chevron-down'
   | 'chevron-up'
@@ -32,6 +35,7 @@ export type IconName =
   | 'eye'
   | 'copy'
   | 'file-text'
+  | 'document'
   | 'activity'
   | 'heart'
   | 'settings'
@@ -46,6 +50,23 @@ export type IconName =
   | 'briefcase'
   | 'cloud'
   | 'filter'
+  | 'zap'
+  | 'tag'
+  | 'qr-code'
+  | 'layers'
+  | 'award'
+  | 'map-pin'
+  | 'help-circle'
+  | 'video'
+  | 'book-open'
+  | 'clock'
+  | 'device-desktop'
+  | 'cube'
+  | 'chat'
+  | 'key'
+  | 'info'
+  | 'shopping-cart'
+  | (string & {})
 
 interface Props {
   name: IconName
@@ -344,6 +365,137 @@ const sizeClass = computed(() => {
     <!-- Filter -->
     <g v-else-if="name === 'filter'">
       <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+    </g>
+
+    <!-- Shield / Shield-Check -->
+    <g v-else-if="name === 'shield'">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </g>
+
+    <!-- Check-Circle -->
+    <g v-else-if="name === 'check-circle'">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <polyline points="22 4 12 14.01 9 11.01" />
+    </g>
+
+    <!-- Arrow Down -->
+    <g v-else-if="name === 'arrow-down'">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <polyline points="19 12 12 19 5 12" />
+    </g>
+
+    <!-- Zap -->
+    <g v-else-if="name === 'zap'">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </g>
+
+    <!-- Tag -->
+    <g v-else-if="name === 'tag'">
+      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+      <line x1="7" y1="7" x2="7.01" y2="7" />
+    </g>
+
+    <!-- QR Code -->
+    <g v-else-if="name === 'qr-code'">
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+    </g>
+
+    <!-- Layers -->
+    <g v-else-if="name === 'layers'">
+      <polygon points="12 2 2 7 12 12 22 7 12 2" />
+      <polyline points="2 17 12 22 22 17" />
+      <polyline points="2 12 12 17 22 12" />
+    </g>
+
+    <!-- Award -->
+    <g v-else-if="name === 'award'">
+      <circle cx="12" cy="8" r="7" />
+      <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+    </g>
+
+    <!-- Map Pin -->
+    <g v-else-if="name === 'map-pin'">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </g>
+
+    <!-- Help Circle -->
+    <g v-else-if="name === 'help-circle'">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </g>
+
+    <!-- Video -->
+    <g v-else-if="name === 'video'">
+      <polygon points="23 7 16 12 23 17 23 7" />
+      <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+    </g>
+
+    <!-- Book Open -->
+    <g v-else-if="name === 'book-open'">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+    </g>
+
+    <!-- Clock -->
+    <g v-else-if="name === 'clock'">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </g>
+
+    <!-- Device Desktop -->
+    <g v-else-if="name === 'device-desktop'">
+      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+      <line x1="8" y1="21" x2="16" y2="21" />
+      <line x1="12" y1="17" x2="12" y2="21" />
+    </g>
+
+    <!-- Cube -->
+    <g v-else-if="name === 'cube'">
+      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+      <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+      <line x1="12" y1="22.08" x2="12" y2="12" />
+    </g>
+
+    <!-- Document -->
+    <g v-else-if="name === 'document'">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+    </g>
+
+    <!-- Chat -->
+    <g v-else-if="name === 'chat'">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </g>
+
+    <!-- Key -->
+    <g v-else-if="name === 'key'">
+      <path d="M21 2l-2 2m-1.5 1.5L14 9l2 2 3-3-2-2 4-4-2-2z" />
+      <circle cx="7.5" cy="15.5" r="5.5" />
+    </g>
+
+    <!-- Info -->
+    <g v-else-if="name === 'info'">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="16" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12.01" y2="8" />
+    </g>
+
+    <!-- Shopping Cart -->
+    <g v-else-if="name === 'shopping-cart'">
+      <circle cx="9" cy="21" r="1" />
+      <circle cx="20" cy="21" r="1" />
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+    </g>
+
+    <!-- Default Fallback Circle -->
+    <g v-else>
+      <circle cx="12" cy="12" r="8" opacity="0.3" />
+      <circle cx="12" cy="12" r="3" />
     </g>
   </svg>
 </template>
