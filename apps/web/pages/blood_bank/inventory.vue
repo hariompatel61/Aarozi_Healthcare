@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useToast } from '~/composables/useToast'
+import PageHeader from '~/components/ui/PageHeader.vue'
+import Card from '~/components/ui/Card.vue'
+import Badge from '~/components/ui/Badge.vue'
+import Button from '~/components/ui/Button.vue'
+import Icon from '~/components/ui/Icon.vue'
+import Kbd from '~/components/ui/Kbd.vue'
+import Modal from '~/components/ui/Modal.vue'
 
 const api = useApi()
-const { success, warning } = useToast()
+const { success } = useToast()
 
 interface BloodUnitItem {
   id: string
@@ -105,7 +112,7 @@ async function confirmQuarantineRelease() {
       notes: 'Cleared all 5 mandatory TTI ELISA markers (HIV-1/2, HBsAg, HCV, VDRL, MP)',
     })
   } catch {
-    // offline simulated
+    // offline fallback
   }
 
   selectedUnitForRelease.value.tti_status = 'passed'
@@ -121,311 +128,428 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="space-y-4 max-w-7xl mx-auto text-left">
+  <div class="space-y-6 max-w-7xl mx-auto text-left">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
-      <div>
-        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Blood Bank &mdash; Inventory &amp; Quarantine</h1>
-        <p class="text-xs text-slate-500 mt-0.5">
-          Cold-chain component inventory, TTI test clearance, temperature surveillance and cross-match readiness
-        </p>
-      </div>
-
-      <div class="flex items-center space-x-2">
-        <NuxtLink
-          to="/blood_bank/crossmatch"
-          class="btn-secondary"
-        >
-          <span>Cross-Match Desk</span>
-        </NuxtLink>
-        <NuxtLink
-          to="/blood_bank/donors"
-          class="btn-danger"
-        >
-          <span>Donor Bleed</span>
-        </NuxtLink>
-      </div>
-    </div>
-
-    <!-- Blood Group Stock Status Pills -->
-    <div class="grid grid-cols-4 sm:grid-cols-8 gap-2">
-      <div
-        v-for="(count, bg) in stockByGroup"
-        :key="bg"
-        :class="[
-          'p-2.5 rounded-lg border text-center transition shadow-2xs',
-          count > 2 ? 'bg-white border-slate-200' : 'bg-red-50 border-red-200'
-        ]"
-      >
-        <p class="text-xs font-bold font-mono text-slate-800">{{ bg }}</p>
-        <p class="text-lg font-bold font-mono mt-0.5" :class="count > 0 ? 'text-red-600' : 'text-slate-300'">
-          {{ count }}
-        </p>
-        <p class="text-[9px] font-semibold" :class="count > 0 ? 'text-slate-500' : 'text-red-500'">
-          {{ count > 0 ? 'Units' : 'CRITICAL' }}
-        </p>
-      </div>
-    </div>
-
-    <!-- Storage Temperatures Live Status -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-      <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center justify-between shadow-2xs">
-        <div>
-          <p class="text-[11px] font-medium text-slate-500">PRBC Refrigerator 1</p>
-          <p class="text-base font-bold font-mono text-emerald-600">+4.2 °C</p>
+    <PageHeader
+      title="Blood Bank — Inventory & Quarantine"
+      description="Cold-chain component inventory, mandatory TTI screening clearance, real-time temperature surveillance, and cross-match readiness."
+    >
+      <template #actions>
+        <div class="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="md"
+            title="Reload blood bank stock"
+            @click="loadInventory"
+          >
+            <Icon name="refresh" class="w-4 h-4" />
+            <span class="hidden sm:inline">Refresh</span>
+          </Button>
+          <Button
+            variant="secondary"
+            size="md"
+            title="Compatibility and cross-matching desk"
+            to="/blood_bank/crossmatch"
+          >
+            <Icon name="activity" class="w-4 h-4" />
+            <span>Cross-Match Desk</span>
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            title="Register blood donor and phlebotomy bleed"
+            to="/blood_bank/donors"
+          >
+            <Icon name="plus" class="w-4 h-4" />
+            <span>Donor Bleed</span>
+          </Button>
         </div>
-        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+      </template>
+    </PageHeader>
+
+    <!-- Blood Group Stock Status Grid -->
+    <div>
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Released Stock by Blood Group</h2>
+        <span class="text-xs text-slate-400 font-medium">8 Serological Types</span>
+      </div>
+      <div class="grid grid-cols-4 sm:grid-cols-8 gap-2.5">
+        <Card
+          v-for="(count, bg) in stockByGroup"
+          :key="bg"
+          :class="[
+            'p-3 text-center transition-shadow',
+            count > 2 ? 'bg-white' : 'bg-red-50/70 border-red-200 ring-1 ring-red-200'
+          ]"
+        >
+          <p class="text-xs font-bold font-mono text-slate-900">{{ bg }}</p>
+          <p class="text-2xl font-bold font-mono mt-1" :class="count > 0 ? 'text-rose-600' : 'text-slate-300'">
+            {{ count }}
+          </p>
+          <p class="text-xs font-semibold mt-0.5" :class="count > 0 ? 'text-slate-500' : 'text-rose-600'">
+            {{ count > 0 ? 'Units' : 'CRITICAL' }}
+          </p>
+        </Card>
+      </div>
+    </div>
+
+    <!-- Storage Temperatures Live Surveillance Status -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <Card class="p-4 bg-white flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">PRBC Refrigerator 1</p>
+          <p class="text-2xl font-bold font-mono text-emerald-600 mt-1">+4.2 °C</p>
+          <p class="text-xs text-slate-400 mt-0.5">Whole Blood &amp; Red Cells</p>
+        </div>
+        <Badge variant="success">
           Compliant (2-6°C)
-        </span>
-      </div>
+        </Badge>
+      </Card>
 
-      <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center justify-between shadow-2xs">
+      <Card class="p-4 bg-white flex items-center justify-between">
         <div>
-          <p class="text-[11px] font-medium text-slate-500">FFP Deep Freezer</p>
-          <p class="text-base font-bold font-mono text-blue-600">-32.4 °C</p>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">FFP Deep Freezer</p>
+          <p class="text-2xl font-bold font-mono text-blue-600 mt-1">-32.4 °C</p>
+          <p class="text-xs text-slate-400 mt-0.5">Fresh Frozen Plasma</p>
         </div>
-        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+        <Badge variant="info">
           Compliant (&lt; -30°C)
-        </span>
-      </div>
+        </Badge>
+      </Card>
 
-      <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center justify-between shadow-2xs">
+      <Card class="p-4 bg-white flex items-center justify-between">
         <div>
-          <p class="text-[11px] font-medium text-slate-500">Platelet Agitator</p>
-          <p class="text-base font-bold font-mono text-amber-600">+22.1 °C</p>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Platelet Agitator</p>
+          <p class="text-2xl font-bold font-mono text-amber-600 mt-1">+22.1 °C</p>
+          <p class="text-xs text-slate-400 mt-0.5">Agitating Continuous</p>
         </div>
-        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+        <Badge variant="warning">
           Agitating (60 RPM)
-        </span>
-      </div>
+        </Badge>
+      </Card>
     </div>
 
-    <!-- Filters -->
-    <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
-      <div class="flex items-center flex-1 min-w-[260px] max-w-lg">
-        <div class="relative flex-1">
+    <!-- Search Toolbar & Filters -->
+    <Card class="p-4 bg-white">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <!-- Search Input -->
+        <div class="relative flex-1 max-w-xl">
           <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 pointer-events-none">
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+            <Icon name="search" class="w-4 h-4" />
           </span>
           <input
             v-model="searchQuery"
             type="search"
-            placeholder="Search by unit number, location, group..."
-            class="input-faang w-full pl-9 pr-7 py-1.5 text-xs font-sans"
+            placeholder="Search by unit number, storage rack, blood group..."
+            class="w-full pl-9 pr-14 py-2 border border-slate-300 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-shadow"
           />
-          <button
-            v-if="searchQuery"
-            type="button"
-            class="absolute inset-y-0 right-0 flex items-center pr-2 text-slate-400 hover:text-slate-600 cursor-pointer"
-            title="Clear search"
-            @click="searchQuery = ''"
+          <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <Kbd>/</Kbd>
+          </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex items-center gap-1.5">
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Group:</label>
+            <select
+              v-model="selectedGroup"
+              class="border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-teal-600"
+            >
+              <option value="All">All Groups</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Component:</label>
+            <select
+              v-model="selectedComponent"
+              class="border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-teal-600"
+            >
+              <option value="All">All Components</option>
+              <option value="PRBC">Packed Red Cells (PRBC)</option>
+              <option value="Whole Blood">Whole Blood (WB)</option>
+              <option value="Plasma">Plasma (FFP)</option>
+              <option value="Platelet">Platelet (RDP/SDP)</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <label class="text-xs font-semibold text-slate-500 uppercase tracking-wider">State:</label>
+            <select
+              v-model="selectedStatus"
+              class="border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-teal-600"
+            >
+              <option value="All">All Stock Units</option>
+              <option value="released">Available for Cross-match</option>
+              <option value="quarantined">In TTI Quarantine</option>
+            </select>
+          </div>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            title="Reset all filters"
+            @click="resetFilters"
           >
-            <span class="text-sm leading-none">&times;</span>
-          </button>
+            <Icon name="x" class="w-3.5 h-3.5" />
+            <span>Reset</span>
+          </Button>
         </div>
       </div>
+    </Card>
 
-      <div class="flex flex-wrap items-center gap-2">
-        <select
-          v-model="selectedGroup"
-          class="select-faang input-faang text-xs text-slate-700 cursor-pointer"
-        >
-          <option value="All">All Blood Groups</option>
-          <option value="A+">A+</option>
-          <option value="A-">A-</option>
-          <option value="B+">B+</option>
-          <option value="B-">B-</option>
-          <option value="O+">O+</option>
-          <option value="O-">O-</option>
-          <option value="AB+">AB+</option>
-          <option value="AB-">AB-</option>
-        </select>
-
-        <select
-          v-model="selectedComponent"
-          class="select-faang input-faang text-xs text-slate-700 cursor-pointer"
-        >
-          <option value="All">All Components</option>
-          <option value="PRBC">Packed Red Cells (PRBC)</option>
-          <option value="Whole Blood">Whole Blood (WB)</option>
-          <option value="Plasma">Plasma (FFP)</option>
-          <option value="Platelet">Platelet (RDP/SDP)</option>
-        </select>
-
-        <select
-          v-model="selectedStatus"
-          class="select-faang input-faang text-xs text-slate-700 cursor-pointer"
-        >
-          <option value="All">All Units</option>
-          <option value="released">Available for Cross-match</option>
-          <option value="quarantined">In TTI Quarantine</option>
-        </select>
-
-        <button
-          type="button"
-          class="btn-secondary"
-          title="Reset all filters"
-          @click="resetFilters"
-        >
-          Reset
-        </button>
-      </div>
-    </div>
-
-    <!-- Table -->
-    <div class="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+    <!-- Desktop Table View -->
+    <Card class="overflow-hidden bg-white hidden md:block">
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-slate-200 text-xs">
           <thead class="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider">
             <tr>
-              <th class="px-4 py-2.5 text-left">Unit Number</th>
-              <th class="px-4 py-2.5 text-center">Group</th>
-              <th class="px-4 py-2.5 text-left">Component</th>
-              <th class="px-4 py-2.5 text-right">Volume</th>
-              <th class="px-4 py-2.5 text-left">Location</th>
-              <th class="px-4 py-2.5 text-left">Expiry Date</th>
-              <th class="px-4 py-2.5 text-center">TTI Status</th>
-              <th class="px-4 py-2.5 text-center">Status</th>
-              <th class="px-4 py-2.5 text-center">Action</th>
+              <th class="px-4 py-3 text-left">Unit Number</th>
+              <th class="px-4 py-3 text-center">Group</th>
+              <th class="px-4 py-3 text-left">Component</th>
+              <th class="px-4 py-3 text-right">Volume</th>
+              <th class="px-4 py-3 text-left">Location</th>
+              <th class="px-4 py-3 text-left">Expiry Date</th>
+              <th class="px-4 py-3 text-center">TTI Status</th>
+              <th class="px-4 py-3 text-center">Stock Status</th>
+              <th class="px-4 py-3 text-center">Action</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 bg-white">
             <tr v-if="loading">
-              <td colspan="9" class="text-center py-8 text-slate-400">Loading blood unit inventory...</td>
+              <td colspan="9" class="text-center py-12 text-slate-400 font-medium">
+                <div class="flex items-center justify-center gap-2">
+                  <Icon name="refresh" class="w-5 h-5 animate-spin text-teal-600" />
+                  <span>Loading blood inventory from cold storage database...</span>
+                </div>
+              </td>
             </tr>
             <tr v-else-if="filteredUnits.length === 0">
-              <td colspan="9" class="text-center py-8 text-slate-400">No blood units match filters</td>
+              <td colspan="9" class="text-center py-12 text-slate-400 font-medium">
+                <div class="flex flex-col items-center justify-center gap-2">
+                  <Icon name="activity" class="w-8 h-8 text-slate-300" />
+                  <p class="text-sm font-semibold text-slate-600">No blood units match filters</p>
+                  <p class="text-xs text-slate-400">Try clearing filters or register a new donor bleed.</p>
+                </div>
+              </td>
             </tr>
             <tr
               v-for="u in filteredUnits"
               v-else
               :key="u.id"
-              class="hover:bg-blue-50/40 transition-colors"
+              class="hover:bg-teal-50/40 transition-colors"
             >
-              <td class="px-4 py-2.5 font-mono font-semibold text-blue-700">
+              <td class="px-4 py-3 font-mono font-bold text-teal-700">
                 {{ u.unit_number }}
               </td>
-              <td class="px-4 py-2.5 text-center">
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 font-mono">
+              <td class="px-4 py-3 text-center">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 font-mono">
                   {{ u.blood_group }}
                 </span>
               </td>
-              <td class="px-4 py-2.5 font-medium text-slate-900">
+              <td class="px-4 py-3 font-semibold text-slate-900">
                 {{ u.component_type }}
               </td>
-              <td class="px-4 py-2.5 text-right font-mono text-slate-600">
+              <td class="px-4 py-3 text-right font-mono text-slate-700 font-medium">
                 {{ u.volume_ml }} mL
               </td>
-              <td class="px-4 py-2.5 text-slate-600 text-[11px]">
+              <td class="px-4 py-3 text-slate-600">
                 {{ u.storage_location }}
               </td>
-              <td class="px-4 py-2.5 font-mono text-slate-700">
+              <td class="px-4 py-3 font-mono text-slate-700">
                 {{ u.expiry_date }}
               </td>
-              <td class="px-4 py-2.5 text-center">
-                <span
-                  :class="[
-                    'inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase',
-                    u.tti_status === 'passed' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                  ]"
-                >
-                  {{ u.tti_status }}
-                </span>
+              <td class="px-4 py-3 text-center">
+                <Badge :variant="u.tti_status === 'passed' ? 'success' : 'warning'">
+                  {{ u.tti_status.toUpperCase() }}
+                </Badge>
               </td>
-              <td class="px-4 py-2.5 text-center">
-                <span
-                  :class="[
-                    'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border',
-                    u.quarantine_status === 'released' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-purple-50 text-purple-700 border-purple-200'
-                  ]"
-                >
+              <td class="px-4 py-3 text-center">
+                <Badge :variant="u.quarantine_status === 'released' ? 'success' : 'neutral'">
                   {{ u.quarantine_status === 'released' ? 'Available' : 'Quarantine' }}
-                </span>
+                </Badge>
               </td>
-              <td class="px-4 py-2.5 text-center whitespace-nowrap">
-                <button
-                  v-if="u.quarantine_status === 'quarantined'"
-                  type="button"
-                  class="px-2.5 py-1 text-[11px] font-semibold text-white bg-purple-600 hover:bg-purple-700 rounded shadow-2xs transition"
-                  @click="openReleaseModal(u)"
-                >
-                  Release TTI
-                </button>
-                <NuxtLink
-                  v-else
-                  to="/blood_bank/crossmatch"
-                  class="text-blue-600 hover:text-blue-800 font-medium text-[11px]"
-                >
-                  Cross-match
-                </NuxtLink>
+              <td class="px-4 py-3 text-center whitespace-nowrap">
+                <div class="flex items-center justify-center gap-1.5">
+                  <Button
+                    v-if="u.quarantine_status === 'quarantined'"
+                    variant="primary"
+                    size="sm"
+                    title="Clear 5 mandatory TTI markers and release unit"
+                    @click="openReleaseModal(u)"
+                  >
+                    <Icon name="shield-check" class="w-3.5 h-3.5" />
+                    <span>Release TTI</span>
+                  </Button>
+                  <Button
+                    v-else
+                    variant="secondary"
+                    size="sm"
+                    to="/blood_bank/crossmatch"
+                    title="Send unit to cross-match bench"
+                  >
+                    <Icon name="activity" class="w-3.5 h-3.5" />
+                    <span>Cross-match</span>
+                  </Button>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+    </Card>
+
+    <!-- Mobile Card View -->
+    <div class="md:hidden space-y-3">
+      <div v-if="loading" class="p-8 text-center text-slate-400 font-medium">
+        <Icon name="refresh" class="w-6 h-6 animate-spin mx-auto text-teal-600 mb-2" />
+        <p class="text-xs">Loading blood units...</p>
+      </div>
+      <div v-else-if="filteredUnits.length === 0" class="p-8 text-center text-slate-400 font-medium bg-white rounded-lg border border-slate-200">
+        <Icon name="activity" class="w-8 h-8 text-slate-300 mx-auto mb-2" />
+        <p class="text-sm font-semibold text-slate-700">No blood units found</p>
+      </div>
+      <Card
+        v-for="u in filteredUnits"
+        v-else
+        :key="'mobile-' + u.id"
+        class="p-4 bg-white space-y-3 border border-slate-200"
+      >
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-xs font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                {{ u.unit_number }}
+              </span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 font-mono">
+                {{ u.blood_group }}
+              </span>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 mt-1">{{ u.component_type }} • {{ u.volume_ml }} mL</h3>
+            <p class="text-xs text-slate-500 mt-0.5">{{ u.storage_location }}</p>
+          </div>
+          <div class="text-right">
+            <Badge :variant="u.quarantine_status === 'released' ? 'success' : 'neutral'">
+              {{ u.quarantine_status === 'released' ? 'Available' : 'Quarantine' }}
+            </Badge>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-2 rounded">
+          <span>Expires: <strong class="font-mono">{{ u.expiry_date }}</strong></span>
+          <Badge :variant="u.tti_status === 'passed' ? 'success' : 'warning'">
+            TTI: {{ u.tti_status.toUpperCase() }}
+          </Badge>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+          <Button
+            v-if="u.quarantine_status === 'quarantined'"
+            variant="primary"
+            size="sm"
+            @click="openReleaseModal(u)"
+          >
+            <Icon name="shield-check" class="w-3.5 h-3.5" />
+            <span>Release TTI</span>
+          </Button>
+          <Button
+            v-else
+            variant="secondary"
+            size="sm"
+            to="/blood_bank/crossmatch"
+          >
+            <Icon name="activity" class="w-3.5 h-3.5" />
+            <span>Cross-match</span>
+          </Button>
+        </div>
+      </Card>
     </div>
 
     <!-- TTI Quarantine Clearance Modal -->
-    <div
-      v-if="isReleaseModalOpen && selectedUnitForRelease"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4"
+    <Modal
+      v-model="isReleaseModalOpen"
+      title="Mandatory TTI Laboratory Clearance"
+      description="Verify that this blood unit has passed all 5 mandatory transfusion-transmitted infection assays."
+      size="md"
+      @close="isReleaseModalOpen = false"
     >
-      <div class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden text-left">
-        <div class="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-          <h3 class="text-sm font-bold text-slate-900">Mandatory TTI Laboratory Clearance</h3>
-          <button type="button" class="text-slate-400 hover:text-slate-600" @click="isReleaseModalOpen = false">&times;</button>
+      <div v-if="selectedUnitForRelease" class="space-y-4">
+        <div class="flex justify-between items-center bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
+          <span>Unit: <strong class="font-mono text-teal-700 text-sm">{{ selectedUnitForRelease.unit_number }}</strong></span>
+          <span>Group: <strong class="text-rose-600 font-bold font-mono text-sm">{{ selectedUnitForRelease.blood_group }}</strong></span>
+          <span>Component: <strong class="text-slate-800">{{ selectedUnitForRelease.component_type }}</strong></span>
         </div>
 
-        <div class="p-5 space-y-3 text-xs">
-          <div class="flex justify-between items-center bg-slate-50 p-2 rounded">
-            <span>Unit: <strong class="font-mono text-blue-700">{{ selectedUnitForRelease.unit_number }}</strong></span>
-            <span>Group: <strong class="text-red-600 font-bold font-mono">{{ selectedUnitForRelease.blood_group }}</strong></span>
+        <div>
+          <p class="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Mandatory Serology &amp; NAT Screening Markers:</p>
+          <div class="space-y-2 border border-slate-200 p-3 rounded-lg bg-slate-50/50 text-xs">
+            <div class="flex justify-between items-center text-slate-700">
+              <span>1. HIV 1 &amp; 2 Antibodies / Ag</span>
+              <span class="text-emerald-700 font-bold flex items-center gap-1">
+                <Icon name="check" class="w-3.5 h-3.5" />
+                Non-Reactive
+              </span>
+            </div>
+            <div class="flex justify-between items-center text-slate-700">
+              <span>2. Hepatitis B Surface Antigen (HBsAg)</span>
+              <span class="text-emerald-700 font-bold flex items-center gap-1">
+                <Icon name="check" class="w-3.5 h-3.5" />
+                Non-Reactive
+              </span>
+            </div>
+            <div class="flex justify-between items-center text-slate-700">
+              <span>3. Hepatitis C Antibodies (HCV Ab)</span>
+              <span class="text-emerald-700 font-bold flex items-center gap-1">
+                <Icon name="check" class="w-3.5 h-3.5" />
+                Non-Reactive
+              </span>
+            </div>
+            <div class="flex justify-between items-center text-slate-700">
+              <span>4. Syphilis Serology (VDRL / RPR)</span>
+              <span class="text-emerald-700 font-bold flex items-center gap-1">
+                <Icon name="check" class="w-3.5 h-3.5" />
+                Non-Reactive
+              </span>
+            </div>
+            <div class="flex justify-between items-center text-slate-700">
+              <span>5. Malaria Parasite Screening (MP)</span>
+              <span class="text-emerald-700 font-bold flex items-center gap-1">
+                <Icon name="check" class="w-3.5 h-3.5" />
+                Negative
+              </span>
+            </div>
           </div>
+        </div>
 
-          <p class="font-semibold text-slate-700 pt-1">Confirm Serology &amp; NAT Testing Results:</p>
-          <div class="space-y-1.5 border p-2.5 rounded bg-slate-50/50 text-[11px]">
-            <div class="flex justify-between text-slate-700">
-              <span>1. HIV 1 &amp; 2 Antibodies</span>
-              <span class="text-emerald-700 font-bold">Non-Reactive</span>
-            </div>
-            <div class="flex justify-between text-slate-700">
-              <span>2. Hepatitis B (HBsAg)</span>
-              <span class="text-emerald-700 font-bold">Non-Reactive</span>
-            </div>
-            <div class="flex justify-between text-slate-700">
-              <span>3. Hepatitis C (HCV Ab)</span>
-              <span class="text-emerald-700 font-bold">Non-Reactive</span>
-            </div>
-            <div class="flex justify-between text-slate-700">
-              <span>4. Syphilis (VDRL / RPR)</span>
-              <span class="text-emerald-700 font-bold">Non-Reactive</span>
-            </div>
-            <div class="flex justify-between text-slate-700">
-              <span>5. Malaria Parasite (MP)</span>
-              <span class="text-emerald-700 font-bold">Negative</span>
-            </div>
-          </div>
-
-          <div class="flex justify-end space-x-2 pt-3">
-            <button
-              type="button"
-              class="px-3 py-1.5 border border-slate-300 text-slate-700 rounded hover:bg-slate-50"
-              @click="isReleaseModalOpen = false"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded shadow-xs"
-              @click="confirmQuarantineRelease"
-            >
-              Authorize Release
-            </button>
-          </div>
+        <div class="flex justify-end gap-2 pt-4 border-t border-slate-200">
+          <Button
+            type="button"
+            variant="ghost"
+            size="md"
+            @click="isReleaseModalOpen = false"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="success"
+            size="md"
+            @click="confirmQuarantineRelease"
+          >
+            <Icon name="shield-check" class="w-4 h-4" />
+            <span>Authorize Release to Stock</span>
+          </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   </div>
 </template>
