@@ -50,8 +50,13 @@ async function handleSignup() {
       localStorage.setItem('aarozi_user', JSON.stringify(userData))
     }
 
+    const customerCookie = useCookie('aarozi_customer_token', { path: '/' })
+    const customerEmailCookie = useCookie('aarozi_customer_email', { path: '/' })
+    customerCookie.value = token
+    customerEmailCookie.value = form.value.email.toLowerCase().trim()
+
     success('Account Created', `Welcome to Aarozi Healthcare, ${form.value.fullName}!`)
-    await navigateTo('/dashboard')
+    await navigateTo('/account')
   } catch (err: any) {
     error('Signup Failed', err.message || 'Could not complete registration.')
   } finally {
@@ -61,7 +66,7 @@ async function handleSignup() {
 </script>
 
 <template>
-  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 p-8 sm:p-10 space-y-6 transition-colors">
+  <div class="bg-white dark:bg-[#15182a] rounded-2xl shadow-xl border border-[#ede9f7] dark:border-[#23273e] p-8 sm:p-10 space-y-6 transition-colors">
     <!-- Header -->
     <div class="space-y-1.5 text-center sm:text-left">
       <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Create an Account</h1>
@@ -127,9 +132,9 @@ async function handleSignup() {
     </form>
 
     <!-- Footer Links -->
-    <div class="pt-4 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-600 dark:text-slate-300">
+    <div class="pt-4 border-t border-[#ede9f7] dark:border-[#23273e] text-center text-xs text-slate-600 dark:text-slate-300">
       <span>Already have an account? </span>
-      <NuxtLink to="/login" class="text-teal-600 dark:text-teal-400 font-bold hover:underline">
+      <NuxtLink to="/login" class="text-[#2576d2] dark:text-[#90ccf9] font-bold hover:underline">
         Sign in
       </NuxtLink>
     </div>

@@ -21,6 +21,43 @@
   --text-3xl: 1.875rem;  /* 30px */
   --text-4xl: 2.25rem;   /* 36px */
 
+  /* Global Colors: Powder Blue (Primary Diagnostic Brand) */
+  --color-powder-50: #f0f7fe;
+  --color-powder-100: #e1f0fd;
+  --color-powder-200: #bee1fb;
+  --color-powder-300: #90ccf9;
+  --color-powder-400: #5eaef5;
+  --color-powder-500: #3b93ee;
+  --color-powder-600: #2576d2;
+  --color-powder-700: #1c5fae;
+  --color-powder-800: #1c508e;
+  --color-powder-900: #1c4372;
+
+  /* Global Colors: Soft Lavender White (Ambient Clinical Surfaces) */
+  --color-lavender-white: #f9f8fe;
+  --color-lavender-50: #faf9fe;
+  --color-lavender-100: #f4f2fc;
+  --color-lavender-200: #ebe6f9;
+  --color-lavender-300: #ddd4f4;
+  --color-lavender-400: #c6b8eb;
+  --color-lavender-500: #aa95df;
+  --color-lavender-600: #8d73cf;
+  --color-lavender-700: #745bbe;
+  --color-lavender-800: #604ca0;
+  --color-lavender-900: #504084;
+
+  /* Global Colors: Warm Sunset Peace (Calming Warm Accents & Highlights) */
+  --color-sunset-50: #fff7f2;
+  --color-sunset-100: #ffefe5;
+  --color-sunset-200: #fed8c4;
+  --color-sunset-300: #fdb99b;
+  --color-sunset-400: #fb8f68;
+  --color-sunset-500: #f46738;
+  --color-sunset-600: #db491c;
+  --color-sunset-700: #b73612;
+  --color-sunset-800: #932c13;
+  --color-sunset-900: #772614;
+
   /* Global Colors: Slate */
   --color-slate-50: #f8fafc;
   --color-slate-100: #f1f5f9;
@@ -34,17 +71,17 @@
   --color-slate-900: #0f172a;
   --color-slate-950: #020617;
 
-  /* Global Colors: Teal (Primary Clinical Brand) */
-  --color-teal-50: #f0fdfa;
-  --color-teal-100: #ccfbf1;
-  --color-teal-200: #99f6e4;
-  --color-teal-300: #5eead4;
-  --color-teal-400: #2dd4bf;
-  --color-teal-500: #14b8a6;
-  --color-teal-600: #0d9488;
-  --color-teal-700: #0f766e;
-  --color-teal-800: #115e59;
-  --color-teal-900: #134e4a;
+  /* Global Colors: Teal / Diagnostic Aliased to Powder Blue */
+  --color-teal-50: #f0f7fe;
+  --color-teal-100: #e1f0fd;
+  --color-teal-200: #bee1fb;
+  --color-teal-300: #90ccf9;
+  --color-teal-400: #5eaef5;
+  --color-teal-500: #3b93ee;
+  --color-teal-600: #2576d2;
+  --color-teal-700: #1c5fae;
+  --color-teal-800: #1c508e;
+  --color-teal-900: #1c4372;
 
   /* Global Colors: Emerald (Health / Verification / WhatsApp) */
   --color-emerald-50: #ecfdf5;
@@ -125,31 +162,31 @@
   --transition-smooth: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 
   /* --------------------------------------------------------------------------
-     2. SEMANTIC TOKENS (LIGHT THEME DEFAULT)
+     2. SEMANTIC TOKENS (LIGHT THEME DEFAULT: SOFT LAVENDER WHITE & POWDER BLUE)
      -------------------------------------------------------------------------- */
-  --surface-base: #f8fafc;
+  --surface-base: #f9f8fe;
   --surface-card: #ffffff;
-  --surface-subtle: #f1f5f9;
-  --surface-muted: #e2e8f0;
-  --surface-overlay: rgba(15, 23, 42, 0.5);
+  --surface-subtle: #f3f1fa;
+  --surface-muted: #ebe7f6;
+  --surface-overlay: rgba(18, 24, 38, 0.45);
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-primary: #121826;
+  --text-secondary: #4a536b;
+  --text-muted: #8c96b3;
   --text-inverse: #ffffff;
 
-  --border-subtle: #e2e8f0;
-  --border-default: #cbd5e1;
-  --border-strong: #94a3b8;
+  --border-subtle: #ede9f7;
+  --border-default: #dad4eb;
+  --border-strong: #8c96b3;
 
-  --action-primary: #0d9488;
-  --action-primary-hover: #0f766e;
-  --action-primary-active: #115e59;
+  --action-primary: #2576d2;
+  --action-primary-hover: #1c5fae;
+  --action-primary-active: #1c508e;
   --action-primary-text: #ffffff;
 
   --action-secondary: #ffffff;
-  --action-secondary-hover: #f8fafc;
-  --action-secondary-border: #e2e8f0;
+  --action-secondary-hover: #f9f8fe;
+  --action-secondary-border: #ede9f7;
   --action-secondary-text: #334155;
 
   --action-emerald: #059669;
@@ -160,28 +197,28 @@
   --action-danger-hover: #b91c1c;
   --action-danger-text: #ffffff;
 
-  /* Status Tokens */
+  /* Status Tokens: Health, Warm Sunset Peace & Panic */
   --status-success-bg: #ecfdf5;
   --status-success-text: #047857;
   --status-success-border: #a7f3d0;
 
-  --status-warning-bg: #fffbeb;
-  --status-warning-text: #b45309;
-  --status-warning-border: #fde68a;
+  --status-warning-bg: #fff7f2;
+  --status-warning-text: #b73612;
+  --status-warning-border: #fed8c4;
 
   --status-danger-bg: #fef2f2;
   --status-danger-text: #b91c1c;
   --status-danger-border: #fecaca;
 
-  --status-info-bg: #f0f9ff;
-  --status-info-text: #0369a1;
-  --status-info-border: #bae6fd;
+  --status-info-bg: #f0f7fe;
+  --status-info-text: #1c5fae;
+  --status-info-border: #bee1fb;
 
   --status-panic-bg: #dc2626;
   --status-panic-text: #ffffff;
   --status-panic-border: #ef4444;
 
-  --focus-ring: 0 0 0 3px rgba(13, 148, 136, 0.2);
+  --focus-ring: 0 0 0 3px rgba(37, 118, 210, 0.22);
 
   /* --------------------------------------------------------------------------
      3. COMPONENT TOKENS
@@ -200,42 +237,47 @@
 /* --------------------------------------------------------------------------
    DARK THEME OVERRIDES (Optional / Inversion Safe)
    -------------------------------------------------------------------------- */
+:root.dark,
 [data-theme="dark"],
 .dark {
-  --surface-base: #090d16;
-  --surface-card: #0f172a;
-  --surface-subtle: #1e293b;
-  --surface-muted: #334155;
-  --surface-overlay: rgba(2, 6, 23, 0.8);
+  --surface-base: #0e101c;
+  --surface-card: #15182a;
+  --surface-subtle: #1d2138;
+  --surface-muted: #2a2f4c;
+  --surface-overlay: rgba(8, 10, 18, 0.85);
 
   --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-inverse: #0f172a;
+  --text-secondary: #c9d2ea;
+  --text-muted: #8c96b3;
+  --text-inverse: #0e101c;
 
-  --border-subtle: #1e293b;
-  --border-default: #334155;
-  --border-strong: #475569;
+  --border-subtle: #23273e;
+  --border-default: #353b5c;
+  --border-strong: #4d5580;
 
-  --action-secondary: #1e293b;
-  --action-secondary-hover: #334155;
-  --action-secondary-border: #334155;
+  --action-primary: #3b93ee;
+  --action-primary-hover: #5eaef5;
+  --action-primary-active: #2576d2;
+
+  --action-secondary: #1d2138;
+  --action-secondary-hover: #2a2f4c;
+  --action-secondary-border: #2a2f4c;
   --action-secondary-text: #f1f5f9;
 
   --status-success-bg: rgba(6, 78, 59, 0.3);
   --status-success-text: #6ee7b7;
   --status-success-border: #065f46;
 
-  --status-warning-bg: rgba(120, 53, 15, 0.3);
-  --status-warning-text: #fcd34d;
-  --status-warning-border: #92400e;
+  --status-warning-bg: rgba(183, 54, 18, 0.25);
+  --status-warning-text: #fdb99b;
+  --status-warning-border: #932c13;
 
   --status-danger-bg: rgba(127, 29, 29, 0.3);
   --status-danger-text: #fca5a5;
   --status-danger-border: #991b1b;
 
-  --status-info-bg: rgba(12, 74, 110, 0.3);
-  --status-info-text: #7dd3fc;
-  --status-info-border: #075985;
+  --status-info-bg: rgba(37, 118, 210, 0.25);
+  --status-info-text: #90ccf9;
+  --status-info-border: #1c5fae;
 }
 

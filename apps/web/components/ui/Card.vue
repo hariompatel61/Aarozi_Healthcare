@@ -17,15 +17,15 @@ withDefaults(defineProps<Props>(), {
 <template>
   <div
     :class="[
-      'bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-xl shadow-2xs transition-all duration-150 overflow-hidden text-left',
-      hoverable ? 'hover:shadow-sm hover:border-slate-300 dark:hover:border-slate-700 cursor-pointer' : ''
+      'bg-white dark:bg-[#15182a] border border-[#ede9f7] dark:border-[#23273e] rounded-xl shadow-2xs transition-all duration-150 overflow-hidden text-left',
+      hoverable ? 'hover:shadow-sm hover:border-[#bee1fb] dark:hover:border-[#353b5c] cursor-pointer' : ''
     ]"
   >
     <!-- Card Header -->
     <div
       v-if="title || subtitle || $slots.header || $slots['header-right']"
       :class="[
-        'border-b border-slate-100 dark:border-slate-800 flex items-center justify-between',
+        'border-b border-[#f4f2fc] dark:border-[#23273e] flex items-center justify-between',
         dense ? 'px-4 py-2.5' : 'px-5 py-3.5'
       ]"
     >

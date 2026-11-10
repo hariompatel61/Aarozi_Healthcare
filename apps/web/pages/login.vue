@@ -74,9 +74,21 @@ async function handleLogin() {
       localStorage.setItem('aarozi_user', JSON.stringify(userData))
     }
 
+    const customerCookie = useCookie('aarozi_customer_token', { path: '/' })
+    const customerEmailCookie = useCookie('aarozi_customer_email', { path: '/' })
+    customerCookie.value = authToken
+    customerEmailCookie.value = username.value.trim()
+
     success('Login Successful', `Welcome back, ${fullName}`)
 
-    const redirectPath = (route.query.redirect as string) || '/dashboard'
+    let redirectPath = route.query.redirect as string
+    if (!redirectPath) {
+      if (username.value.toLowerCase().includes('super') || role === 'SUPER_ADMIN') {
+        redirectPath = '/admin/platform'
+      } else {
+        redirectPath = '/account'
+      }
+    }
     await navigateTo(redirectPath)
   } catch (err: any) {
     error('Login Failed', err.message || 'Invalid username or password. Please try again.')
@@ -87,7 +99,7 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-800 p-8 sm:p-10 space-y-6 transition-colors">
+  <div class="bg-white dark:bg-[#15182a] rounded-2xl shadow-xl border border-[#ede9f7] dark:border-[#23273e] p-8 sm:p-10 space-y-6 transition-colors">
     <!-- Header -->
     <div class="space-y-1.5 text-center sm:text-left">
       <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Sign In</h1>
@@ -118,11 +130,11 @@ async function handleLogin() {
             <input
               v-model="rememberMe"
               type="checkbox"
-              class="w-3.5 h-3.5 rounded text-teal-600 focus:ring-teal-500 border-slate-300 dark:border-slate-700 dark:bg-slate-800"
+              class="w-3.5 h-3.5 rounded text-[#2576d2] focus:ring-[#3b93ee] border-slate-300 dark:border-slate-700 dark:bg-slate-800"
             />
             <span>Remember me</span>
           </label>
-          <NuxtLink to="/forgot-password" class="text-teal-600 dark:text-teal-400 hover:underline font-semibold">
+          <NuxtLink to="/forgot-password" class="text-[#2576d2] dark:text-[#90ccf9] hover:underline font-semibold">
             Forgot password?
           </NuxtLink>
         </div>
@@ -142,9 +154,9 @@ async function handleLogin() {
     </form>
 
     <!-- Footer Links -->
-    <div class="pt-4 border-t border-slate-100 dark:border-slate-800 text-center text-xs text-slate-600 dark:text-slate-300">
+    <div class="pt-4 border-t border-[#ede9f7] dark:border-[#23273e] text-center text-xs text-slate-600 dark:text-slate-300">
       <span>Don't have an account? </span>
-      <NuxtLink to="/signup" class="text-teal-600 dark:text-teal-400 font-bold hover:underline">
+      <NuxtLink to="/signup" class="text-[#2576d2] dark:text-[#90ccf9] font-bold hover:underline">
         Sign up
       </NuxtLink>
     </div>

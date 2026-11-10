@@ -205,7 +205,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <header class="h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 flex items-center justify-between z-30 sticky top-0 shadow-2xs select-none">
+  <header class="h-14 bg-white/95 dark:bg-[#15182a] border-b border-[#ede9f7] dark:border-[#23273e] px-4 sm:px-6 flex items-center justify-between z-30 sticky top-0 shadow-2xs select-none">
     <!-- Left: Mobile Toggle & Operating Station Indicator -->
     <div class="flex items-center space-x-3">
       <!-- Mobile Hamburger Button -->
@@ -231,12 +231,12 @@ onUnmounted(() => {
     <div class="hidden md:flex items-center">
       <button
         type="button"
-        class="flex items-center justify-between w-64 lg:w-80 px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 hover:bg-white dark:hover:bg-slate-700/60 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer transition-all shadow-2xs group"
+        class="flex items-center justify-between w-64 lg:w-80 px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 bg-[#f9f8fe] dark:bg-[#1d2138] hover:bg-white dark:hover:bg-[#252b48] border border-[#ede9f7] dark:border-[#2a2f4c] rounded-lg cursor-pointer transition-all shadow-2xs group"
         title="Quick search patients, investigations, barcodes (Ctrl+K)"
         @click="emit('open-command-palette')"
       >
         <div class="flex items-center gap-2">
-          <Icon name="search" size="xs" className="text-slate-400 group-hover:text-teal-600 transition-colors" />
+          <Icon name="search" size="xs" className="text-slate-400 group-hover:text-[#2576d2] transition-colors" />
           <span class="text-slate-500 dark:text-slate-300 font-normal">Search UHID, sample, test...</span>
         </div>
         <Kbd size="xs">Ctrl K</Kbd>
@@ -250,13 +250,13 @@ onUnmounted(() => {
         <Button variant="primary" size="sm">
           <template #icon-left><Icon name="plus" size="xs" /></template>
           <span>Register</span>
-          <Kbd size="xs" class="bg-teal-700 text-teal-100 border-teal-600">F2</Kbd>
+          <Kbd size="xs" class="bg-[#1c5fae] text-[#bee1fb] border-[#2576d2]">F2</Kbd>
         </Button>
       </NuxtLink>
 
       <!-- Interactive Operating Branch Selector -->
       <div class="flex items-center text-xs text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-2xs overflow-hidden">
-        <span class="pl-2 pr-0.5 text-teal-600 shrink-0">
+        <span class="pl-2 pr-0.5 text-[#2576d2] shrink-0">
           <Icon name="briefcase" size="xs" />
         </span>
         <select

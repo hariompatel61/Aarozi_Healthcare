@@ -15,7 +15,7 @@ function openCommandPalette() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 dark:bg-slate-950 flex font-sans text-slate-900 dark:text-slate-100 antialiased">
+  <div class="min-h-screen bg-[#f9f8fe] dark:bg-[#0e101c] flex font-sans text-slate-900 dark:text-slate-100 antialiased selection:bg-[#bee1fb] selection:text-[#1c4372]">
     <!-- Collapsible Operational Sidebar matching Reference Design -->
     <Sidebar
       v-model:collapsed="isSidebarCollapsed"
@@ -43,7 +43,7 @@ function openCommandPalette() {
       </main>
 
       <!-- Clean Clinical Footer -->
-      <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-6 py-2.5 text-xs text-slate-500 dark:text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <footer class="bg-white/90 dark:bg-[#15182a] border-t border-[#ede9f7] dark:border-[#23273e] px-6 py-2.5 text-xs text-slate-500 dark:text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-2">
         <div class="flex items-center space-x-2">
           <span class="font-semibold text-slate-800 dark:text-slate-200">Aarozi Healthcare</span>
           <span>&bull;</span>

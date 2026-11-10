@@ -1,29 +1,38 @@
 <script setup lang="ts">
+import { onMounted, computed } from 'vue'
+import { usePlatformStore } from '~/composables/usePlatformStore'
 import Icon from '~/components/ui/Icon.vue'
 import Button from '~/components/ui/Button.vue'
+import Badge from '~/components/ui/Badge.vue'
 
 definePageMeta({
   layout: 'customer',
 })
 
-const packages = [
+const { windowsRelease, initStore } = usePlatformStore()
+
+onMounted(() => {
+  initStore()
+})
+
+const packages = computed(() => [
   {
-    name: 'Aarozi Healthcare Master Server Installer (x64)',
-    version: 'v1.0.4-LTS',
-    fileSize: '30.6 MB',
-    date: '10 Nov 2026',
-    format: 'Setup .exe',
-    url: '/downloads/AaroziHealthcareServer-v1.0.4-Setup.exe',
-    sha256: 'a9f1b4c83d7e52a09f3e4c6b8d1a2f5e7c9b0a1d3f5e7c9b0a1d3f5e7c9b0a1d',
+    name: 'Aarozi Healthcare Master LIS Installer (.exe)',
+    version: windowsRelease.value.version,
+    fileSize: windowsRelease.value.fileSize,
+    date: windowsRelease.value.releaseDate,
+    format: 'Windows Setup .exe',
+    url: windowsRelease.value.downloadUrl,
+    sha256: windowsRelease.value.sha256,
     recommended: true,
   },
   {
     name: 'Aarozi Portable ZIP Package (No Admin Rights Needed)',
-    version: 'v1.0.4-Portable',
-    fileSize: '32.1 MB',
-    date: '10 Nov 2026',
+    version: `${windowsRelease.value.version}-Portable`,
+    fileSize: '86.2 MB',
+    date: windowsRelease.value.releaseDate,
     format: '.zip Archive',
-    url: '/downloads/AaroziHealthcareServer-v1.0.4-Portable.zip',
+    url: '/downloads/Aarozi-LIS-Portable-v2.4.0.zip',
     sha256: '7c8b9a01f2e3d4c5b6a7890123456789abcdef0123456789abcdef0123456789',
     recommended: false,
   },
@@ -37,14 +46,14 @@ const packages = [
     sha256: '3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e',
     recommended: false,
   },
-]
+])
 </script>
 
 <template>
-  <div class="space-y-8">
+  <div class="space-y-8 text-slate-900 dark:text-slate-100">
     <div>
       <h1 class="text-2xl font-black text-slate-900 dark:text-white">Windows Software Downloads</h1>
-      <p class="text-xs text-slate-500">Official verified binaries and server deployment scripts for your Master PC</p>
+      <p class="text-xs text-slate-500">Official verified binaries and server deployment packages for your Laboratory Master PC</p>
     </div>
 
     <!-- Downloads Grid -->
@@ -52,18 +61,15 @@ const packages = [
       <div
         v-for="pkg in packages"
         :key="pkg.name"
-        class="rounded-3xl bg-white dark:bg-slate-900 border p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm"
-        :class="pkg.recommended ? 'border-teal-500/50 ring-1 ring-teal-500/20' : 'border-slate-200 dark:border-slate-800'"
+        class="rounded-3xl bg-white dark:bg-[#15182a] border p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-2xs"
+        :class="pkg.recommended ? 'border-[#2576d2] ring-1 ring-[#2576d2]/20' : 'border-[#ede9f7] dark:border-[#23273e]'"
       >
         <div class="space-y-2 max-w-xl">
           <div class="flex items-center space-x-2">
             <h3 class="text-base font-bold text-slate-900 dark:text-white">{{ pkg.name }}</h3>
-            <span
-              v-if="pkg.recommended"
-              class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300"
-            >
+            <Badge v-if="pkg.recommended" variant="info" size="sm">
               Recommended
-            </span>
+            </Badge>
           </div>
 
           <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500">
@@ -80,13 +86,12 @@ const packages = [
         </div>
 
         <a :href="pkg.url" download class="shrink-0">
-          <Button variant="primary" size="sm" class="w-full sm:w-auto font-bold">
+          <Button variant="primary" size="md" class="w-full sm:w-auto font-bold shadow-xs">
             <template #icon-left><Icon name="download" size="xs" /></template>
-            Download ({{ pkg.format }})
+            <span>Download {{ pkg.format }}</span>
           </Button>
         </a>
       </div>
     </div>
   </div>
 </template>
-

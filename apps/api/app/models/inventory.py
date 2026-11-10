@@ -86,3 +86,4 @@ class StockMovement(Base):
     timestamp: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False, index=True)
 
     item: Mapped[InventoryItem] = relationship("InventoryItem", back_populates="movements")
+

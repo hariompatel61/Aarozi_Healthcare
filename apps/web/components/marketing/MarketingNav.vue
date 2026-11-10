@@ -86,17 +86,17 @@ const resourceItems = [
 </script>
 
 <template>
-  <header class="sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
+  <header class="sticky top-0 z-50 bg-white/95 dark:bg-[#15182a]/95 backdrop-blur-md border-b border-[#ede9f7] dark:border-[#23273e] transition-colors">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
       <!-- Logo Branding -->
       <NuxtLink to="/" class="flex items-center space-x-3 group" @click="closeDropdowns">
-        <div class="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center font-black text-lg shadow-md group-hover:bg-teal-700 transition-colors">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2576d2] to-[#5eaef5] text-white flex items-center justify-center font-black text-lg shadow-md group-hover:from-[#1c5fae] group-hover:to-[#3b93ee] transition-all">
           AH
         </div>
         <div>
           <div class="flex items-center space-x-2">
             <span class="font-extrabold text-lg tracking-tight text-slate-900 dark:text-white">Aarozi Healthcare</span>
-            <span class="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300 rounded-full border border-teal-200 dark:border-teal-800 uppercase tracking-wide">
+            <span class="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold bg-[#f0f7fe] text-[#1c5fae] dark:bg-[#1d273d] dark:text-[#90ccf9] rounded-full border border-[#bee1fb] dark:border-[#2576d2]/50 uppercase tracking-wide">
               LIS v1.0.4
             </span>
           </div>

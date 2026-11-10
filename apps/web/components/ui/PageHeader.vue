@@ -23,7 +23,7 @@ withDefaults(defineProps<Props>(), {
 <template>
   <header
     :class="[
-      'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 mb-4 border-b border-slate-200 dark:border-slate-800',
+      'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 mb-4 border-b border-[#ede9f7] dark:border-[#23273e]',
       compact ? 'pb-2.5 mb-2.5' : 'pb-4 mb-4'
     ]"
   >
@@ -31,7 +31,7 @@ withDefaults(defineProps<Props>(), {
     <div class="flex items-start gap-3 min-w-0">
       <div
         v-if="icon"
-        class="w-10 h-10 rounded-lg bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 mt-0.5 border border-teal-100 dark:border-teal-900"
+        class="w-10 h-10 rounded-lg bg-[#f0f7fe] dark:bg-[#1d273d] text-[#2576d2] dark:text-[#90ccf9] flex items-center justify-center shrink-0 mt-0.5 border border-[#bee1fb] dark:border-[#2576d2]/40"
       >
         <Icon :name="icon" size="md" />
       </div>

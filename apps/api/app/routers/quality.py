@@ -241,3 +241,4 @@ def record_calibration(
         "status": cal.status,
         "message": "Equipment calibration registered successfully",
     }
+

@@ -102,6 +102,7 @@ const navSections: NavSection[] = [
     title: 'Quality & Governance',
     items: [
       { name: 'NABL & QC Desk', to: '/quality', icon: 'shield' },
+      { name: 'Platform & CMS Admin', to: '/admin/platform', icon: 'database' },
       { name: 'Settings Hub', to: '/admin/users', icon: 'settings' },
     ],
   },
@@ -128,20 +129,20 @@ function isCurrentRoute(path: string): boolean {
     <!-- Main Sidebar Shell -->
     <aside
       :class="[
-        'fixed top-0 bottom-0 left-0 z-40 flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-all duration-200 select-none text-left',
+        'fixed top-0 bottom-0 left-0 z-40 flex flex-col bg-white/95 dark:bg-[#15182a] border-r border-[#ede9f7] dark:border-[#23273e] transition-all duration-200 select-none text-left',
         collapsed ? 'w-16' : 'w-56',
         mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       ]"
     >
       <!-- Top Brand Header -->
-      <div class="h-14 flex items-center justify-between px-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0">
+      <div class="h-14 flex items-center justify-between px-3.5 border-b border-[#ede9f7] dark:border-[#23273e] shrink-0">
         <NuxtLink to="/dashboard" class="flex items-center space-x-2.5 min-w-0" @click="emit('close-mobile')">
-          <div class="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#2576d2] to-[#5eaef5] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
             AH
           </div>
           <div v-if="!collapsed" class="truncate">
             <div class="font-bold text-xs tracking-tight text-slate-900 dark:text-white">Aarozi Healthcare</div>
-            <div class="text-[10px] text-teal-600 dark:text-teal-400 font-medium">Pathology LIS</div>
+            <div class="text-[10px] text-[#2576d2] dark:text-[#90ccf9] font-medium">Pathology LIS</div>
           </div>
         </NuxtLink>
 
@@ -197,8 +198,8 @@ function isCurrentRoute(path: string): boolean {
               'group flex items-center rounded-lg transition-colors duration-150',
               collapsed ? 'justify-center p-2' : 'px-2.5 py-1.5 justify-between',
               isCurrentRoute(item.to)
-                ? 'bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-200 font-semibold'
-                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                ? 'bg-[#f0f7fe] dark:bg-[#1d273d] text-[#1c5fae] dark:text-[#90ccf9] font-semibold'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/60'
             ]"
             @click="emit('close-mobile')"
           >
@@ -208,7 +209,7 @@ function isCurrentRoute(path: string): boolean {
                 size="sm"
                 :class="[
                   'shrink-0 transition-colors',
-                  isCurrentRoute(item.to) ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200'
+                  isCurrentRoute(item.to) ? 'text-[#2576d2] dark:text-[#90ccf9]' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200'
                 ]"
               />
               <span v-if="!collapsed" class="text-xs truncate">
@@ -225,7 +226,7 @@ function isCurrentRoute(path: string): boolean {
       </nav>
 
       <!-- Bottom Staff Profile & Logout Footer -->
-      <div class="p-2.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
+      <div class="p-2.5 border-t border-[#ede9f7] dark:border-[#23273e] bg-[#f9f8fe]/60 dark:bg-[#1d2138]/50 shrink-0">
         <div v-if="!collapsed" class="flex items-center justify-between">
           <div class="min-w-0 pr-1">
             <div class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">

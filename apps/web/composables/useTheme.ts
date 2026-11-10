@@ -10,7 +10,7 @@ export function useTheme() {
     if (stored) {
       isDark.value = stored === 'dark'
     } else {
-      isDark.value = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+      isDark.value = false // Default to clean minimal Light Mode (Soft Lavender White & Powder Blue)
     }
     applyTheme()
     initialized = true
@@ -19,12 +19,21 @@ export function useTheme() {
   function applyTheme() {
     if (typeof document === 'undefined') return
     const root = document.documentElement
+    const body = document.body
     if (isDark.value) {
       root.classList.add('dark')
       root.setAttribute('data-theme', 'dark')
+      if (body) {
+        body.classList.add('dark')
+        body.setAttribute('data-theme', 'dark')
+      }
     } else {
       root.classList.remove('dark')
       root.setAttribute('data-theme', 'light')
+      if (body) {
+        body.classList.remove('dark')
+        body.setAttribute('data-theme', 'light')
+      }
     }
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('aarozi_theme', isDark.value ? 'dark' : 'light')

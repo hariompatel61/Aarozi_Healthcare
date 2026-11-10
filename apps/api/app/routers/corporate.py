@@ -252,3 +252,4 @@ def generate_corporate_invoice(
         "due_date": invoice.due_date.strftime("%Y-%m-%d"),
         "message": "Corporate monthly invoice generated and issued",
     }
+

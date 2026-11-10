@@ -59,3 +59,4 @@ class HomeCollectionBooking(Base):
     patient = relationship("Patient")
     order = relationship("Order")
     phlebotomist = relationship("User", foreign_keys=[phlebotomist_id])
+

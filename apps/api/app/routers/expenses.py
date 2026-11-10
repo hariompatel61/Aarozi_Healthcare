@@ -273,3 +273,4 @@ def get_expense_summary(
         "total_expense_count": count or 0,
         "payment_modes": {m: float(amt or 0) for m, amt in modes},
     }
+

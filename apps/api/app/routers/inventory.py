@@ -295,3 +295,4 @@ def get_inventory_alerts(
             for lot in expiring_soon
         ],
     }
+

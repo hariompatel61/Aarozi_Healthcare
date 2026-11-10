@@ -92,3 +92,4 @@ class CorporateInvoice(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     corporate: Mapped[CorporateAccount] = relationship("CorporateAccount", back_populates="invoices")
+

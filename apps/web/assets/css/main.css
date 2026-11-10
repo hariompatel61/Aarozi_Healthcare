@@ -1,6 +1,66 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *, .dark, .dark *));
+@variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
+
+@theme {
+  --color-powder-50: #f0f7fe;
+  --color-powder-100: #e1f0fd;
+  --color-powder-200: #bee1fb;
+  --color-powder-300: #90ccf9;
+  --color-powder-400: #5eaef5;
+  --color-powder-500: #3b93ee;
+  --color-powder-600: #2576d2;
+  --color-powder-700: #1c5fae;
+  --color-powder-800: #1c508e;
+  --color-powder-900: #1c4372;
+
+  --color-lavender-white: #f9f8fe;
+  --color-lavender-50: #faf9fe;
+  --color-lavender-100: #f4f2fc;
+  --color-lavender-200: #ebe6f9;
+  --color-lavender-300: #ddd4f4;
+  --color-lavender-400: #c6b8eb;
+  --color-lavender-500: #aa95df;
+  --color-lavender-600: #8d73cf;
+  --color-lavender-700: #745bbe;
+  --color-lavender-800: #604ca0;
+  --color-lavender-900: #504084;
+
+  --color-sunset-50: #fff7f2;
+  --color-sunset-100: #ffefe5;
+  --color-sunset-200: #fed8c4;
+  --color-sunset-300: #fdb99b;
+  --color-sunset-400: #fb8f68;
+  --color-sunset-500: #f46738;
+  --color-sunset-600: #db491c;
+  --color-sunset-700: #b73612;
+  --color-sunset-800: #932c13;
+  --color-sunset-900: #772614;
+
+  --color-teal-50: #f0f7fe;
+  --color-teal-100: #e1f0fd;
+  --color-teal-200: #bee1fb;
+  --color-teal-300: #90ccf9;
+  --color-teal-400: #5eaef5;
+  --color-teal-500: #3b93ee;
+  --color-teal-600: #2576d2;
+  --color-teal-700: #1c5fae;
+  --color-teal-800: #1c508e;
+  --color-teal-900: #1c4372;
+  --color-teal-950: #102644;
+
+  --color-amber-50: #fff7f2;
+  --color-amber-100: #ffefe5;
+  --color-amber-200: #fed8c4;
+  --color-amber-300: #fdb99b;
+  --color-amber-400: #fb8f68;
+  --color-amber-500: #f46738;
+  --color-amber-600: #db491c;
+  --color-amber-700: #b73612;
+  --color-amber-800: #932c13;
+  --color-amber-900: #772614;
+}
 
 @import "./fonts.css";
 @import "./tokens.css";
@@ -55,7 +115,7 @@
 
 /* FAANG-Grade Design System Utility Classes (Linear/Stripe Aesthetic) */
 @layer components {
-  /* Primary Action Button */
+  /* Primary Action Button (Powder Blue Palette) */
   .btn-primary {
     display: inline-flex;
     align-items: center;
@@ -65,18 +125,18 @@
     font-weight: 600;
     line-height: 1rem;
     color: #ffffff;
-    background-color: #0d9488;
+    background-color: #2576d2;
     padding: 0.5rem 0.875rem;
     border-radius: 0.5rem;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 2px 0 rgba(37, 118, 210, 0.18);
     transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     user-select: none;
     border: 1px solid transparent;
   }
   .btn-primary:hover {
-    background-color: #0f766e;
-    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
+    background-color: #1c5fae;
+    box-shadow: 0 2px 4px 0 rgba(37, 118, 210, 0.25);
   }
   .btn-primary:active {
     transform: scale(0.98);
@@ -178,9 +238,9 @@
     background-color: #f8fafc;
   }
   .filter-pill.active {
-    background-color: #f0fdfa;
-    border-color: #99f6e4;
-    color: #0f766e;
+    background-color: #f0f7fe;
+    border-color: #bee1fb;
+    color: #1c5fae;
   }
 
   /* Emerald / Health Action Button (WhatsApp, Verify, Clinical Release) */
@@ -259,8 +319,8 @@
   }
   .input-faang:focus {
     outline: none;
-    border-color: #0d9488;
-    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+    border-color: #2576d2;
+    box-shadow: 0 0 0 3px rgba(37, 118, 210, 0.18);
   }
   .input-faang::placeholder {
     color: #94a3b8;

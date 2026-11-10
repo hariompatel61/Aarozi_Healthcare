@@ -93,7 +93,7 @@ function handleClear() {
           monospace ? 'font-mono tabular-nums' : '',
           error
             ? 'border-red-400 text-red-900 dark:text-red-300 dark:border-red-600 bg-red-50/20 focus:ring-red-400 focus:border-red-500 placeholder-red-300'
-            : 'border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 focus:ring-teal-500 focus:border-teal-500 placeholder-slate-400',
+            : 'border-[#dad4eb] dark:border-[#353b5c] text-slate-900 dark:text-slate-100 bg-white dark:bg-[#15182a] focus:ring-[#3b93ee] focus:border-[#2576d2] placeholder-slate-400',
           disabled ? 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-500 cursor-not-allowed border-slate-200 dark:border-slate-800' : '',
           readonly ? 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300' : ''
         ]"

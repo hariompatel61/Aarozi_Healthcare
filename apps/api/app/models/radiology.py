@@ -83,3 +83,4 @@ class RadiologyAttachment(Base):
     uploaded_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
     finding: Mapped[RadiologyFinding] = relationship("RadiologyFinding", back_populates="attachments")
+

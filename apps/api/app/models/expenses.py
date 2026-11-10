@@ -77,3 +77,4 @@ class Expense(Base):
 
     category: Mapped[ExpenseCategory] = relationship("ExpenseCategory", back_populates="expenses")
     vendor: Mapped[Vendor | None] = relationship("Vendor", back_populates="expenses")
+

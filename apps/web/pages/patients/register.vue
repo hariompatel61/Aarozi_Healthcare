@@ -631,7 +631,7 @@ onUnmounted(() => {
           Clear POS [Esc]
         </Button>
         <Button
-          variant="success"
+          variant="primary"
           size="sm"
           icon-left="printer"
           :loading="isSubmitting"
@@ -660,7 +660,7 @@ onUnmounted(() => {
               </Badge>
               <div class="flex items-center gap-1 font-mono text-xs bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
                 <span class="text-slate-600 dark:text-slate-400 font-bold">UHID:</span>
-                <span class="font-bold text-teal-700 dark:text-teal-400">{{ patientUhid }}</span>
+                <span class="font-bold text-[#2576d2] dark:text-[#90ccf9]">{{ patientUhid }}</span>
               </div>
             </div>
           </template>
@@ -676,7 +676,7 @@ onUnmounted(() => {
                   <button
                     v-if="isExistingPatient"
                     type="button"
-                    class="text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+                    class="text-xs font-semibold text-[#b73612] dark:text-[#fdb99b] hover:underline cursor-pointer"
                     @click="resetToNewPatient"
                   >
                     Change to New
@@ -684,7 +684,7 @@ onUnmounted(() => {
                   <button
                     v-else-if="form.mobile.replace(/\D/g, '').length >= 10"
                     type="button"
-                    class="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline cursor-pointer"
+                    class="text-xs font-semibold text-[#2576d2] dark:text-[#90ccf9] hover:underline cursor-pointer"
                     @click="checkMobileLookup"
                   >
                     Check Past
@@ -698,8 +698,8 @@ onUnmounted(() => {
                     type="tel"
                     maxlength="10"
                     placeholder="10-digit mobile"
-                    class="w-full px-3 py-2 border rounded-lg text-xs font-mono bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
-                    :class="isExistingPatient ? 'border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/20' : ''"
+                    class="w-full px-3 py-2 border rounded-lg text-xs font-mono bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-[#3b93ee] focus:border-[#2576d2] transition-colors"
+                    :class="isExistingPatient ? 'border-[#2576d2] bg-[#f0f7fe] dark:bg-[#1d273d]' : ''"
                     @input="triggerPatientSearch(form.mobile, 'mobile')"
                     @focus="form.mobile.length >= 3 && triggerPatientSearch(form.mobile, 'mobile')"
                     @keydown.enter.prevent="checkMobileLookup"
@@ -725,8 +725,8 @@ onUnmounted(() => {
                     v-model="form.full_name"
                     type="text"
                     placeholder="e.g. Aarav Sharma (or search repeat name)"
-                    class="w-full px-3 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-colors"
-                    :class="isExistingPatient ? 'border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/20' : ''"
+                    class="w-full px-3 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-[#3b93ee] focus:border-[#2576d2] transition-colors"
+                    :class="isExistingPatient ? 'border-[#2576d2] bg-[#f0f7fe] dark:bg-[#1d273d]' : ''"
                     @input="triggerPatientSearch(form.full_name, 'name')"
                     @focus="form.full_name.length >= 2 && triggerPatientSearch(form.full_name, 'name')"
                   />
@@ -740,11 +740,11 @@ onUnmounted(() => {
               <!-- Repeat Patient Dropdown Popover -->
               <div
                 v-if="showSearchDropdown && searchSuggestions.length > 0"
-                class="absolute top-16 left-4 right-4 z-50 bg-white dark:bg-slate-900 border border-teal-200 dark:border-teal-800 rounded-xl shadow-2xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-800"
+                class="absolute top-16 left-4 right-4 z-50 bg-white dark:bg-slate-900 border border-[#ede9f7] dark:border-[#23273e] rounded-xl shadow-2xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-800"
               >
-                <div class="bg-teal-50 dark:bg-teal-950/80 px-3.5 py-2 flex items-center justify-between text-xs font-bold text-teal-900 dark:text-teal-200 border-b border-teal-100 dark:border-teal-900">
+                <div class="bg-[#f0f7fe] dark:bg-[#1d273d] px-3.5 py-2 flex items-center justify-between text-xs font-bold text-[#1c4372] dark:text-[#90ccf9] border-b border-[#ede9f7] dark:border-[#23273e]">
                   <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-teal-600 animate-pulse" />
+                    <span class="w-2 h-2 rounded-full bg-[#2576d2] animate-pulse" />
                     <span>Repeat Records Found ({{ searchSuggestions.length }}) — Click to Auto-fill</span>
                   </div>
                   <button
@@ -761,12 +761,12 @@ onUnmounted(() => {
                     v-for="sug in searchSuggestions"
                     :key="sug.id"
                     type="button"
-                    class="w-full text-left p-3 hover:bg-teal-50/60 dark:hover:bg-teal-950/40 flex items-center justify-between transition cursor-pointer group"
+                    class="w-full text-left p-3 hover:bg-[#f0f7fe] dark:hover:bg-[#1d273d] flex items-center justify-between transition cursor-pointer group"
                     @click="selectExistingPatient(sug)"
                   >
                     <div class="space-y-1 min-w-0">
                       <div class="flex items-center gap-2 flex-wrap">
-                        <span class="font-bold text-slate-900 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-teal-400 text-xs">
+                        <span class="font-bold text-slate-900 dark:text-slate-100 group-hover:text-[#2576d2] dark:group-hover:text-[#90ccf9] text-xs">
                           {{ sug.first_name }} {{ sug.last_name || '' }}
                         </span>
                         <Badge variant="info" size="sm">
@@ -784,7 +784,7 @@ onUnmounted(() => {
                     </div>
 
                     <div class="shrink-0 ml-3">
-                      <span class="inline-flex items-center gap-1 text-xs font-semibold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950 px-2.5 py-1 rounded-md border border-teal-200 dark:border-teal-800 group-hover:bg-teal-600 group-hover:text-white transition">
+                      <span class="inline-flex items-center gap-1 text-xs font-semibold text-[#1c5fae] dark:text-[#90ccf9] bg-[#f0f7fe] dark:bg-[#1d273d] px-2.5 py-1 rounded-md border border-[#bee1fb] dark:border-[#2576d2]/50 group-hover:bg-[#2576d2] group-hover:text-white transition">
                         <span>Select</span>
                         <span>→</span>
                       </span>
@@ -796,7 +796,7 @@ onUnmounted(() => {
                   <span>Press Escape to dismiss</span>
                   <button
                     type="button"
-                    class="text-teal-600 dark:text-teal-400 font-bold hover:underline cursor-pointer"
+                    class="text-[#2576d2] dark:text-[#90ccf9] font-bold hover:underline cursor-pointer"
                     @click="showSearchDropdown = false"
                   >
                     Register as New Patient
@@ -814,7 +814,7 @@ onUnmounted(() => {
                   type="number"
                   min="0"
                   max="125"
-                  class="w-full px-3 py-2 border rounded-lg text-xs font-mono bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  class="w-full px-3 py-2 border rounded-lg text-xs font-mono bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-[#3b93ee] focus:border-[#2576d2]"
                 />
               </div>
 
@@ -822,7 +822,7 @@ onUnmounted(() => {
                 <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Gender</label>
                 <select
                   v-model="form.gender"
-                  class="w-full px-3 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                  class="w-full px-3 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-[#3b93ee] focus:border-[#2576d2] cursor-pointer"
                 >
                   <option value="Male">Male (M)</option>
                   <option value="Female">Female (F)</option>
@@ -836,7 +836,7 @@ onUnmounted(() => {
                   v-model="form.city"
                   type="text"
                   placeholder="e.g. Noida / Delhi"
-                  class="w-full px-3 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  class="w-full px-3 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-[#3b93ee] focus:border-[#2576d2]"
                 />
               </div>
             </div>
@@ -848,7 +848,7 @@ onUnmounted(() => {
           <template #header-right>
             <button
               type="button"
-              class="text-xs font-bold text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 flex items-center gap-1 cursor-pointer"
+              class="text-xs font-bold text-[#2576d2] dark:text-[#90ccf9] hover:underline flex items-center gap-1 cursor-pointer"
               @click="isAddDoctorModalOpen = true"
             >
               <Icon name="plus" size="xs" />
@@ -861,14 +861,14 @@ onUnmounted(() => {
               <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
                 Prescribing Clinician or Referral Source *
               </label>
-              <span v-if="selectedPartner.commission_pct > 0" class="text-xs font-semibold text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/80 px-2 py-0.5 rounded border border-teal-200 dark:border-teal-800">
+              <span v-if="selectedPartner.commission_pct > 0" class="text-xs font-semibold text-[#b73612] dark:text-[#fdb99b] bg-[#fff7f2] dark:bg-[#772614]/30 px-2 py-0.5 rounded border border-[#fed8c4] dark:border-[#932c13]">
                 {{ selectedPartner.commission_pct }}% Referral Commission
               </span>
             </div>
 
             <select
               v-model="selectedPartnerId"
-              class="w-full px-3 py-2 border rounded-lg text-xs font-medium bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+              class="w-full px-3 py-2 border rounded-lg text-xs font-medium bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-[#3b93ee] focus:border-[#2576d2] cursor-pointer"
             >
               <option v-for="p in partners" :key="p.id" :value="p.id">
                 {{ getPartnerDisplayLabel(p) }}
@@ -897,7 +897,7 @@ onUnmounted(() => {
                 v-model="testSearchQuery"
                 type="text"
                 placeholder="Search test name or code (e.g., CBC, LFT, Lipid, HbA1c)... [F3]"
-                class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white dark:focus:bg-slate-800 transition"
+                class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#3b93ee] focus:border-[#2576d2] focus:bg-white dark:focus:bg-slate-800 transition"
               />
             </div>
 
@@ -910,7 +910,7 @@ onUnmounted(() => {
                 :class="[
                   'px-3 py-1 rounded-full text-xs font-semibold transition cursor-pointer shrink-0 border select-none',
                   selectedCategory === cat
-                    ? 'bg-teal-600 text-white border-teal-600 shadow-2xs'
+                    ? 'bg-[#2576d2] text-white border-[#2576d2] shadow-2xs'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
                 ]"
                 @click="selectedCategory = cat"
@@ -938,7 +938,7 @@ onUnmounted(() => {
                     :class="[
                       'cursor-pointer transition-colors',
                       selectedTestCodes.includes(t.code)
-                        ? 'bg-teal-50/70 dark:bg-teal-950/40 font-semibold'
+                        ? 'bg-[#f0f7fe] dark:bg-[#1d273d] font-semibold'
                         : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
                     ]"
                     @click="toggleTest(t.code)"
@@ -947,11 +947,11 @@ onUnmounted(() => {
                       <input
                         type="checkbox"
                         :checked="selectedTestCodes.includes(t.code)"
-                        class="h-4 w-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500 cursor-pointer"
+                        class="h-4 w-4 text-[#2576d2] rounded border-slate-300 focus:ring-[#3b93ee] cursor-pointer"
                         @change="toggleTest(t.code)"
                       />
                     </td>
-                    <td class="px-3 py-2 font-mono font-bold text-teal-700 dark:text-teal-400">{{ t.code }}</td>
+                    <td class="px-3 py-2 font-mono font-bold text-[#2576d2] dark:text-[#90ccf9]">{{ t.code }}</td>
                     <td class="px-3 py-2 text-slate-800 dark:text-slate-200">{{ t.name }}</td>
                     <td class="px-3 py-2">
                       <span class="inline-block px-2 py-0.5 rounded font-mono text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
@@ -1025,7 +1025,7 @@ onUnmounted(() => {
                       type="button"
                       :class="[
                         'px-2 py-0.5 cursor-pointer font-bold transition-colors',
-                        discountType === 'flat' ? 'bg-teal-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                        discountType === 'flat' ? 'bg-[#2576d2] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                       ]"
                       @click="discountType = 'flat'"
                     >
@@ -1035,7 +1035,7 @@ onUnmounted(() => {
                       type="button"
                       :class="[
                         'px-2 py-0.5 cursor-pointer font-bold transition-colors',
-                        discountType === 'percentage' ? 'bg-teal-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                        discountType === 'percentage' ? 'bg-[#2576d2] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                       ]"
                       @click="discountType === 'percentage'"
                     >
@@ -1061,7 +1061,7 @@ onUnmounted(() => {
               <!-- Net Payable Total Display -->
               <div class="flex items-center justify-between border-t border-slate-200 dark:border-slate-700 pt-3">
                 <span class="text-sm font-bold text-slate-900 dark:text-white">Net Bill Payable:</span>
-                <span class="text-xl font-extrabold font-mono text-teal-600 dark:text-teal-300">
+                <span class="text-xl font-extrabold font-mono text-[#2576d2] dark:text-[#90ccf9]">
                   ₹{{ netPayable.toLocaleString('en-IN') }}
                 </span>
               </div>
@@ -1082,14 +1082,14 @@ onUnmounted(() => {
               </button>
               <button
                 type="button"
-                class="px-2 py-0.5 bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-300 hover:bg-teal-100 rounded text-xs font-semibold cursor-pointer border border-teal-200 dark:border-teal-800"
+                class="px-2 py-0.5 bg-[#f0f7fe] dark:bg-[#1d273d] text-[#1c5fae] dark:text-[#90ccf9] hover:bg-[#e1f0fd] rounded text-xs font-semibold cursor-pointer border border-[#bee1fb] dark:border-[#2576d2]/50"
                 @click="setPaymentMode('upi')"
               >
                 UPI QR
               </button>
               <button
                 type="button"
-                class="px-2 py-0.5 bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 hover:bg-amber-100 rounded text-xs font-semibold cursor-pointer border border-amber-200 dark:border-amber-800"
+                class="px-2 py-0.5 bg-[#fff7f2] dark:bg-[#772614]/30 text-[#b73612] dark:text-[#fdb99b] hover:bg-[#ffefe5] rounded text-xs font-semibold cursor-pointer border border-[#fed8c4] dark:border-[#932c13]"
                 @click="setPaymentMode('due')"
               >
                 Mark Due
@@ -1136,7 +1136,7 @@ onUnmounted(() => {
                   :class="[
                     'px-3 py-2 rounded-lg font-mono font-bold text-xs border flex items-center justify-between',
                     balanceDue > 0
-                      ? 'bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700'
+                      ? 'bg-[#fff7f2] dark:bg-[#772614]/30 text-[#b73612] dark:text-[#fdb99b] border-[#fed8c4] dark:border-[#932c13]'
                       : 'bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700'
                   ]"
                 >
@@ -1150,7 +1150,7 @@ onUnmounted(() => {
             <!-- Action Buttons Bar -->
             <div class="pt-3 border-t border-slate-200 dark:border-slate-700 space-y-2">
               <Button
-                variant="success"
+                variant="primary"
                 size="lg"
                 full-width
                 icon-left="printer"
@@ -1159,7 +1159,7 @@ onUnmounted(() => {
                 @click="handleSaveAndPrintInvoice"
               >
                 <span>Save &amp; Print Invoice</span>
-                <Kbd size="xs" class="ml-2 text-white bg-emerald-800/80 border-emerald-700">F2</Kbd>
+                <Kbd size="xs" class="ml-2 text-white bg-[#1c5fae] border-[#2576d2]">F2</Kbd>
               </Button>
 
               <Button
@@ -1189,7 +1189,7 @@ onUnmounted(() => {
           <label class="block font-bold text-slate-700 dark:text-slate-300 mb-1">Partner Category / Entity Type *</label>
           <select
             v-model="newDoctor.partner_type"
-            class="w-full px-3 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+            class="w-full px-3 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-[#3b93ee] focus:border-[#2576d2] cursor-pointer"
             @change="onQuickPartnerTypeChange"
           >
             <option v-for="t in partnerTypesList" :key="t.id" :value="t.id">
@@ -1204,7 +1204,7 @@ onUnmounted(() => {
             v-model="newDoctor.name"
             type="text"
             placeholder="e.g. Dr. Rajesh Khanna, Metro Path Lab or Apex Hospital"
-            class="w-full px-3 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            class="w-full px-3 py-2 border rounded-lg text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-[#3b93ee] focus:border-[#2576d2]"
           />
         </div>
 
@@ -1251,7 +1251,7 @@ onUnmounted(() => {
         <div class="text-center border-b border-dashed border-slate-300 dark:border-slate-700 pb-2.5">
           <h3 class="font-bold text-slate-900 dark:text-white text-sm">AAROZI HEALTHCARE CENTRAL LAB</h3>
           <p class="text-xs text-slate-500">ISO 15189:2022 • GSTIN: 09AAACA1234D1Z5</p>
-          <p class="text-xs font-bold text-teal-700 dark:text-teal-400 mt-1">{{ generatedInvoiceNo }}</p>
+          <p class="text-xs font-bold text-[#2576d2] dark:text-[#90ccf9] mt-1">{{ generatedInvoiceNo }}</p>
         </div>
 
         <div class="text-xs space-y-1 border-b border-dashed border-slate-300 dark:border-slate-700 pb-2.5">
@@ -1284,7 +1284,7 @@ onUnmounted(() => {
       <template #footer="{ close }">
         <NuxtLink
           to="/patients"
-          class="text-xs font-bold text-teal-600 hover:underline flex items-center gap-1"
+          class="text-xs font-bold text-[#2576d2] hover:underline flex items-center gap-1"
         >
           <span>View Patient Directory →</span>
         </NuxtLink>
@@ -1315,7 +1315,7 @@ onUnmounted(() => {
             <div class="flex justify-between items-start text-xs">
               <div>
                 <strong class="text-slate-900 dark:text-white block">{{ form.full_name || 'PATIENT' }}</strong>
-                <span class="text-teal-700 dark:text-teal-400 font-bold">{{ patientUhid }}</span> • {{ form.age }}Y/{{ form.gender.charAt(0) }}
+                <span class="text-[#2576d2] dark:text-[#90ccf9] font-bold">{{ patientUhid }}</span> • {{ form.age }}Y/{{ form.gender.charAt(0) }}
               </div>
               <Badge variant="neutral" size="sm">{{ t.sample }}</Badge>
             </div>

@@ -22,26 +22,26 @@ function isActive(path: string) {
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-100 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 flex flex-col selection:bg-teal-600 selection:text-white">
+  <div class="min-h-screen bg-[#f9f8fe] dark:bg-[#0e101c] font-sans text-slate-900 dark:text-slate-100 flex flex-col selection:bg-[#bee1fb] selection:text-[#1c4372]">
     <!-- Top Customer Portal Navigation Bar -->
-    <header class="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-xs">
+    <header class="sticky top-0 z-40 bg-white dark:bg-[#15182a] border-b border-[#ede9f7] dark:border-[#23273e] shadow-2xs">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <!-- Brand & Context -->
         <div class="flex items-center space-x-3">
           <NuxtLink to="/" class="flex items-center space-x-2.5 group">
-            <div class="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center font-black text-sm">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#2576d2] to-[#5eaef5] text-white flex items-center justify-center font-black text-sm shadow-xs">
               AH
             </div>
             <span class="font-extrabold text-base text-slate-900 dark:text-white tracking-tight">Aarozi Healthcare</span>
           </NuxtLink>
           <span class="text-slate-300 dark:text-slate-700">/</span>
-          <span class="px-2.5 py-0.5 text-xs font-bold bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300 rounded-md border border-teal-200 dark:border-teal-800">
+          <span class="px-2.5 py-0.5 text-xs font-bold bg-[#f0f7fe] text-[#1c5fae] dark:bg-[#1d273d] dark:text-[#90ccf9] rounded-md border border-[#bee1fb] dark:border-[#2576d2]/50">
             Customer Account Portal
           </span>
         </div>
 
         <!-- Center Registered Laboratory Info -->
-        <div class="hidden md:flex items-center space-x-3 bg-slate-50 dark:bg-slate-800/60 px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
+        <div class="hidden md:flex items-center space-x-3 bg-slate-50 dark:bg-slate-800/60 px-3.5 py-1.5 rounded-lg border border-[#ede9f7] dark:border-[#23273e] text-xs">
           <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <span class="font-bold text-slate-800 dark:text-slate-200">{{ profile.lab_name }}</span>
           <span class="text-slate-400">&bull;</span>
@@ -65,7 +65,7 @@ function isActive(path: string) {
       </div>
 
       <!-- Secondary Subnav Tabs -->
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-100 dark:border-slate-800 flex overflow-x-auto">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-[#ede9f7] dark:border-[#23273e] flex overflow-x-auto">
         <NuxtLink
           v-for="tab in navTabs"
           :key="tab.path"
@@ -73,7 +73,7 @@ function isActive(path: string) {
           class="px-4 py-3 text-xs font-bold border-b-2 flex items-center space-x-2 whitespace-nowrap transition-colors"
           :class="[
             isActive(tab.path)
-              ? 'border-teal-600 text-teal-600 dark:text-teal-400'
+              ? 'border-[#2576d2] text-[#2576d2] dark:text-[#90ccf9]'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           ]"
         >

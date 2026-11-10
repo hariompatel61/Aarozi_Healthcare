@@ -29,7 +29,7 @@ const props = withDefaults(defineProps<Props>(), {
 const variantClasses = computed(() => {
   switch (props.variant) {
     case 'primary':
-      return 'bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-semibold shadow-xs border border-transparent focus:ring-teal-500'
+      return 'bg-[#2576d2] hover:bg-[#1c5fae] active:bg-[#1c508e] text-white font-semibold shadow-xs border border-transparent focus:ring-[#3b93ee]'
     case 'secondary':
       return 'bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-700 font-semibold border border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700 shadow-2xs focus:ring-slate-400'
     case 'tertiary':

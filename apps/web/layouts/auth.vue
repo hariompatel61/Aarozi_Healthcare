@@ -8,13 +8,13 @@ const { isDark, toggleTheme } = useTheme()
 
 <template>
   <div
-    class="min-h-screen w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-between items-center p-4 sm:p-6 transition-colors duration-200 relative selection:bg-teal-600 selection:text-white"
+    class="min-h-screen w-full bg-[#f9f8fe] dark:bg-[#0e101c] text-slate-900 dark:text-slate-100 flex flex-col justify-between items-center p-4 sm:p-6 transition-colors duration-200 relative selection:bg-[#bee1fb] selection:text-[#1c4372]"
     style="display: flex; flex-direction: column; min-height: 100vh; justify-content: space-between; align-items: center;"
   >
     <!-- Top Minimal Navigation Bar -->
     <header class="w-full max-w-5xl py-4 flex items-center justify-between z-10 shrink-0">
       <NuxtLink to="/" class="flex items-center space-x-2.5 group">
-        <div class="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center font-black text-sm shadow-sm group-hover:bg-teal-700 transition-colors">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#2576d2] to-[#5eaef5] text-white flex items-center justify-center font-black text-sm shadow-sm group-hover:from-[#1c5fae] group-hover:to-[#3b93ee] transition-all">
           AH
         </div>
         <span class="font-bold text-base tracking-tight text-slate-900 dark:text-white transition-colors">
@@ -36,7 +36,7 @@ const { isDark, toggleTheme } = useTheme()
 
         <NuxtLink
           to="/"
-          class="text-xs font-semibold text-slate-600 hover:text-teal-600 dark:text-slate-400 dark:hover:text-teal-400 transition-colors flex items-center space-x-1"
+          class="text-xs font-semibold text-slate-600 hover:text-[#2576d2] dark:text-slate-400 dark:hover:text-[#90ccf9] transition-colors flex items-center space-x-1"
         >
           <span>&larr; Back to website</span>
         </NuxtLink>
@@ -51,7 +51,7 @@ const { isDark, toggleTheme } = useTheme()
     </main>
 
     <!-- Simple Professional Footer -->
-    <footer class="w-full max-w-5xl py-4 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 z-10 border-t border-slate-200 dark:border-slate-800 gap-2 shrink-0">
+    <footer class="w-full max-w-5xl py-4 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 z-10 border-t border-[#ede9f7] dark:border-[#23273e] gap-2 shrink-0">
       <div>
         <span>&copy; 2026 Aarozi Healthcare. All rights reserved.</span>
       </div>
