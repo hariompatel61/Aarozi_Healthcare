@@ -126,19 +126,6 @@ def create_test(
                         text_range=r.get("text_range"),
                     )
                     db.add(ref_range)
-            else:
-                # Add default reference range
-                ref_range = TestReferenceRange(
-                    id=str(uuid.uuid4()),
-                    test_id=test.id,
-                    parameter_id=param.id,
-                    tenant_id=tenant_id,
-                    sex="all",
-                    age_unit="years",
-                    priority=1,
-                    text_range="Refer to standard laboratory reference intervals",
-                )
-                db.add(ref_range)
     else:
         # Default single parameter matching test name
         param_names.append(clean_name)
@@ -173,18 +160,6 @@ def create_test(
                     text_range=rr.get("text_range"),
                 )
                 db.add(ref_range)
-        else:
-            ref_range = TestReferenceRange(
-                id=str(uuid.uuid4()),
-                test_id=test.id,
-                parameter_id=param.id,
-                tenant_id=tenant_id,
-                sex="all",
-                age_unit="years",
-                priority=1,
-                text_range="Refer to standard laboratory reference intervals",
-            )
-            db.add(ref_range)
 
     test.parameters_summary = ", ".join(param_names[:5]) + (f" (+{len(param_names)-5} more)" if len(param_names) > 5 else "")
 

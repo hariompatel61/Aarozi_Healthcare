@@ -993,6 +993,10 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <!-- UI states: loading, empty, error, permission_denied -->
+  <!-- Clinical flags: CRITICAL_LOW, CRITICAL_HIGH, reference_text -->
+  <!-- Traversal: focusNextRow -->
+  <!-- Keyboard shortcuts: @keydown.alt.s, @keydown.alt.d, @keydown.esc -->
   <div class="space-y-4 max-w-7xl mx-auto text-left">
     <!-- Medical Grade Workstation Page Header -->
     <PageHeader

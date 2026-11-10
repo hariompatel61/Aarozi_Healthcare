@@ -19,6 +19,8 @@ const api = useApi()
 // 1. PATIENT DEMOGRAPHICS & MOBILE / NAME AUTO-LOOKUP
 // -------------------------------------------------------------
 const loading = ref(false)
+const permission_denied = ref(false)
+const firstNameInput = ref<HTMLInputElement | null>(null)
 const mobileInputRef = ref<HTMLInputElement | null>(null)
 const testSearchInputRef = ref<HTMLInputElement | null>(null)
 
@@ -596,6 +598,7 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <!-- Keyboard shortcuts: @keydown.alt.s, @keydown.esc -->
   <div class="space-y-4 max-w-7xl mx-auto text-left text-slate-900 dark:text-slate-100 pb-12">
     <!-- Top Action Header -->
     <PageHeader

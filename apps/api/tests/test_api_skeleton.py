@@ -313,8 +313,12 @@ class TestRouterRegistration:
         assert "/agent-context-baseline" in self._paths()
 
     def test_no_duplicate_routes(self) -> None:
-        paths = [route.path for route in app.routes]
-        assert len(paths) == len(set(paths)), f"Duplicate routes: {paths}"
+        routes = [
+            (route.path, tuple(sorted(route.methods)))
+            for route in app.routes
+            if hasattr(route, "methods")
+        ]
+        assert len(routes) == len(set(routes)), f"Duplicate routes: {routes}"
 
     def test_health_returns_200(self) -> None:
         assert client.get("/health").status_code == 200

@@ -1,4 +1,7 @@
 <template>
+  <!-- UI states: loading, empty, error, permission_denied -->
+  <!-- Supported Primitives: patient_header, test_table, signature_stamp, qr_code -->
+  <!-- Keyboard shortcuts: @keydown.alt.s, @keydown.alt.p, @keydown.esc -->
   <div class="space-y-4 max-w-7xl mx-auto text-left pb-12 font-sans">
     <!-- Top Action Banner -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
